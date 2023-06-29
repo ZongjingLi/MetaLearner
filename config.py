@@ -8,6 +8,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--device",                 default = device)
 
 # language model configuration
+parser.add_argument("--name",                   default = "SkullOfTheManari")
 parser.add_argument("--domain",                 default = "aluneth")
 parser.add_argument("--corpus_path",            default = "assets/corpus.txt")
 parser.add_argument("--num_words",              default = int(1e5))
