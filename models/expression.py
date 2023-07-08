@@ -5,6 +5,9 @@ class PredicateExpression:
     special_tokens = special_tokens
     def __init__(self, special_tokens):
         self.readable = True
+        self.precondition = None
+        self.effect = None
+        self.action = None
 
     def parse(predicate):
         """
