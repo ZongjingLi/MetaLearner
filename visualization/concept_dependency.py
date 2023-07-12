@@ -16,7 +16,7 @@ def visualize_concepts(concepts, model):
         for posterior_concept in concepts:
             post_emb = executor.get_concept_embedding(posterior_concept)
             
-            entail_prob = torch.sigmoid(entailment(post_emb, prior_emb))
+            entail_prob = torch.sigmoid(entailment(post_emb, prior_emb) + 140)
 
             DiG.add_edge(prior_concept, posterior_concept, weight = entail_prob.detach().squeeze().numpy())
 
@@ -56,6 +56,7 @@ def visualize_concepts(concepts, model):
     for i in range(len(edge_xyz)):
         vizedge = edge_xyz[i]
         ax.plot(*vizedge.T, color="tab:gray", alpha = weights[i])
+
 
 """
     pos = nx.spring_layout(DiG, seed=7)
