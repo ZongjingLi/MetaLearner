@@ -5,6 +5,7 @@ import torch.nn.functional as F
 
 from .nn import *
 from .executor import *
+import networkx as nx
 
 class VanillaReasoner(nn.Module):
     def __init__(self, config):
@@ -19,6 +20,7 @@ class MetaReasoner(nn.Module):
         super().__init__()
         # [Concept Structure Embedding]
         self.box_registry = build_box_registry(config)
+        self.entailment = build_entailment(config)
 
         # [Neuro Symbolic Executor]
         self.executor = SceneProgramExecutor(config)
