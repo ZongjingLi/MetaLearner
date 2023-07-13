@@ -1,0 +1,1 @@
+/Users/melkor/miniforge3/envs/Melkor/bin/python train.py --checkpoint="checkpoints/alueth.pth"

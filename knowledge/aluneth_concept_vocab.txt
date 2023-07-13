@@ -13,3 +13,6 @@ function
 map
 mapping
 manifold
+complete
+normed
+has_inner_product

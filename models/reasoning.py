@@ -23,7 +23,7 @@ class MetaReasoner(nn.Module):
         self.entailment = build_entailment(config)
 
         # [Neuro Symbolic Executor]
-        self.executor = SceneProgramExecutor(config)
+        self.executor = ConceptProgramExecutor(config)
         self.rep = config.concept_type
         self.applier = None
         self.p = .97

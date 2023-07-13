@@ -14,11 +14,13 @@ def visualize_concepts(concepts, model):
     for prior_concept in concepts:
         prior_emb = executor.get_concept_embedding(prior_concept)
         for posterior_concept in concepts:
-            post_emb = executor.get_concept_embedding(posterior_concept)
-            
-            entail_prob = torch.sigmoid(entailment(post_emb, prior_emb) + 140)
+            if prior_concept != posterior_concept:
+                post_emb = executor.get_concept_embedding(posterior_concept)
+        
+                entail_prob = torch.sigmoid(entailment(prior_emb,post_emb))
+                if entail_prob.squeeze().detach().numpy() > 0.5:print(prior_concept,"->",posterior_concept,entail_prob.squeeze().detach().numpy())
 
-            DiG.add_edge(prior_concept, posterior_concept, weight = entail_prob.detach().squeeze().numpy())
+                DiG.add_edge(prior_concept, posterior_concept, weight = entail_prob.detach().squeeze().numpy())
 
 
     fig = plt.figure(figsize=plt.figaspect(1/1))
@@ -48,21 +50,14 @@ def visualize_concepts(concepts, model):
     # Plot the nodes - alpha is scaled by "depth" automatically
     ax.scatter(*node_xyz.T, s=100, ec="w")
 
+    sort_di_graph = sorted(DiG)
     for i in range(len(concepts)):
         x,y,z = node_xyz[i]
-        ax.text(x,y,z,concepts[i])
-
+        ax.text(x,y,z,sort_di_graph[i])
+    arrow_scale = 0.04
     # Plot the edges
     for i in range(len(edge_xyz)):
         vizedge = edge_xyz[i]
         ax.plot(*vizedge.T, color="tab:gray", alpha = weights[i])
-
-
-"""
-    pos = nx.spring_layout(DiG, seed=7)
-    esmall = [(u, v) for (u, v, d) in DiG.edges(data=True) if d["weight"] <= 1.5]
-    nx.draw_networkx_edges(
-    DiG, pos, edgelist=esmall, width=6, alpha=0.5, edge_color="b", style="dashed"
-    )
-
-"""
+        u,v = vizedge
+        ax.quiver(*(u/2+v/2),*(u-v)/np.linalg.norm(v-u) * arrow_scale, alpha = weights[i])

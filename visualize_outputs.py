@@ -1,0 +1,23 @@
+
+from visualization import *
+from models import *
+from config import *
+
+visparser = argparse.ArgumentParser()
+visparser.add_argument("--checkpoint",                 default = False)
+
+visconfig = visparser.parse_args()
+
+model = MetaReasoner(config)
+model.load_state_dict(torch.load("checkpoints/alueth.pth"))
+
+concepts = ["topological_vector_space",
+            "banach_steinhaus_theorem",
+            "close", "open", "compact",
+            "seperation", "banach_space",
+            "hilbert_space", "heine_borel",
+            "bounded", "continuous", "function",
+            "map", "mapping","manifold","complete","normed","has_inner_product"]
+
+visualize_concepts(concepts,model)
+plt.show()
