@@ -4,12 +4,12 @@ from models import *
 from config import *
 
 visparser = argparse.ArgumentParser()
-visparser.add_argument("--checkpoint",                 default = False)
+visparser.add_argument("--checkpoint",                 default = "checkpoints/alueth.pth")
 
 visconfig = visparser.parse_args()
 
 model = MetaLearner(config)
-model.load_state_dict(torch.load("checkpoints/alueth.pth"))
+model.load_state_dict(torch.load(visconfig.checkpoint))
 
 concepts = ["topological_vector_space",
             "banach_steinhaus_theorem",

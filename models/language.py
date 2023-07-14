@@ -43,7 +43,7 @@ class LanguageModel(nn.Module):
             curr_outputs = self.decode(feature, lib[i], target_qs[i])
             losses.append(curr_outputs["loss"])
             programs.append(curr_outputs["program"])
-        outputs = {"loss":losses,"translate":programs}
+        outputs = {"loss":losses,"program":programs}
         return outputs
 
     def decode(self,feature, lib, target_q):
@@ -65,10 +65,10 @@ class LanguageModel(nn.Module):
                 arg_num = lib["args_num"][token_names.index(target_name)]
                 target_index = token_names.index(target_name)
             else:
-                node_name = target.__class__.__name__
-                arg_num = lib["args_num"][node_name.index(node_name)]
                 target_index = np.random.choice(list(range(len(token_names))),p = pdf/np.sum(pdf))
                 target_name = token_names[target_index]
+                arg_num = lib["args_num"][token_names.index(target_name)]
+                
             
             if arg_num != 0:
                 parsed_node = target_name + "(" +"{}," * (arg_num-1) + "{}" +")"
@@ -79,7 +79,7 @@ class LanguageModel(nn.Module):
             child_node = None; right_child = None; left_child = None
             
             if arg_num == 1:
-                child_node = target.child
+                if target is not None:child_node = target.child
                 arg_feature = self.arg_embeddings(torch.tensor([0]))
                 #print(arg_feature.shape)
                 outputs = parse_node(joint_continue,arg_feature[0:1],child_node)
@@ -89,8 +89,8 @@ class LanguageModel(nn.Module):
                 parsed_node = parsed_node.format(outputs["program"])
 
             if arg_num == 2:
-                left_child = target.left_child
-                right_child = target.right_child
+                if target is not None:left_child = target.left_child
+                if target is not None:right_child = target.right_child
                 arg_feature = self.arg_embeddings(torch.tensor([0,1]))
          
                 left_outputs = parse_node(joint_continue,arg_feature[0:1], left_child)

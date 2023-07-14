@@ -1,1 +1,1 @@
-/Users/melkor/miniforge3/envs/Melkor/bin/python evaluate.py --checkpoint="checkpoints/alueth.pth" --freeze_concepts=True --lr=0.0002 --phase="translation
+/Users/melkor/miniforge3/envs/Melkor/bin/python evaluate.py --checkpoint="checkpoints/alueth.pth"  --phase="translation"

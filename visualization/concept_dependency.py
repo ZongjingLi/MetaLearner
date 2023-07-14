@@ -5,7 +5,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-def visualize_concepts(concepts, model):
+def visualize_concepts(concepts, model, flag = True):
     entailment = model.entailment
     registry = model.box_registry
     executor = model.executor
@@ -18,7 +18,7 @@ def visualize_concepts(concepts, model):
                 post_emb = executor.get_concept_embedding(posterior_concept)
         
                 entail_prob = torch.sigmoid(entailment(prior_emb,post_emb))
-                if entail_prob.squeeze().detach().numpy() > 0.5:print(prior_concept,"->",posterior_concept,entail_prob.squeeze().detach().numpy())
+                if flag and entail_prob.squeeze().detach().numpy() > 0.5:print(prior_concept,"->",posterior_concept,entail_prob.squeeze().detach().numpy())
 
                 DiG.add_edge(prior_concept, posterior_concept, weight = entail_prob.detach().squeeze().numpy())
 

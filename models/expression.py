@@ -9,9 +9,4 @@ class PredicateExpression:
         self.effect = None
         self.action = None
 
-    def parse(predicate):
-        """
-        input: predicate representation that is not so human readable
-        output: normal format that is human readable
-        """
-        return 
+    def check_applicable(self):return
