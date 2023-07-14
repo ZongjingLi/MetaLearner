@@ -8,7 +8,7 @@ visparser.add_argument("--checkpoint",                 default = False)
 
 visconfig = visparser.parse_args()
 
-model = MetaReasoner(config)
+model = MetaLearner(config)
 model.load_state_dict(torch.load("checkpoints/alueth.pth"))
 
 concepts = ["topological_vector_space",

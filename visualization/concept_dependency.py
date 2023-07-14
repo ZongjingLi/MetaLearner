@@ -23,7 +23,7 @@ def visualize_concepts(concepts, model):
                 DiG.add_edge(prior_concept, posterior_concept, weight = entail_prob.detach().squeeze().numpy())
 
 
-    fig = plt.figure(figsize=plt.figaspect(1/1))
+    fig = plt.figure("concept dependency",figsize=plt.figaspect(1/1))
     ax = fig.add_subplot(111, projection="3d"); rang = 1.0
 
     ax.set_zlim(-rang,rang);ax.set_xlim(-rang,rang);ax.set_ylim(-rang,rang)

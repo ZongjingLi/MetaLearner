@@ -11,18 +11,29 @@ from datasets import *
 from config import *
 from torch.utils.tensorboard import SummaryWriter
 
+def freeze_parameters(model):
+    for param in model.parameters():
+        param.requires_grad = False
+def unfreeze_parameters(model):
+    for param in model.parameters():
+        param.requires_grad = True
+
 def train_knowledge_prior(model, config, args):
-    alpha = 1.0
-    beta  = 1.0
+    alpha = args.alpha
+    beta  = args.beta
+    EPS = 1e-6
     epochs = args.epochs
     if args.dataset == "Aluneth":
-        if args.phase == "knowledge_prior":
+        if args.phase in ["knowledge_prior", "translation"]:
             train_dataset = AlunethKnowledge(config)
         elif args.phase == "neuro_search":
             train_dataset = AlunethSearch(config)
         else:
             raiseExceptions
     train_loader = DataLoader(train_dataset, batch_size = args.batch_size)
+    
+    if args.freeze_concepts:freeze_parameters(model.executor)
+        
     
     # [Initalize the model optimizer]
     optimizer = torch.optim.Adam(model.parameters(), lr = args.lr)
@@ -45,13 +56,19 @@ def train_knowledge_prior(model, config, args):
             # [Train Language->Program]
             translate_loss = 0
             avg_translation_conf = 0.0
-            if translate_program and len(inputs["program"])!=0 and len(inputs["statement"])!=0:
-                outputs = model.translate(inputs["statement"], inputs["program"])
-                for term in outputs["loss"]:
-                    translate_loss += term
-                    avg_translation_conf += torch.sigmoid(term)
-            avg_translation_conf /= len(inputs["statement"])
+            count_trans = 0
+            if args.phase in ["translation"]:
+                if translate_program and len(inputs["program"])!=0 and len(inputs["statement"])!=0:
+                    outputs = model.translate(inputs["statement"], inputs["program"])
+                    for term in outputs["loss"]:
+                        translate_loss += term
+                        count_trans += 1
+                        avg_translation_conf += torch.exp(0 - term)
 
+                avg_translation_conf /= count_trans
+                writer.add_scalar("translate_loss",translate_loss.detach(),itrs)
+                writer.add_scalar("avg_translate_conf",avg_translation_conf,itrs)
+            
             # [Logical Statement Loss]
             statement_loss = 0
             avg_confidence = 0.0
@@ -62,12 +79,15 @@ def train_knowledge_prior(model, config, args):
                     kwargs = {}
                     q = model.executor.parse(program)   
                     o = model.executor(q, **kwargs)
-                    statement_loss -= o["end"].squeeze()
+                    statement_loss -= o["end"].squeeze(0)
                     avg_confidence += torch.sigmoid(o["end"].squeeze())
                     count_statement += 1
             avg_confidence /= count_statement
 
-            working_loss = translate_loss/args.batch_size * alpha + statement_loss * beta
+            
+            working_loss = statement_loss * alpha + translate_loss * beta
+            writer.add_scalar("statement_loss",statement_loss.detach(),itrs)
+            writer.add_scalar("avg_statement_conf",avg_confidence,itrs)
 
             optimizer.zero_grad()
             working_loss.backward()
@@ -87,10 +107,14 @@ argparser = argparse.ArgumentParser()
 argparser.add_argument("--name",                    default = "LW")
 argparser.add_argument("--dataset",                 default = "Aluneth")
 argparser.add_argument("--epochs",                  default = 5000)
-argparser.add_argument("--batch_size",              default = 2)
-argparser.add_argument("--lr",                      default = 2e-3)
+argparser.add_argument("--batch_size",              default = 5)
+argparser.add_argument("--lr",                      default = 1e-3)
 argparser.add_argument("--phase",                   default = "knowledge_prior")
 argparser.add_argument("--train_translate",         default = True)
+argparser.add_argument("--freeze_concepts",         default = False)
+
+argparser.add_argument("--alpha",                   default = 1.0)
+argparser.add_argument("--beta",                    default = 1.0)
 
 # check for any checkpoints to load
 argparser.add_argument("--checkpoint",              default = False)
@@ -99,14 +123,15 @@ argparser.add_argument("--checkpoint",              default = False)
 argparser.add_argument("--checkpoint_itrs",         default = 100)
 
 args = argparser.parse_args()
+args.lr = float(args.lr)
 
 if not args.checkpoint:
-    model = MetaReasoner(config)
+    model = MetaLearner(config)
 else:
-    model = MetaReasoner(config)
+    model = MetaLearner(config)
     model.load_state_dict(torch.load(args.checkpoint))
 
-if args.phase == "knowledge_prior":
+if args.phase in  ["knowledge_prior","translation" ]:
     train_knowledge_prior(model, config, args)
 if args.phase == "neuro_search":
     train_neuro_search(model, config, args)

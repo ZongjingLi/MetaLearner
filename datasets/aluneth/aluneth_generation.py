@@ -38,13 +38,6 @@ data = [
     "lean":[],
     "program":"subset(function,map)"},
 
-    {"statement":"An open set is not a close set.",
-    "lean":[],
-    "program":"not(subset(open,close))"},
-
-    {"statement":"An open set is not a compact set.",
-    "lean":[],
-    "program":"not(subset(open,compact))"},
 
     {"statement":"A Banach space must be a topological_vector_space.",
     "lean":[],

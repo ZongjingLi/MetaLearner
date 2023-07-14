@@ -1,3 +1,4 @@
+from logging import raiseExceptions
 import re
 
 import torch
@@ -90,6 +91,13 @@ class SymbolicProgram(AbstractProgram):
         program.registered = self.registered
         return program
 
+class SuperNode(SymbolicProgram):
+    def __init__(self, *args):
+        super().__init__()
+        self.child = None
+
+    def __call__(self):
+        raiseExceptions
 
 class Scene(SymbolicProgram):
     BIG_NUMBER = 10
