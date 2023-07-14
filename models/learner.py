@@ -39,7 +39,7 @@ class MetaLearner(nn.Module):
         self.p = .97
 
         # [Neuro Predicate Plan Search]
-        self.neuro_reasoner = NeuroReasoner()
+        self.neuro_reasoner = NeuroReasoner(config)
     
     def get_token_embeddings(self):return self.token_embeddings(torch.tensor(list(range(len(self.tokens)))))
 

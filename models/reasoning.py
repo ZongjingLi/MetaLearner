@@ -10,8 +10,14 @@ class FactorState:
 class NeuroPredicate(nn.Module):
     def __init__(self):
         super().__init__()
-        self.pre_condtion = None
-        self.effect = None        
+        self.args = []
+        self.system = []
+        self.pre_condition = None
+        self.effect = None
+    
+    def applicable(self, args):return self.pre_condition(args)
+
+    def get_effect(self, args):return self.pre_condition(args)
 
 class NeuroReasoner(nn.Module):
     def __init__(self, config):
