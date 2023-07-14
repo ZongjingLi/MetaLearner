@@ -5,6 +5,7 @@ import torch.nn.functional as F
 
 from .nn import *
 from .executor import *
+from .language import *
 import networkx as nx
 
 class VanillaReasoner(nn.Module):
@@ -22,6 +23,12 @@ class MetaReasoner(nn.Module):
         self.box_registry = build_box_registry(config)
         self.entailment = build_entailment(config)
 
+        # [Language Semantics Encoder]
+        self.language_encoder = LanguageModel(config)
+
+        # [Regular Program Searcher]
+        #self.token_embeddings = torch.nn.Embedding(config.num_tokens)
+
         # [Neuro Symbolic Executor]
         self.executor = ConceptProgramExecutor(config)
         self.rep = config.concept_type
@@ -30,6 +37,15 @@ class MetaReasoner(nn.Module):
 
     def forward(self, quries):
         return quries
+    
+    def translate(self, statements, programs = None):
+        
+        libs = [
+
+        ]
+
+        outputs = self.language_encoder.translate(statements,libs, programs)
+        return outputs
     
     def search(self, init_state, init_latent, goal):
         """

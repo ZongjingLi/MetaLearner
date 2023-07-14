@@ -44,8 +44,13 @@ def train_knowledge_prior(model, config, args):
 
             # [Train Language->Program]
             translate_loss = 0
+            avg_translation_conf = 0.0
             if translate_program and len(inputs["program"])!=0 and len(inputs["statement"])!=0:
-                translate_loss += 0
+                outputs = model.translate(inputs["statement"], inputs["program"])
+                for term in outputs["loss"]:
+                    translate_loss += term
+                    avg_translation_conf += torch.sigmoid(term)
+            avg_translation_conf /= len(inputs["statement"])
 
             # [Logical Statement Loss]
             statement_loss = 0
@@ -70,7 +75,7 @@ def train_knowledge_prior(model, config, args):
             
             if not itrs % args.checkpoint_itrs:
                 torch.save(model.state_dict(), "checkpoints/alueth.pth")
-            sys.stdout.write ("\rEpoch: {}, Itrs: {} Loss: {}, AvfConi: {}, Time: {}".format(epoch + 1, itrs, working_loss,avg_confidence,datetime.timedelta(seconds=time.time() - start)))
+            sys.stdout.write ("\rEpoch: {}, Itrs: {} Loss: {}, AvgConf: {} AvgTrans: {} , Time: {}".format(epoch + 1, itrs, working_loss,avg_confidence,avg_translation_conf,datetime.timedelta(seconds=time.time() - start)))
             itrs += 1
 
 

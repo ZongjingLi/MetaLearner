@@ -22,11 +22,11 @@ def save_json(data,path):
     return True
 
 data = [
-    {"statement":"A Banach space is a complete normed space",
+    {"statement":"A Banach space is a complete normed space.",
     "lean":[],
     "program":"subset(banach_space,cintersect(complete,normed))"},
 
-    {"statement":"A Hilbert space is a Banach space with inner product",
+    {"statement":"A Hilbert space is a Banach space with inner product.",
     "lean":[],
     "program":"subset(hilbert_space,cintersect(banach_space,has_inner_product))"},
 
@@ -37,6 +37,18 @@ data = [
     {"statement":"A function is a map.",
     "lean":[],
     "program":"subset(function,map)"},
+
+    {"statement":"An open set is not a close set.",
+    "lean":[],
+    "program":"not(subset(open,close))"},
+
+    {"statement":"An open set is not a compact set.",
+    "lean":[],
+    "program":"not(subset(open,compact))"},
+
+    {"statement":"A Banach space must be a topological_vector_space.",
+    "lean":[],
+    "program":"subset(banach_space, topological_vector_space)"},
 
 ]
 

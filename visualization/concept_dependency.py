@@ -60,4 +60,4 @@ def visualize_concepts(concepts, model):
         vizedge = edge_xyz[i]
         ax.plot(*vizedge.T, color="tab:gray", alpha = weights[i])
         u,v = vizedge
-        ax.quiver(*(u/2+v/2),*(u-v)/np.linalg.norm(v-u) * arrow_scale, alpha = weights[i])
+        ax.quiver(*(u/2+v/2),*(v-u)/np.linalg.norm(v-u) * arrow_scale, alpha = weights[i])

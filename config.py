@@ -1,7 +1,8 @@
 import argparse
 from models import *
 translator = {"scene":Scene,"exist":Exist,"filter":Filter,"union":Union,"unique":Unique,"count":Count,
-              "contain":Contain,"subset":Subset,"not":Not,"cunionc":BoxUnion,"cintersect":BoxIntersect}
+              "contain":Contain,"subset":Subset,"not":Not,"cunionc":BoxUnion,"cintersect":BoxIntersect,
+              "and":And,"or":Or,}
 
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
@@ -13,6 +14,7 @@ parser.add_argument("--name",                   default = "SkullOfTheManari")
 parser.add_argument("--domain",                 default = "aluneth")
 parser.add_argument("--corpus_path",            default = "assets/corpus.txt")
 parser.add_argument("--num_words",              default = int(1e5))
+parser.add_argument("--num_tokens",             default = int(1e5))
 parser.add_argument("--word_dim",               default = 132)
 parser.add_argument("--semantics_dim",          default = 232)
 

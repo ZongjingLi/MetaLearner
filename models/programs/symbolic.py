@@ -245,11 +245,41 @@ class Not(SymbolicProgram):
         self.child, = args
 
     def __call__(self, executor):
+        eps = 1e-6
         child = self.child(executor)
         true_logit = child["end"]
-        not_logit = torch.log(torch.sigmoid(true_logit))
+        not_logit = torch.log(torch.sigmoid(true_logit) + eps)
         return {"end": not_logit}
 
+class And(SymbolicProgram):
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.left_child, self.right_child = args
+    
+    def __call__(self, executor):
+        if isinstance(self.left_child, str):
+            left_child = executor.get_concept_embedding(self.left_child)
+        else: left_child = self.left_child(executor)["end"]
+        if isinstance(self.right_child, str):
+            right_child = executor.get_concept_embedding(self.right_child)
+        else: right_child = self.right_child(executor)["end"]
+        and_logit = torch.min(left_child, right_child)
+        return {"end":and_logit}
+
+class Or(SymbolicProgram):
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.left_child, self.right_child = args
+    
+    def __call__(self, executor):
+        if isinstance(self.left_child, str):
+            left_child = executor.get_concept_embedding(self.left_child)
+        else: left_child = self.left_child(executor)["end"]
+        if isinstance(self.right_child, str):
+            right_child = executor.get_concept_embedding(self.right_child)
+        else: right_child = self.right_child(executor)["end"]
+        or_logit = torch.max(left_child, right_child)
+        return {"end":or_logit}
 
 class Union(SymbolicProgram):
 
