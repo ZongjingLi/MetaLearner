@@ -8,7 +8,7 @@ from models import *
 from config import *
 
 def evaluate_knowledge_prior(model, config, args):
-    if args.dataset == "Aluneth":
+    if args.dataset == "Aluneth" or "aluneth":
         if args.phase in ["knowledge_prior", "translation"]:
             train_dataset = AlunethKnowledge(config)
         elif args.phase == "neuro_search":
@@ -40,7 +40,7 @@ def evaluate_knowledge_prior(model, config, args):
 
     avg_confidence /= count_statement
     print("Average Knowledge Confidence:",avg_confidence.detach().numpy(), "Acc: {}/{}".format(correct_num,count_statement))
-    with open("outputs/{}_{}_evaluation.txt".format(args.dataset, args.phase),'w') as evaluation:
+    with open("outputs/{}{}_evaluation.txt".format(args.dataset, args.phase),'w') as evaluation:
         evaluation.write(str("Average Knowledge Confidence:{} Acc: {}/{}".format(avg_confidence.detach().numpy(),correct_num,count_statement)))
 
 
@@ -73,7 +73,7 @@ def evaluate_translation(model, config, args):
                     total_num += 1
     avg_translation_conf /= count_trans
     print("Average Translation Confidence:",avg_translation_conf.detach().numpy(),"Acc:{}/{}".format(correct_num,total_num))
-    with open("outputs/{}_{}_evaluation.txt".format(args.dataset, args.phase),'w') as evaluation:
+    with open("outputs/{}/{}_evaluation.txt".format(args.dataset, args.phase),'w') as evaluation:
         evaluation.write(str("Average Translation Confidence:{} Acc: {}/{}".format(avg_translation_conf.detach().numpy(),correct_num,total_num)))
 
 
