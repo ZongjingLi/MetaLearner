@@ -5,10 +5,10 @@ from torch.utils.data import Dataset, DataLoader
 class ManariKnowledge(Dataset):
     def __init__(self, config):
         super().__init__()
-
         self.config = config
+        self.data = None
 
-    def __len__(self):return 0
+    def __len__(self):return len(self.data)
 
     def __getitem__(self, idx):return idx
 

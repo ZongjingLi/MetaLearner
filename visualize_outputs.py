@@ -5,6 +5,7 @@ from config import *
 
 visparser = argparse.ArgumentParser()
 visparser.add_argument("--checkpoint",                 default = "checkpoints/alueth.pth")
+visparser.add_argument("--logflag",                    default = False)
 
 visconfig = visparser.parse_args()
 
@@ -19,5 +20,6 @@ concepts = ["topological_vector_space",
             "bounded", "continuous", "function",
             "map", "mapping","manifold","complete","normed","has_inner_product"]
 
-visualize_concepts(concepts,model)
+
+visualize_concepts(concepts,model, visconfig.logflag)
 plt.show()

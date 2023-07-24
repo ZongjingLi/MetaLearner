@@ -1,0 +1,1 @@
+/Users/melkor/miniforge3/envs/Melkor/bin/python visualize_outputs.py --checkpoint="checkpoints/manari.pth"

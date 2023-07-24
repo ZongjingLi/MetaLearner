@@ -41,7 +41,9 @@ def evaluate_knowledge_prior(model, config, args):
     avg_confidence /= count_statement
     print("Average Knowledge Confidence:",avg_confidence.detach().numpy(), "Acc: {}/{}".format(correct_num,count_statement))
     with open("outputs/{}{}_evaluation.txt".format(args.dataset, args.phase),'w') as evaluation:
+        evaluation.write("Experiment:{} using model:{} train dataset:{} on phase:{}\n".format(args.name, config.name, args.dataset, args.phase))
         evaluation.write(str("Average Knowledge Confidence:{} Acc: {}/{}".format(avg_confidence.detach().numpy(),correct_num,count_statement)))
+        
 
 
 def evaluate_translation(model, config, args):
@@ -74,6 +76,7 @@ def evaluate_translation(model, config, args):
     avg_translation_conf /= count_trans
     print("Average Translation Confidence:",avg_translation_conf.detach().numpy(),"Acc:{}/{}".format(correct_num,total_num))
     with open("outputs/{}/{}_evaluation.txt".format(args.dataset, args.phase),'w') as evaluation:
+        evaluation.write("Experiment:{} using model:{} train dataset:{} on phase:{}\n".format(args.name, config.name, args.dataset, args.phase))
         evaluation.write(str("Average Translation Confidence:{} Acc: {}/{}".format(avg_translation_conf.detach().numpy(),correct_num,total_num)))
 
 
