@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 from models import *
-from config import *
+from Aluneth.config import *
 
 
 argparser = argparse.ArgumentParser()

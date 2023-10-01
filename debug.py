@@ -1,5 +1,5 @@
 from models import *
-from config import *
+from Aluneth.config import *
 
 langs = LanguageModel(config)
 metar = MetaReasoner(config)

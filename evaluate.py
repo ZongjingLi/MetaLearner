@@ -5,7 +5,7 @@ from tqdm import tqdm
 
 from datasets import *
 from models import *
-from config import *
+from Aluneth.config import *
 
 def evaluate_knowledge_prior(model, config, args):
     if args.dataset == "Aluneth" or "aluneth":

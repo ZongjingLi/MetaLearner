@@ -21,7 +21,6 @@ def unfreeze_parameters(model):
 def train_knowledge_prior(model, config, args):
     alpha = args.alpha
     beta  = args.beta
-    EPS = 1e-6
     epochs = args.epochs
     if args.dataset == "Aluneth":
         if args.phase in ["knowledge_prior", "translation"]:
@@ -41,7 +40,7 @@ def train_knowledge_prior(model, config, args):
     # [start the training process recording]
     itrs = 0
     start = time.time()
-    logging_root = "./logs"
+    logging_root = "./tf-logs"
     ckpt_dir     = os.path.join(logging_root, 'checkpoints')
     events_dir   = os.path.join(logging_root, 'events')
     if not os.path.exists(ckpt_dir): os.makedirs(ckpt_dir)
@@ -106,7 +105,7 @@ argparser = argparse.ArgumentParser()
 # basic usage of training session and phase change
 argparser.add_argument("--name",                    default = "LW")
 argparser.add_argument("--dataset",                 default = "Aluneth")
-argparser.add_argument("--epochs",                  default = 5000)
+argparser.add_argument("--epochs",                  default = 15000)
 argparser.add_argument("--batch_size",              default = 5)
 argparser.add_argument("--lr",                      default = 1e-3)
 argparser.add_argument("--phase",                   default = "knowledge_prior")
@@ -124,6 +123,7 @@ argparser.add_argument("--checkpoint_itrs",         default = 100)
 
 args = argparser.parse_args()
 args.lr = float(args.lr)
+args.epochs = int(args.epochs)
 
 if not args.checkpoint:
     model = MetaLearner(config)

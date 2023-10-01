@@ -19,6 +19,6 @@ config = updparser.parse_args()
 
 domain_data = load_json("/Users/melkor/Documents/datasets/Aluneth/Knowledge/u1_knowledge.json")
 
-with open("assets/{}_corpus.txt".format(config.domain.lower()),'w') as txt_file:
+with open("Aluneth/assets/{}_corpus.txt".format(config.domain.lower()),'w') as txt_file:
     for data in domain_data:
         if len(data["statement"]) > 0:txt_file.write(data["statement"] + "\n")

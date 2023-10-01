@@ -12,11 +12,13 @@ device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--device",                 default = device)
+parser.add_argument("--root",                   default = "Aluneth")
+parser.add_argument("--dataset_root",           default = "/Users/melkor/Documents/datasets")
 
 # language model configuration
 parser.add_argument("--name",                   default = "Aluneth")
 parser.add_argument("--domain",                 default = "aluneth")
-parser.add_argument("--corpus_path",            default = "assets/aluneth_corpus.txt")
+parser.add_argument("--corpus_path",            default = "Aluneth/assets/aluneth_corpus.txt")
 parser.add_argument("--num_words",              default = int(1e5))
 parser.add_argument("--num_tokens",             default = int(1e5))
 parser.add_argument("--token_dim",              default = 128)
@@ -31,7 +33,7 @@ parser.add_argument("--temperature",            default = 0.02)
 
 parser.add_argument("--method",                 default = "uniform")
 parser.add_argument("--offset",                 default = [-.25, .25])
-parser.add_argument("--center",                 default =[.0, .0])
+parser.add_argument("--center",                 default =[-.01, .01])
 parser.add_argument("--entries",                default = 32)
 parser.add_argument("--translator",             default = translator)
 parser.add_argument("--args_num",               default = args_num)

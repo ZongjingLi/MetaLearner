@@ -1,4 +1,3 @@
-from lib2to3.pgen2 import token
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -6,7 +5,7 @@ import torch.nn.functional as F
 from .nn.primary import *
 from .executor import *
 from .programs.symbolic import *
-from utils import *
+from Karanir.utils import *
 
 class LanguageModel(nn.Module):
     def __init__(self,config):
