@@ -36,20 +36,23 @@ class NeuroReasoner(nn.Module):
         """
         return x
     
-    def reason(self,x, max_steps = 1132):
+    def reason(self,x,max_steps = 1132, threshold = 0.9):
         init_state = FactorState([])
-        reason_stop = 1
+        reason_stop = False
+        goal_evaluator = None
         itrs = 0
 
         visited_states = []
         curr_state = init_state
         while not reason_stop and itrs <= max_steps:
             itrs += 1
-            for next_states in self.get_next_state(curr_state):
+            if goal_evaluator(curr_state) > threshold:
+                reason_stop = True
+            for next_states in self.get_neighbor_states(curr_state):
                 pass
         return x
     
-    def get_next_state(self, state):
+    def get_neighbor_states(self, state):
         return []
 
 if __name__ == "__main__":
