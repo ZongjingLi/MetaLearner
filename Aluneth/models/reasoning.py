@@ -51,6 +51,9 @@ class NeuroReasoner(nn.Module):
             for next_states in self.get_neighbor_states(curr_state):
                 pass
         return x
+
+    def proceed(curr_state, goal_state):
+        return []
     
     def get_neighbor_states(self, state):
         return []
