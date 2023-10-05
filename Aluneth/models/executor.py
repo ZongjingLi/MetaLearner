@@ -4,8 +4,8 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 
-from models.nn import build_entailment, build_box_registry
-from Karanir.utils import *
+from Aluneth.models.nn import build_entailment, build_box_registry
+from karanir.utils import *
 
 class UnknownArgument(Exception):
     def __init__(self):super()

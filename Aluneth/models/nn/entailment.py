@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from Karanir.utils import Singleton
+from karanir.utils import Singleton
 from .measure import Measure
 
 class Entailment(nn.Module, metaclass = Singleton):

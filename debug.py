@@ -1,4 +1,4 @@
-from models import *
+from Aluneth.models import *
 from Aluneth.config import *
 
 langs = LanguageModel(config)

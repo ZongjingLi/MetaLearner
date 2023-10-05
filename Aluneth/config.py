@@ -1,5 +1,5 @@
 import argparse
-from models import *
+from .models import *
 
 translator = {"scene":Scene,"exist":Exist,"filter":Filter,"union":Union,"unique":Unique,"count":Count,
               "contain":Contain,"subset":Subset,"not":Not,"cunionc":BoxUnion,"cintersect":BoxIntersect,

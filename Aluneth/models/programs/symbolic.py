@@ -5,7 +5,7 @@ import torch
 import torch.nn.functional as F
 
 from .abstract_program import AbstractProgram
-from Karanir.utils import copy_dict, EPS
+from karanir.utils import copy_dict, EPS
 
 class SymbolicProgram(AbstractProgram):
     def __init__(self, *args):
