@@ -5,7 +5,7 @@ import torch.nn.functional as F
 from .nn.primary import *
 from .executor import *
 from .programs.symbolic import *
-from karanir.utils import *
+from karanir.utils.tokens import *
 
 class LanguageModel(nn.Module):
     def __init__(self,config):

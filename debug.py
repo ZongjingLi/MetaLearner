@@ -2,7 +2,7 @@ from Aluneth.models import *
 from Aluneth.config import *
 
 langs = LanguageModel(config)
-metar = MetaReasoner(config)
+metar = MetaLearner(config)
 
 output_seqs = langs([
     "what is that ?",

@@ -1,5 +1,5 @@
 from visualization import *
-from models import *
+from .models import *
 from config import *
 
 visparser = argparse.ArgumentParser()
