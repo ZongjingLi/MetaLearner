@@ -1,0 +1,28 @@
+table:
+  position: [1.0, 0.0, 0.0]
+  orientation: [0, 0, 0, 1]
+
+objects:
+  - name: "red_cube"
+    type: "box"
+    size: [0.02, 0.02, 0.02]
+    mass: 0.1
+    color: [1, 0, 0, 1]
+    position: [0.7, -0.2, 0.65]
+    orientation: [0, 0, 0, 1]
+    
+  - name: "green_cube"
+    type: "box"
+    size: [0.02, 0.02, 0.02]
+    mass: 0.1
+    color: [0, 1, 0, 1]
+    position: [0.7, 0, 0.65]
+    orientation: [0, 0, 0, 1]
+    
+  - name: "blue_cube"
+    type: "box"
+    size: [0.02, 0.02, 0.02]
+    mass: 0.1
+    color: [0, 0, 1, 1]
+    position: [0.7, 0.2, 0.65]
+    orientation: [0, 0, 0, 1]

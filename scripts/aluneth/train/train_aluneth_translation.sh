@@ -1,3 +1,0 @@
-/Users/melkor/miniforge3/envs/Melkor/bin/python train.py \
---checkpoint="checkpoints/alueth.pth" \
---freeze_concepts=True --lr=0.0002 --phase="translation"

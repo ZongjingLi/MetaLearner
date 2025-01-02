@@ -1,1 +1,0 @@
-/Users/melkor/miniforge3/envs/Melkor/bin/python evaluate.py --checkpoint="checkpoints/alueth.pth" --phase="knowledge_prior"

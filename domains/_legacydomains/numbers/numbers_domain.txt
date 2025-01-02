@@ -1,0 +1,10 @@
+(domain Numbers)
+(:type
+    state - vector[float, 232]
+)
+(:predicate
+    value ?x-state -> float
+
+    greater ?x-float ?y-float -> boolean
+    lesser ?x-float ?y-float -> boolean
+)

@@ -1,0 +1,24 @@
+(domain Plane)
+(:type
+    state - vector[float,2]
+)
+(:predicate
+    pos ?x-state -> vector[float,2]
+
+    ;; comparison between the length of two 
+    greater ?x-float ?y-float -> boolean
+    lesser ?x-float ?y-float -> boolean
+w
+    ;; spatial relations left, right and other prepositions
+    left-of ?x-pos ?y-pos -> boolean
+    right-of ?x-pos ?y-pos -> boolean
+    above ?x-pos ?y-pos -> boolean
+    below ?x-pos ?y-pos -> boolean
+    
+    ;; spatial relations that are independent of the relative position but only the distance
+    near ?x-pos ?y-pos -> boolean
+    far ?x-pos ?y-pos -> boolean
+)
+(:derived
+    length ?x-state expr: (??f (pos ?x))
+)

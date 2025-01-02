@@ -1,0 +1,23 @@
+(domain Distance)
+(:type
+    state - vector[float, 2]        ;; [x, y] coordinates
+)
+(:predicate
+    ;; Basic position predicate
+    get_position ?x-state -> vector[float, 2]
+    
+    ;; Qualitative distance predicates
+    very_near ?x-state ?y-state -> boolean
+    near ?x-state ?y-state -> boolean
+    moderately_far ?x-state ?y-state -> boolean
+    far ?x-state ?y-state -> boolean
+    very_far ?x-state ?y-state -> boolean
+    
+    ;; Quantitative distance predicates
+    euclidean_distance ?x-state ?y-state -> float
+    manhattan_distance ?x-state ?y-state -> float
+    
+    ;; Relative distance predicates
+    closer_than ?x-state ?y-state ?ref-state -> boolean
+    further_than ?x-state ?y-state ?ref-state -> boolean
+)

@@ -1,0 +1,13 @@
+simulation:
+  timestep: 0.002
+  max_steps: 1000
+  render: true
+
+physics:
+  gravity: [0, 0, -9.81]
+  solver_iterations: 150
+
+logging:
+  enabled: true
+  level: INFO
+  path: "logs/"

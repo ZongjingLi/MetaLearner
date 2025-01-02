@@ -1,0 +1,10 @@
+(domain Graph)
+(:type
+    state - float
+)
+(:predicate
+    pos ?x-state -> float
+
+    left ?x-pos ?y-pos -> boolean
+    right ?x-pos ?y-pos -> boolean
+)

@@ -1,0 +1,11 @@
+(domain Box)
+(:type
+    state - vector[float,4]
+)
+(:predicate
+    box ?x-state -> state
+    contain ?x-box ?y-box -> boolean
+)
+(:derived
+    size ?x-state expr: (??f (box ?x))
+)

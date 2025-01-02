@@ -1,2 +1,0 @@
-Experiment:KFT using model:Aluneth train dataset:Aluneth on phase:translation
-Average Translation Confidence:0.9997897148132324 Acc: 5/5

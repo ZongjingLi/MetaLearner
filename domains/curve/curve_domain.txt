@@ -1,0 +1,37 @@
+(domain Curve2D)
+(:type 
+    state - vector[float, 64]     ;; [batch_size, num_points, 2] point cloud
+)
+(:predicate
+    ;; Basic curve predicates
+    get_curve ?x-state -> vector[float, 320, 2]  ;; Returns curve points
+    get_start ?x-state -> vector[float, 2]     ;; Start point
+    get_end ?x-state -> vector[float, 2]       ;; End point
+    get_length ?x-state -> float               ;; Curve length
+    get_centroid ?x-state -> vector[float, 2]  ;; Center of mass
+    
+    ;; Geometric properties
+    is_closed ?x-state -> boolean   ;; Start ≈ end point
+    is_straight ?x-state -> boolean  ;; Points close to line
+    is_circular ?x-state -> boolean  ;; Points close to circle
+    
+    ;; Curve comparisons
+    similar_shape ?x-state ?y-state -> boolean     ;; Similar after alignment
+    same_length ?x-state ?y-state -> boolean      ;; Equal arc lengths
+    parallel_to ?x-state ?y-state -> boolean      ;; Locally parallel
+    
+    ;; Spatial relations
+    intersects ?x-state ?y-state -> boolean       ;; Curves cross
+    contains ?x-state ?y-state -> boolean         ;; One inside other
+    left_of ?x-state ?y-state -> boolean          ;; Relative position
+    above ?x-state ?y-state -> boolean            ;; Relative position
+    
+    ;; Shape analysis  
+    get_curvature ?x-state -> vector[float, 320]  ;; Local curvature
+    get_direction ?x-state -> vector[float, 320]  ;; Tangent angles
+    get_complexity ?x-state -> float            ;; Shape complexity
+    
+    ;; Parametric properties
+    get_speed ?x-state -> vector[float, 320]      ;; Point spacing
+    is_uniform ?x-state -> boolean                ;; Even sampling
+)

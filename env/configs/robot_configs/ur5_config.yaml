@@ -1,0 +1,8 @@
+ur5:
+  base_position: [0, 0, 0.02]
+  max_force: 500
+  default_joint_positions: [0, -1.57, 1.57, -1.57, -1.57, 0]
+  gripper:
+    type: "wsg50"
+    max_force: 50
+    max_width: 0.05
