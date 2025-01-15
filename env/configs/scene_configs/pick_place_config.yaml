@@ -11,6 +11,7 @@ objects:
     position: [0.7, -0.2, 0.65]
     orientation: [0, 0, 0, 1]
     
+    
   - name: "green_cube"
     type: "box"
     size: [0.02, 0.02, 0.02]

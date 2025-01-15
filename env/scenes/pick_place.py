@@ -1,5 +1,5 @@
 from .base_scene import BaseScene
-from ..objects.simple_objects import Box
+from ..objects.simple_object import Box
 import pybullet as p
 
 class PickPlaceScene(BaseScene):

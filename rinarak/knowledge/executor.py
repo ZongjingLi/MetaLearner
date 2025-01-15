@@ -593,8 +593,8 @@ class CentralExecutor(nn.Module):
         
         # Process and evaluate program
         program = self._process_program(program)
-        return Program.parse(program).evaluate(context)
-    
+        res = Program.parse(program).evaluate(context)
+        return res
     
     def get_predicate_arity(self, predicate_name: str) -> int:
         """Get the arity of a predicate by name.

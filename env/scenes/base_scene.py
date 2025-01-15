@@ -1,5 +1,6 @@
 from typing import Dict, List
 import pybullet as p
+import pybullet_data
 
 class BaseScene:
     def __init__(self, config: dict):

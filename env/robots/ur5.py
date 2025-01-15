@@ -5,8 +5,10 @@ import pybullet_data
 class UR5(BaseRobot):
     def _load_robot(self):
         p.setAdditionalSearchPath(pybullet_data.getDataPath())
+        
+        # Load default UR5
         self.robot_id = p.loadURDF(
-            "ur5/ur5.urdf",
+            "robot/ur5e.urdf",  # Default UR5 URDF path in PyBullet data
             self.config['base_position'],
             useFixedBase=True
         )

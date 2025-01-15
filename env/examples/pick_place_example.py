@@ -7,7 +7,6 @@ def main():
     # Load config
     with open('env/configs/pick_place_config.yaml', 'r') as f:
         config = yaml.safe_load(f)
-    
     # Create environment
     env = BaseEnv(config)
     
