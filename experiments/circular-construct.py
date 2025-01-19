@@ -55,12 +55,12 @@ model    = PointEnergyMLP(constraints, dim = 3)
 schedule = ScheduleLogLinear(N=500, sigma_min=0.005, sigma_max=10)
 trainer  = training_loop(loader, model, schedule, epochs=0000)
 losses   = [ns.loss.item() for ns in trainer]
-torch.save(model.state_dict(),"checkpoints/circular_state.pth")
+#torch.save(model.state_dict(),"checkpoints/circular_state.pth")
 
 batchsize = 3
-#model.load_state_dict(torch.load("checkpoints/state.pth"))
+model.load_state_dict(torch.load("checkpoints/circular_state.pth", map_location="cpu"))
 
-cond = {"edges":[(0,1,"disconnected"), (1,0,"partial_overlap")]}
+cond = {"edges":[(0,1,"disconnected"), (1,2,"partial_overlap")]}
 *xt, x0  = samples(model, schedule.sample_sigmas(20), gam=2, cond = cond, batchsize = batchsize)
 
 print(x0.shape)

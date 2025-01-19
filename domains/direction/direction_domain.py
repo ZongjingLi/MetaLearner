@@ -342,6 +342,18 @@ def build_direction_executor(temperature: float = 0.2) -> CentralExecutor:
     # Add visualization method to executor
 
     executor.visualize = direction_domain.visualize
+
+    constraints = {
+    "north_of": 2,
+    "south_of": 2,
+    "east_of": 2,
+    "west_of": 2,
+    "northeast_of": 2,
+    "northwest_of": 2,
+    "southeast_of": 2,
+    "southwest_of": 2
+    }
+    executor.costraints = constraints
     
     return executor
 

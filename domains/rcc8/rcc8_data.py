@@ -310,3 +310,5 @@ if __name__ == "__main__":
         shuffle=True,
         collate_fn=collate_rcc8_batch
     )
+
+def get_constraint_dataset(): return RCC8Dataset()

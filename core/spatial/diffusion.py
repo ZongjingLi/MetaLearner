@@ -98,6 +98,51 @@ def generate_train_sample(x0: Union[torch.FloatTensor, Tuple[torch.FloatTensor, 
     eps = torch.randn_like(x0)
     return x0, sigma, eps, cond
 
+def process_edges_by_arity(x: torch.Tensor, edges):
+    """
+    Process edges and conditions into arity-based dictionaries.
+    
+    Args:
+        x: Tensor of shape [num_points, feature_dim] containing point features
+        edges: List of tuples (idx1, idx2, ..., type) where last element is edge type
+        
+    Returns:
+        features_dict: Dictionary mapping arity to concatenated features tensor
+        types_dict: Dictionary mapping arity to list of edge types
+    """
+    # Initialize dictionaries for different arities
+    features_dict = {}  # Will store concatenated features
+    types_dict = {}     # Will store edge types
+    
+    for edge in edges:
+        # Get object indices and type
+        obj_idx = edge[:-1]  # All elements except last
+        type_name = edge[-1]
+        arity = len(obj_idx)
+        
+        # Get features for objects in this edge
+        x_inputs = x[list(obj_idx), :]  # [arity, feature_dim]
+        
+        # Reshape to single vector
+        n, d = x_inputs.shape
+        x_inputs = x_inputs.reshape(1, n * d)  # [1, arity * feature_dim]
+        
+        # Initialize lists for this arity if not already present
+        if arity not in features_dict:
+            features_dict[arity] = []
+            types_dict[arity] = []
+            
+        # Add features and type to appropriate lists
+        features_dict[arity].append(x_inputs)
+        types_dict[arity].append(type_name)
+    
+    # Concatenate features for each arity
+    for arity in features_dict:
+        if features_dict[arity]:  # If list is not empty
+            features_dict[arity] = torch.cat(features_dict[arity], dim=0)
+            
+    return features_dict, types_dict
+
 # Model objects
 # Always called with (x, sigma):
 #   If x.shape == [B, D1, ..., Dk], sigma.shape == [] or [B, 1, ..., 1].
@@ -122,10 +167,14 @@ def training_loop(loader      : DataLoader,
             x0 = sample["data"]
             conditional = sample["cond"]
             batchsize = x0.shape[0]
+
             #print(conditional)
             #conditional = {"edges" : [(i,"online") for i in range(batchsize)]}
-            x0, sigma, eps, cond = generate_train_sample(x0, schedule, conditional)
+            #print("batchsize:",batchsize,x0.shape)
+            b, d = x0.shape
 
+            x0, sigma, eps, cond = generate_train_sample(x0, schedule, conditional)
+            #print(x0.shape, sigma.shape, eps.shape)
 
             loss = model.get_loss(x0, sigma, eps, cond=conditional)
             yield SimpleNamespace(**locals()) # For extracting training statistics

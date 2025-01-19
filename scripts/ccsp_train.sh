@@ -1,0 +1,1 @@
+python main.py --generic_dim=256 --command="train_ccsp_rcc8" --epochs=10000

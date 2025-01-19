@@ -499,6 +499,18 @@ def build_rcc8_executor(temperature: float = 0.1,
     
     # Add visualization method to executor
     executor.visualize = rcc8_domain.visualize
+
+    constraints = {
+        "externally_connected": 2,
+        "partial_overlap": 2,
+        "equal": 2,
+        "disconnected": 2,
+        "tangential_proper_part": 2,
+        "non_tangential_proper_part": 2,
+        "tangential_proper_part_inverse": 2,
+        "non_tangential_proper_part_inverse": 2
+    }
+    executor.constraints = constraints
     
     return executor
 

@@ -220,21 +220,21 @@ class PointEnergyMLP(nn.Module, ModelMixin):
         assert cond is not None, """cond requires edge parameters"""
         total_energy = 0.0
         x.requires_grad = True
-
         #print("State Size:", x.shape)
+        #print("Sigma Size:", sigma.shape)
         #print("Edge Size:", len(cond["edges"]))
         for edge in cond["edges"]:
             obj_idx = edge[:-1]
             type_name = edge[-1]
 
 
-            #print(x.shape)
-
             x_inputs = x[obj_idx, :]
+
             n, d= x_inputs.shape
+
             x_inputs = x_inputs.reshape([1, n * d])
-            #print(x_inputs.shape)
-            sigma_inputs = sigma[obj_idx[0:1]]
+
+            sigma_inputs = sigma[obj_idx[:]]
 
 
             comp = self.energies[type_name](x_inputs, sigma_inputs)

@@ -86,27 +86,41 @@ class Domain:
         for pos in expr_list:
             if isinstance(pos, list): [self.register_slots(name, slot) for slot in pos]
             if pos[:2] == "??": self.implementations[name+"-"+pos[2:]] = None
-
-    def print_summary(self):
-        print(f"domain:\n  {self.domain_name}")
-        print("types:")
+        
+    def get_summary(self):
+        summary = []
+        # Domain section
+        summary.append(f"domain:\n  {self.domain_name}")
+        
+        # Types section
+        summary.append("types:")
         for key in self.types:
-            print(f"  {key} - {self.types[key]}")
-        print("predicates:")
+            summary.append(f"  {key} - {self.types[key]}")
+        
+        # Predicates section
+        summary.append("predicates:")
         for key in self.predicates:
             predicate_name = self.predicates[key]["name"]
             parameters = self.predicates[key]["parameters"]
             output_type = self.predicates[key]["type"]
-            print(f"  {predicate_name}:{parameters} -> {output_type}");
-        print("actions:")
+            summary.append(f"  {predicate_name}:{parameters} -> {output_type}")
+        
+        # Actions section
+        summary.append("actions:")
         for key in self.actions:
             atom_action = self.actions[key]
             name = atom_action.action_name
             params = atom_action.parameters
             precond = str(atom_action.precondition)
             effect = str(atom_action.effect)
-            print(f" name:{name}\n  params:{params}\n  precond:{precond}\n  effect:{effect}")
-        print(self.implementations)
+            summary.append(f" name:{name}\n  params:{params}\n  precond:{precond}\n  effect:{effect}")
+        
+        # Implementations
+        summary.append(str(self.implementations))
+        
+        return '\n'.join(summary)
+
+    def print_summary(self):print(self.get_summary())
 
 #_icc_parser = Domain()
 
