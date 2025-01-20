@@ -18,8 +18,19 @@ parser.add_argument("--command",          default = "train",   help = "the comma
 """
 
 parser.add_argument("--generic_dim",      default = 256,       help = "the dim of the generic embedding space")
-parser.add_argument("--core_knowledge",   default = None,      help = "core knowledge model to load from")
 
-parser.add_argument("--epochs",           default = 5000,     help = "number of epochs for the training")
+"""training commmand epochs"""
+parser.add_argument("--epochs",           default = 5000,      help = "number of epochs for the training")
+
+"""handle the textual token encoder"""
+parser.add_argument("--corpus",           default = "data/corpus.txt")
+parser.add_argument("--vocab_size",       default = 10000,     help = "number of vocabulary to hold in the text encoder")
+
+"""handle the image mask object encoder"""
+parser.add_argument("--num_channels",     default = 3,         help = "number of input channels of the image encoder")
+
+
+parser.add_argument("--core_knowledge",   default = None,      help = "core knowledge model to load from")
+parser.add_argument("--load_checkpoint",  default = None,      help = "load the checkpoint")
 
 config = parser.parse_args()

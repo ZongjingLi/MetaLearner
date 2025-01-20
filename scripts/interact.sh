@@ -1,0 +1,1 @@
+python main.py --command="interact"

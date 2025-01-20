@@ -22,8 +22,8 @@ from typing import Dict, List, Tuple, Optional, Any
 from dataclasses import dataclass
 from collections import defaultdict
 
-from metaphors.base import StateMapper
-from metaphors.legacy import PredicateConnectionMatrix, ActionConnectionMatrix
+from core.metaphors.base import StateMapper
+from core.metaphors.legacy import PredicateConnectionMatrix, ActionConnectionMatrix
 from rinarak.utils.data import combine_dict_lists
 
 logger = get_logger("Citadel", KFTLogFormatter)

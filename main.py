@@ -45,8 +45,40 @@ def process_command(command):
         torch.save(model.state_dict(),"checkpoints/{command}_state.pth")
         main_logger.info("finish the training and saved in checkpoints/{command}_state.pth")
 
-    if regex.match("train_metaphor_*", command):
-        domain = command[15:]
+    if regex.match("train_mcl_*", command):
+        main_logger.info("start training the metaphorical concept learner")
+        domain = command[10:]
+        from core.model import EnsembleModel
+        model = EnsembleModel(config)
+
+        text = "this is a real sentence"
+        print(model.encode_text(text).shape)
+
+    
+    if command == "interact":
+        main_logger.info("start the interactive mode of the metaphorical concept learner")
+        from core.model import EnsembleModel
+        model = EnsembleModel(config)
+        
+        # Import and start the server
+        from server import make_app
+        import tornado
+        
+        # Create and start the server with the model
+        app = make_app(model=model)
+        port = getattr(config, 'port', 8888)  # Use config port if available, else default to 8888
+        app.listen(port)
+        
+        main_logger.info(f"Server running on http://localhost:{port}")
+        
+        # Start the Tornado IO loop
+        try:
+            tornado.ioloop.IOLoop.current().start()
+        except KeyboardInterrupt:
+            main_logger.info("Server stopped by user")
+            tornado.ioloop.IOLoop.current().stop()
+        
+
     return command
 
 if __name__ == "__main__":
