@@ -2,6 +2,7 @@ import openai
 import time
 from openai.error import RateLimitError, Timeout, APIError, APIConnectionError, OpenAIError
 
+#`pip install openai==0.28`
 
 def run_gpt(questions, prompts, temperature: float = 1.0, use_user_message: bool = False):
     query_str = '\n'.join([  # Format the questions into a query string
@@ -13,7 +14,7 @@ def run_gpt(questions, prompts, temperature: float = 1.0, use_user_message: bool
         try:
             # Create a chat completion request
             response = openai.ChatCompletion.create(
-                model='gpt-4o-mini',  # Specify the desired model (e.g., gpt-4 or gpt-3.5-turbo)
+                model='gpt-4o-mini',  # Specify the desired model (e.g., gpt-4o-mini or gpt-3.5-turbo)
                 messages=[
                     {'role': 'system', 'content': prompts['system']},  # System message to set context
                     {'role': 'user', 'content': prompts['user'] + query_str}  # User message containing the prompt and questions
@@ -49,7 +50,7 @@ if __name__  == "__main__":
             'user': user_prompt.strip()
         }
 
-    questions = ["How to represent an integer in binary"]
+    questions = ["Explain to me what is Banach-Alaoglu theorem."]
     
     res = run_gpt(questions, prompts)
     print(res["questions"])
