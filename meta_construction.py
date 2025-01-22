@@ -38,24 +38,23 @@ class MetaphorMorphism(nn.Module):
         super().__init__()
         self.source_domain = source_domain
         self.target_domain = target_domain
+
+        """f_a: used to check is the metaphor is applicable for the mapping"""
         
-        # State mapping network
+        """f_s: as the state mapping from source state to the target state"""
         self.state_mapper = StateMapper(
             source_dim=source_domain.state_dim[0],
             target_dim=target_domain.state_dim[0],
             hidden_dim=hidden_dim
         )
         
-        # Connection matrices
+        """f_d: as the predicate and action connections between the source domain and target domain"""
         self.predicate_matrix = PredicateConnectionMatrix(
             source_domain.domain, target_domain.domain
         )
         self.action_matrix = ActionConnectionMatrix(
             source_domain.domain, target_domain.domain
         )
-        
-        # Evaluation tracking
-        self.evaluation_tracker = None
 
     def forward(self, state: torch.Tensor) -> torch.Tensor:
         """Map state from source to target domain"""
@@ -212,11 +211,11 @@ class ConceptDiagram(nn.Module):
         states = []
         results = []
         path_probs = []
-
+        """1. get all the paths from the source to target domain"""
         for path in all_paths[:top_k]:
             current_state = state
             path_prob = torch.exp(self.get_path_prob(path))
-
+            """2. calculate the probability of this path exists"""
             for src, tgt, idx in path:
                 morphism = self.get_morphism(src, tgt, idx)
                 current_state = morphism(current_state)
@@ -961,7 +960,7 @@ if __name__ == "__main__":
 
 
 import sys
-#sys.exit()
+sys.exit()
 
 import torch
 import torch.optim as optim
