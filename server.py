@@ -8,6 +8,8 @@ import matplotlib.pyplot as plt
 import io
 import base64
 
+
+
 class MainHandler(tornado.web.RequestHandler):
     def initialize(self, model=None):
         self.model = model

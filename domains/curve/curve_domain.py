@@ -61,10 +61,6 @@ CURVE_DOMAIN = """
     similar_shape ?x-state ?y-state -> boolean
     same_length ?x-state ?y-state -> boolean
     parallel_to ?x-state ?y-state -> boolean
-    intersects ?x-state ?y-state -> boolean
-    contains ?x-state ?y-state -> boolean
-    left_of ?x-state ?y-state -> boolean
-    above ?x-state ?y-state -> boolean
 )
 """
 
@@ -90,16 +86,20 @@ class CurveDomain:
         self.latent_dim = latent_dim
         self.temperature = temperature 
         self.epsilon = epsilon
-        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+        self.device = torch.device('mps' if torch.backends.mps.is_available() else 'cpu')
+        if not torch.backends.mps.is_available():
+            self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         
         # Load VAE model
         folder_path = os.path.dirname(os.path.abspath(__file__))
         from .curve_repr import PointCloudVAE
         self.curve_vae = PointCloudVAE(num_points=num_points, latent_dim=latent_dim)
         self.curve_vae.load_state_dict(
-            torch.load(f"{folder_path}/curve_vae_state.pth", map_location=self.device)
+            torch.load(f"{folder_path}/curve_vae_state.pth", map_location=self.device, weights_only = True)
         )
         self.curve_vae.to(self.device)
+
 
     def _pairwise_distances(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         """Calculate pairwise distances between point sets.
@@ -519,12 +519,13 @@ class CurveDomain:
             state_sizes: Dictionary to store number of curves per state
         """
         for i, (key, value) in enumerate(states_dict.items()):
-            curves = self.decode_curve(value["state"]).detach()
+            #print(self.device)
+            curves = self.decode_curve(value["state"].to(self.device)).detach()
             state_sizes[key] = len(curves)
             
             for b in range(len(curves)):
                 curve = curves[b]
-                ax.plot(curve[:, 0].numpy(), curve[:, 1].numpy(),
+                ax.plot(curve[:, 0].cpu().numpy(), curve[:, 1].cpu().numpy(),
                        f'-{markers[i%len(markers)]}',
                        color=colors[i % len(colors)],
                        label=f'Curve {key}_{b}' if b == 0 else "",
@@ -532,9 +533,9 @@ class CurveDomain:
                        markersize=4)
                 
                 # Mark start and end points
-                ax.plot(curve[0, 0].numpy(), curve[0, 1].numpy(),
+                ax.plot(curve[0, 0].cpu().numpy(), curve[0, 1].cpu().numpy(),
                        'g>', markersize=8, alpha=0.8)
-                ax.plot(curve[-1, 0].numpy(), curve[-1, 1].numpy(),
+                ax.plot(curve[-1, 0].cpu().numpy(), curve[-1, 1].cpu().numpy(),
                        'r<', markersize=8, alpha=0.8)
 
     def _plot_relations(self, ax1: plt.Axes, ax2: plt.Axes,
@@ -549,6 +550,7 @@ class CurveDomain:
             state_sizes: Dictionary of number of curves per state
             relation_matrix: Tensor of relation scores
         """
+        relation_matrix = relation_matrix.squeeze(-1)
         if relation_matrix.dim() == 2:
             curves0 = self.decode_curve(states_dict[0]["state"])
             curves1 = self.decode_curve(states_dict[1]["state"])
@@ -575,12 +577,15 @@ class CurveDomain:
             ax2.set_ylabel("Curve 1 Index")
         
         elif relation_matrix.dim() == 3:
+            print(relation_matrix.shape)
             # For per-point values (e.g., curvature)
             curves0 = self.decode_curve(states_dict[0]["state"])
             for i in range(min(4, state_sizes[0])):
                 values = relation_matrix[i].detach()
                 curve = curves0[i]
-                scatter = ax1.scatter(curve[:, 0], curve[:, 1],
+                print(curve.shape)
+
+                scatter = ax1.scatter(curve[:, 0].cpu().detach().numpy(), curve[:, 1].cpu().detach().numpy(),
                                     c=values.numpy(),
                                     cmap='viridis',
                                     s=100,

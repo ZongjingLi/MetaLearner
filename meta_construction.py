@@ -11,6 +11,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import matplotlib.pyplot as plt
+from io import BytesIO
+import base64
 
 from rinarak.logger import get_logger, KFTLogFormatter
 from rinarak.logger import set_logger_output_file
@@ -22,12 +24,14 @@ from typing import Dict, List, Tuple, Optional, Any
 from dataclasses import dataclass
 from collections import defaultdict
 
-from core.metaphors.base import StateMapper
+from core.metaphors.base import StateMapper, StateClassifier
 from core.metaphors.legacy import PredicateConnectionMatrix, ActionConnectionMatrix
 from rinarak.utils.data import combine_dict_lists
 
 logger = get_logger("Citadel", KFTLogFormatter)
 set_logger_output_file("logs/citadel_logs.txt")
+
+device = "mps" if torch.backends.mps.is_available() else "cpu"
 
 class MetaphorMorphism(nn.Module):
     """A conceptual metaphor from source domain to target domain"""
@@ -40,6 +44,13 @@ class MetaphorMorphism(nn.Module):
         self.target_domain = target_domain
 
         """f_a: used to check is the metaphor is applicable for the mapping"""
+        #print(source_domain.domain.domain_name,source_domain.state_dim[0])
+        self.state_checker = StateClassifier(
+            source_dim = source_domain.state_dim[0],
+            latent_dim = hidden_dim,
+            hidden_dim = hidden_dim
+        )
+
         
         """f_s: as the state mapping from source state to the target state"""
         self.state_mapper = StateMapper(
@@ -57,8 +68,11 @@ class MetaphorMorphism(nn.Module):
         )
 
     def forward(self, state: torch.Tensor) -> torch.Tensor:
-        """Map state from source to target domain"""
-        return self.state_mapper(state)
+        """Map state from source to target domain
+        Inputs:
+            state : should be a 
+        """
+        return self.state_checker.compute_logit(state), self.state_mapper(state)
         
     def get_predicate_mapping(self, source_pred: str, target_pred: str) -> torch.Tensor:
         """Get mapping weight between predicates"""
@@ -68,27 +82,6 @@ class MetaphorMorphism(nn.Module):
         """Get mapping weight between actions"""
         return self.action_matrix.get_connection_weight(source_action, target_action)
 
-class MetaphorBindingTracker:
-    def __init__(self):
-        self.bound_pairs = set()
-        self.binding_strengths = {}
-        
-    def bind_metaphors(self, path1: List[Tuple[str, str, int]], 
-                      path2: List[Tuple[str, str, int]], 
-                      strength: float = 1.0):
-        path_key = (tuple(path1), tuple(path2))
-        self.bound_pairs.add(path_key)
-        self.binding_strengths[path_key] = strength
-        
-    def get_binding_strength(self, path1: List[Tuple[str, str, int]], 
-                           path2: List[Tuple[str, str, int]]) -> float:
-        path_key = (tuple(path1), tuple(path2))
-        return self.binding_strengths.get(path_key, 0.0)
-        
-    def are_paths_bound(self, path1: List[Tuple[str, str, int]], 
-                       path2: List[Tuple[str, str, int]]) -> bool:
-        path_key = (tuple(path1), tuple(path2))
-        return path_key in self.bound_pairs
 
 
 class ConceptDiagram(nn.Module):
@@ -102,7 +95,6 @@ class ConceptDiagram(nn.Module):
         self.edge_indices = defaultdict(list)
         self.domain_logits = nn.ParameterDict()  # Store log p for domains
         self.morphism_logits = nn.ParameterDict()  # Store log p for morphisms
-        self.evaluation_tracker = MetaphorBindingTracker()
 
     def add_domain(self, name: str, domain: nn.Module, p: float = 1.0) -> None:
         if name not in self.domains:
@@ -123,7 +115,8 @@ class ConceptDiagram(nn.Module):
             
         if name is None:
             name = f"morphism_{source}_{target}_{len(self.edge_indices[(source, target)])}"
-            
+        #if name == "morphism_DistanceDomain_RCC8Domain_0":
+            #print(morphism)
         self.morphisms[name] = morphism
         self.edge_indices[(source, target)].append(name)
         self.morphism_logits[name] = nn.Parameter(torch.logit(torch.ones(1), eps=1e-6))
@@ -155,7 +148,7 @@ class ConceptDiagram(nn.Module):
         return torch.sigmoid(self.morphism_logits[name])
 
     def evaluate(self, state: torch.Tensor, predicate: str, domain: str = None, 
-                eval_type: str = 'actual', top_k: int = 3) -> torch.Tensor:
+                eval_type: str = 'literal', top_k: int = 3) -> torch.Tensor:
         """Evaluate a predicate on the given state using specified evaluation method."""
         
         # Find predicate domain if not specified
@@ -192,8 +185,8 @@ class ConceptDiagram(nn.Module):
             predicate = f"({predicate} $0 $1)"
 
         # Choose evaluation method
-        if eval_type == 'actual':
-            return self._evaluate_actual(state, predicate, domain, pred_domain, top_k)
+        if eval_type == 'literal':
+            return self._evaluate_literal(state, predicate, domain, pred_domain, top_k)
         elif eval_type == 'metaphor':
             return self._evaluate_metaphor(state, predicate, domain, pred_domain, top_k)
         elif eval_type == 'prob_metaphor':
@@ -201,44 +194,61 @@ class ConceptDiagram(nn.Module):
         else:
             raise ValueError(f"Unknown evaluation type: {eval_type}")
 
-    def _evaluate_actual(self, state: torch.Tensor, predicate_expr: str, 
+    def _evaluate_literal(self, state: torch.Tensor, predicate_expr: str, 
                         source_domain: str, target_domain: str, top_k: int) -> torch.Tensor:
-        """Actual evaluation following all paths."""
+        """literal evaluation following all paths."""
+
+        """1. get all the paths from the source to target domain"""
         all_paths = self.get_path(source_domain, target_domain)
         if not all_paths:
-            return torch.zeros_like(state[:, 0])
+            raise Exception(f"no path found between domain {source_domain} and {target_domain}")
 
-        states = []
-        results = []
+        path_of_apply = []
+        path_of_state = []
+        
         path_probs = []
-        """1. get all the paths from the source to target domain"""
+        results = []
+       
         for path in all_paths[:top_k]:
+            """initalize the state, apply, result paths along the way"""
             current_state = state
-            path_prob = torch.exp(self.get_path_prob(path))
+            apply_path = [1.0]
+            state_path = [current_state]
+
+            
+            path_prob = torch.exp(self.get_path_prob(path)) # control the probability of this path actually exists.
+            apply_prob = 1.0
             """2. calculate the probability of this path exists"""
+
             for src, tgt, idx in path:
                 morphism = self.get_morphism(src, tgt, idx)
-                current_state = morphism(current_state)
 
-            target_executor = self.domains[target_domain]
+                applicable_prob, transformed_state = morphism(current_state)
 
+                current_state = transformed_state
+                apply_prob = apply_prob * torch.sigmoid(applicable_prob)
+
+                # add transoformed states and path probability according to the way
+                apply_path.append(apply_prob)
+                state_path.append(current_state)
+
+
+            target_executor = self.domains[target_domain] # find the executor for the final state.
             assert isinstance(target_executor, CentralExecutor), "not an central executor"
-            context = {0:{"state" : current_state}, 1:{"state" : current_state}}
+    
+            context = {0:{"state" : current_state}, 1:{"state" : current_state}} # create the evaluation context
             pred_result = target_executor.evaluate(predicate_expr, context)
 
+            path_of_apply.append(apply_path)
+            path_of_state.append(state_path)
 
-            states.append(pred_result["state"])
+            path_probs.append(apply_prob * path_prob)
             results.append(pred_result["end"])
-            path_probs.append(path_prob)
 
         path_probs = torch.stack(path_probs)
-        path_probs = path_probs / path_probs.sum()
+        results = torch.stack(results)
 
-        final_result = torch.zeros_like(results[0])
-        for result, prob in zip(results, path_probs):
-            final_result += result * prob
-
-        return {"end":final_result, "states" : states, "results" : results}
+        return {"results" : results, "probs" : path_probs, "state_path" : path_of_state, "apply_path" : path_of_apply, "metas_path" : all_paths}
     
     def _evaluate_metaphor(self, state: torch.Tensor, predicate_expr: str,
                           source_domain: str, target_domain: str, top_k: int) -> torch.Tensor:
@@ -494,240 +504,9 @@ class ConceptDiagram(nn.Module):
         
         return best_path, best_prob.exp()
 
-    def visualize(self, save_path: Optional[str] = None, figsize: Tuple[int, int] = (10, 8)):
-        """Visualize the concept diagram with probabilities."""
-        try:
-            import networkx as nx
-        except ImportError:
-            logger.error("networkx is required for visualization")
-            return
-                
-        fig, ax = plt.subplots(figsize=figsize)
-        G = nx.DiGraph()
-        
-        # Add nodes with probabilities
-        for domain_name in self.domains.keys():
-            prob = self.get_domain_prob(domain_name).item()
-            G.add_node(domain_name, probability=prob)
-        
-        # Add edges with probabilities and track morphisms
-        edge_labels = {}
-        for (source, target), morph_names in self.edge_indices.items():
-            for idx, morph_name in enumerate(morph_names):
-                prob = self.get_morphism_prob(morph_name).item()
-                G.add_edge(source, target, 
-                         probability=prob,
-                         morphism_name=morph_name)
-                # Add edge label with probability
-                edge_labels[(source, target)] = f"{prob:.2f}"
-        
-        # Create layout with more spread
-        pos = nx.kamada_kawai_layout(G)  # Better layout for small graphs
-        
-        # Draw nodes with probability-based coloring
-        node_colors = [G.nodes[node]['probability'] for node in G.nodes()]
-        nodes = nx.draw_networkx_nodes(G, pos,
-                                     node_color=node_colors,
-                                     node_size=2000, 
-                                     cmap='YlOrRd',
-                                     vmin=0.0,
-                                     vmax=1.0,
-                                     ax=ax)
-        
-        # Draw edges
-        edges = nx.draw_networkx_edges(G, pos,
-                                     arrowsize=20,
-                                     connectionstyle='arc3,rad=0.2',
-                                     ax=ax,
-                                     edge_color='darkgray',
-                                     width=2,
-                                     alpha=0.6)
-        
-        # Add node labels with probabilities
-        labels = {node: f"{node}\n{G.nodes[node]['probability']:.2f}" 
-                 for node in G.nodes()}
-        nx.draw_networkx_labels(G, pos, labels, ax=ax, font_size=10)
-        
-        # Add edge labels (morphism probabilities)
-        edge_label_pos = nx.draw_networkx_edge_labels(G, pos,
-                                                    edge_labels=edge_labels,
-                                                    label_pos=0.5,
-                                                    font_size=8)
-        
-        # Add colorbar for probability scale
-        norm = plt.Normalize(vmin=0.0, vmax=1.0)
-        sm = plt.cm.ScalarMappable(cmap='YlOrRd', norm=norm)
-        plt.colorbar(sm, ax=ax, label='Domain Probability')
-        
-        ax.set_title('Concept Diagram\nNode color: Domain probability\nEdge labels: Morphism probability')
-        ax.axis('off')
-        
-        # Adjust layout to prevent text overlap
-        plt.tight_layout()
-        
-        if save_path:
-            plt.savefig(save_path, bbox_inches='tight', dpi=300)
-        plt.show()
-
-    def visualize_path(self, source: str, target: str, save_path: Optional[str] = None):
-        """Visualize the most probable path between two domains.
-        
-        Args:
-            source: Source domain name
-            target: Target domain name
-            save_path: Optional path to save the visualization
-        """
-        try:
-            import networkx as nx
-        except ImportError:
-            logger.error("networkx is required for visualization")
-            return
-            
-        plt.figure(figsize=(12, 8))
-        
-        # Get most probable path
-        path, prob = self.get_most_probable_path(source, target)
-        if path is None:
-            plt.text(0.5, 0.5, f"No path found from {source} to {target}",
-                    ha='center', va='center')
-            plt.axis('off')
-            if save_path:
-                plt.savefig(save_path, dpi=300)
-            plt.show()
-            return
-        
-        # Create graph
-        G = nx.DiGraph()
-        
-        # Add all nodes and mark path nodes
-        path_nodes = {source}.union(t for _, t, _ in path)
-        for domain_name in self.domains.keys():
-            G.add_node(domain_name, in_path=domain_name in path_nodes)
-        
-        # Add all edges and mark path edges
-        path_edges = [(s, t) for s, t, _ in path]
-        for (s, t), _ in self.edge_indices.items():
-            G.add_edge(s, t, in_path=(s, t) in path_edges)
-        
-        # Create layout
-        pos = nx.spring_layout(G, k=1.5, iterations=50)
-        
-        # Draw non-path elements
-        non_path_nodes = [n for n in G.nodes() if not G.nodes[n]['in_path']]
-        nx.draw_networkx_nodes(G, pos, 
-                              nodelist=non_path_nodes,
-                              node_color='lightgray',
-                              node_size=800)
-        
-        # Draw path elements
-        path_nodes = [n for n in G.nodes() if G.nodes[n]['in_path']]
-        nx.draw_networkx_nodes(G, pos, 
-                              nodelist=path_nodes,
-                              node_color='lightblue',
-                              node_size=1000)
-        
-        # Draw edges
-        non_path_edges = [(s, t) for s, t in G.edges() if (s, t) not in path_edges]
-        nx.draw_networkx_edges(G, pos,
-                              edgelist=non_path_edges,
-                              edge_color='lightgray',
-                              width=1,
-                              alpha=0.5,
-                              connectionstyle='arc3,rad=0.2')
-        
-        nx.draw_networkx_edges(G, pos,
-                              edgelist=path_edges,
-                              edge_color='blue',
-                              width=2,
-                              arrowsize=20,
-                              connectionstyle='arc3,rad=0.2')
-        
-        # Add labels
-        nx.draw_networkx_labels(G, pos)
-        
-        plt.title(f'Most Probable Path: {source} → {target}\nPath Probability: {float(prob):.3f}')
-        plt.axis('off')
-        
-        if save_path:
-            plt.savefig(save_path, bbox_inches='tight', dpi=300)
-        plt.show()
-
-    def visualize_connection_matrices(self, path: List[Tuple[str, str, int]], predicate: str):
-        """Visualize predicate connection matrices along a path.
-        
-        Args:
-            path: List of tuples (source, target, idx) representing the path
-            predicate: The predicate to track connections for
-        """
-        import matplotlib.pyplot as plt
-        import seaborn as sns
-        
-        if not path:
-            print("Empty path provided")
-            return
-            
-        num_steps = len(path)
-        fig, axes = plt.subplots(1, num_steps, figsize=(5*num_steps, 4))
-        if num_steps == 1:
-            axes = [axes]
-        
-        current_pred = predicate
-        composite_matrix = None
-        
-        # For each step in the path
-        for idx, (src, tgt, morph_idx) in enumerate(path):
-            morphism = self.get_morphism(src, tgt, morph_idx)
-            
-            # Get source and target domain predicates
-            src_domain = self.domains[src]
-            tgt_domain = self.domains[tgt]
-            
-            # Get connection matrix for this morphism
-            if isinstance(morphism, MetaphorMorphism):
-                # Use forward method instead of accessing matrix directly
-                connection_matrix, _ = morphism.predicate_matrix()
-                connection_matrix = connection_matrix.detach().cpu()
-                
-                # If first step, initialize composite matrix
-                if composite_matrix is None:
-                    composite_matrix = connection_matrix
-                else:
-                    # Compose with previous matrices
-                    composite_matrix = torch.matmul(composite_matrix, connection_matrix)
-                
-                # Plot the connection matrix
-                ax = axes[idx]
-                sns.heatmap(connection_matrix, ax=ax, cmap='YlOrRd', 
-                           xticklabels=tgt_domain.predicates.get(1, []),
-                           yticklabels=src_domain.predicates.get(1, []))
-                
-                # Highlight the current predicate
-                if current_pred in src_domain.predicates.get(1, []):
-                    pred_idx = src_domain.predicates.get(1, []).index(current_pred)
-                    ax.get_yticklabels()[pred_idx].set_color('red')
-                
-                ax.set_title(f'Step {idx+1}: {src} → {tgt}\nMorphism {morph_idx}')
-                
-                # Update current predicate mapping
-                if hasattr(morphism, 'map_predicate'):
-                    current_pred = morphism.map_predicate(current_pred)
-            
-            plt.tight_layout()
-        
-        # Add a final plot for the composite matrix if path length > 1
-        if len(path) > 1:
-            fig, ax = plt.subplots(figsize=(6, 4))
-            sns.heatmap(composite_matrix, ax=ax, cmap='YlOrRd',
-                       xticklabels=self.domains[path[-1][1]].predicates.get(1, []),
-                       yticklabels=self.domains[path[0][0]].predicates.get(1, []))
-            ax.set_title('Composite Connection Matrix\n(Full Path)')
-            plt.tight_layout()
-        
-        plt.show()
-
 
     def metaphorical_evaluation(self, source_state: torch.Tensor, target_predicate: str,
-                                source_predicate: Optional[str] = None, source_domain : Optional[str] = None, eval_type : str = "actual",
+                                source_predicate: Optional[str] = None, source_domain : Optional[str] = None, eval_type : str = "literal",
                                 visualize: bool = False) -> Dict[str, Any]:
         """
         Perform metaphorical evaluation between source and target domains.
@@ -805,6 +584,50 @@ class ConceptDiagram(nn.Module):
             "source_context": source_context,
             "target_context": target_context
         }
+
+    def visualize_path(self, state_path, metas_path, result = None, save_dir="outputs"):
+        """
+        Visualizes each state in the path using the corresponding executors.
+
+        Args:
+            state_path (list): List of states along the path.
+            metas_path (list): List of tuples (source, target, morphism index) representing metaphors.
+            save_dir (str): Directory to save visualized images.
+        """
+        os.makedirs(save_dir, exist_ok=True)
+        visualizations = []
+
+        for i, ((src_domain, tgt_domain, morphism_index), state) in enumerate(zip(metas_path[:], state_path[1:])):
+            if src_domain not in self.domains or tgt_domain not in self.domains:
+                print(f"Domain missing: {src_domain} or {tgt_domain}")
+                continue
+
+            # Get the executor for the target domain
+            target_executor = self.domains[tgt_domain]
+            assert isinstance(target_executor, CentralExecutor), "Target domain must be a CentralExecutor"
+
+            # Create context
+            state = state.cpu().detach()
+            context = {0: {"state": state}, 1: {"state": state}}
+
+            # Generate visualization
+            fig, ax = plt.subplots()
+            target_executor.visualize(context, result.cpu().detach())
+
+            ax.set_title(f"Step {i}: {src_domain} → {tgt_domain}")
+
+            # Save image
+            img_path = os.path.join(save_dir, f"path_step_{i}.png")
+            plt.savefig(img_path)
+            plt.close(fig)
+
+            # Convert to base64 for inline display
+            img_buffer = BytesIO()
+            with open(img_path, "rb") as img_file:
+                base64_image = base64.b64encode(img_file.read()).decode()
+            visualizations.append({"step": i, "source": src_domain, "target": tgt_domain, "image": base64_image})
+
+        return visualizations
 
 def visualize_predicate_tracing(
     path: List[Tuple[str, str, int]],
@@ -913,6 +736,7 @@ if __name__ == "__main__":
     from domains.direction.direction_domain import direction_executor
     logger.info("create the concept diagram with empty graph.")
     concept_diagram = ConceptDiagram()
+    curve_executor.to(device)
     concept_diagram.add_domain("GenericDomain", generic_executor)
     concept_diagram.add_domain("LineDomain", line_executor)
     concept_diagram.add_domain("CurveDomain", curve_executor)
@@ -930,35 +754,42 @@ if __name__ == "__main__":
     concept_diagram.add_morphism("CurveDomain", "LineDomain", MetaphorMorphism(curve_executor, line_executor))
     concept_diagram.add_morphism("LineDomain", "RCC8Domain", MetaphorMorphism(line_executor, rcc8_executor))
     concept_diagram.add_morphism("LineDomain", "RCC8Domain", MetaphorMorphism(line_executor, rcc8_executor))
-    concept_diagram.add_morphism("DistanceDomain", "RCC8Domain", MetaphorMorphism(line_executor, rcc8_executor))
-    
-    print(concept_diagram.exists_path("GenericDomain", "DirectionDomain"))
-    print(concept_diagram.exists_path("GenericDomain", "DistanceDomain"))
+    concept_diagram.add_morphism("DistanceDomain", "RCC8Domain", MetaphorMorphism(distance_executor, rcc8_executor))
 
+    concept_diagram.add_morphism("GenericDomain", "CurveDomain", MetaphorMorphism(generic_executor, curve_executor))
+    
 
     path = concept_diagram.get_path("GenericDomain", "RCC8Domain")[0]  # Get first path
 
+    line_executor.domain.get_summary()
 
+    concept_diagram.to(device)
 
     """generic state space testing"""
-    source_state = torch.randn([5, 256])
-    evaluation_result = concept_diagram.metaphorical_evaluation(
-        source_state, "near", source_domain = "GenericDomain", eval_type = "actual",  visualize = False
-    )
-    evaluation_result = concept_diagram.metaphorical_evaluation(
-        source_state, "near", source_domain = "GenericDomain", eval_type= 'metaphor', visualize = False
-    )
-    #concept_diagram.visualize_metaphorical_trace(evaluation_result, "GenericDomain", "DirectionDomain", 
-    #                                       "near", connection_threshold=0.5)
-    evaluation_result["target_results"][0]
-    print("Metaphor:", evaluation_result["target_results"][0])
+    source_state = torch.randn([5, 256]).to(device)
+    context = {
+        0 : {"state" : source_state},
+        1 : {"state" : source_state}
+        
+    }
+    #print(concept_diagram.get_morphism('DistanceDomain', 'RCC8Domain', 0))
+
+    evaluation_result = concept_diagram.evaluate(source_state, "parallel_to", "GenericDomain", eval_type = "literal")
+    apply_path = evaluation_result["apply_path"][0] # [1.0, tensor([0.5170], device='mps:0', grad_fn=<MulBackward0>), tensor([0.2620], device='mps:0', grad_fn=<MulBackward0>)]
+    state_path = evaluation_result["state_path"][0]
+    metas_path = evaluation_result["metas_path"][0] # [('GenericDomain', 'DistanceDomain', 0), ('DistanceDomain', 'DirectionDomain', 0)]
+
+    visualizations = concept_diagram.visualize_path(state_path, metas_path, evaluation_result["results"][0].cpu().detach())
+
+    # Example: Display the first visualization
+
+    direction_executor.visualize(context, evaluation_result["results"][0])
+    print((evaluation_result["results"][0] + 0.5).int())
+    plt.savefig("outputs/save1.png")
 
 
-    evaluation_result = concept_diagram.metaphorical_evaluation(
-        source_state, "south_of", source_domain = "GenericDomain", visualize = False
-    )
 
-
+"""
 import sys
 sys.exit()
 
@@ -976,18 +807,7 @@ def optimize_concept_params(
     lr: float = 0.01,
     visualization_steps: int = 1
 ):
-    """
-    Optimize source state parameters to minimize target results in concept diagram
-    
-    Args:
-        concept_diagram: The concept diagram for evaluation
-        initial_state: Initial state tensor to optimize
-        predicate: Predicate to evaluate
-        source_domain: Source domain name
-        num_steps: Number of optimization steps
-        lr: Learning rate
-        visualization_steps: Steps between visualizations
-    """
+
     # Create parameter to optimize
     source_state = torch.nn.Parameter(initial_state.clone())
     optimizer = optim.Adam([source_state], lr=lr)
@@ -1021,21 +841,7 @@ def optimize_concept_params(
         
         # Visualize every visualization_steps steps
         if step % visualization_steps == 0:
-            """
-            print(f"\nStep {step}")
-            print("Target Results:", target_results.detach())
-            
-            # Plot loss curve
-            plt.figure(figsize=(10, 4))
-            plt.plot(losses)
-            plt.title("Optimization Loss")
-            plt.xlabel("Step")
-            plt.ylabel("Loss")
-            plt.yscale('log')
-            plt.grid(True)
-            plt.show()
-            plt.close()
-            """
+
             final_evaluation = concept_diagram.metaphorical_evaluation(
         source_state, predicate, source_domain=source_domain, visualize=True
         )
@@ -1081,3 +887,4 @@ if __name__ == "__main__":
     plt.yscale('log')
     plt.grid(True)
     plt.show()
+"""

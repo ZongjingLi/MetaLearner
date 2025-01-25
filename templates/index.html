@@ -3,329 +3,299 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Analysis Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.24.0/cytoscape.min.css">
     <style>
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f8f9fa;
+            overflow-x: auto;
         }
-        .section-card {
-            background: white;
-            border-radius: 1rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            transition: all 0.3s ease;
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-gap: 20px;
+            width: 100%;
+            max-width: 2200px;
+            margin-top: 20px;
+            align-items: start;
         }
-        .section-card:hover {
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        .input-controls, .selected-details {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            max-height: 800px;
         }
-        .custom-scrollbar {
-            scrollbar-width: thin;
-            scrollbar-color: #CBD5E0 #EDF2F7;
+        .selected-details {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
         }
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 8px;
+        .details-section {
+            flex-grow: 1;
+            border: 1px solid #ddd;
+            padding: 15px;
+            background: #ffffff;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: monospace;
         }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #EDF2F7;
-            border-radius: 4px;
+        .concept-diagram {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background-color: #CBD5E0;
-            border-radius: 4px;
+        #cy {
+            width: 100%;
+            height: 800px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+        }
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        .button-group button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .button-group button:hover {
+            background-color: #0056b3;
+        }
+        #image-display {
+            text-align: center;
+            margin-top: 15px;
+        }
+        #image-output img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .visualization-list {
+            margin-top: 10px;
+            border-top: 1px solid #ddd;
+        }
+        .visualization-item {
+            cursor: pointer;
+            padding: 5px;
+            border-bottom: 1px solid #ddd;
+        }
+        .visualization-item:hover {
+            background-color: #f1f1f1;
+        }
+        /* Enhanced Input Controls Section */
+        .input-controls {
+            display: flex;
+            flex-direction: row; /* Aligning horizontally */
+            gap: 20px;
+            align-items: flex-start;
+        }
+        .input-controls textarea {
+            width: 60%;
+            height: 120px;
+            padding: 10px;
+            font-size: 14px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            resize: none;
+        }
+        .input-controls button {
+            padding: 12px 20px;
+            font-size: 16px;
+            border-radius: 8px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .input-controls button:hover {
+            background-color: #0056b3;
+        }
+        .image-upload {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 35%; /* Adjusting width to fit alongside code editor */
+        }
+        .image-upload input[type="file"] {
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+        .image-upload .preview-area {
+            text-align: center;
+            padding: 20px;
+            border: 1px dashed #ccc;
+            border-radius: 8px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .image-upload .preview-area img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
         }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
-    <!-- Main Container -->
-    <div class="container mx-auto px-6 py-8">
-        <!-- Header -->
-        <header class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-800">Interactive Analysis Dashboard</h1>
-            <p class="text-gray-600 mt-2">Visualize and analyze your data with ease</p>
-        </header>
-
-        <!-- Main Grid Layout -->
-        <div class="grid grid-cols-3 gap-8 h-[calc(100vh-12rem)]">
-            <!-- Left Section: Input Panel -->
-            <div class="section-card p-6 flex flex-col h-full">
-                <h2 class="text-xl font-semibold text-gray-800 mb-6">Input Controls</h2>
-                
-                <!-- Code Editor -->
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Code Editor</label>
-                    <div class="relative">
-                        <textarea 
-                            id="codeInput" 
-                            class="w-full h-40 p-4 bg-gray-50 border border-gray-200 rounded-lg font-mono text-sm custom-scrollbar focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder="Enter your code here..."
-                        ></textarea>
-                        <button 
-                            onclick="executeCode()" 
-                            class="mt-2 w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center space-x-2"
-                        >
-                            <span>Execute Code</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Image Upload -->
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Image Upload</label>
-                    <div class="space-y-4">
-                        <div class="flex items-center justify-center w-full">
-                            <label for="imageUpload" class="w-full flex flex-col items-center px-4 py-6 bg-gray-50 rounded-lg border-2 border-gray-200 border-dashed cursor-pointer hover:bg-gray-100">
-                                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                </svg>
-                                <span class="mt-2 text-sm text-gray-500">Drop image here or click to upload</span>
-                                <input type="file" id="imageUpload" class="hidden" accept="image/*">
-                            </label>
-                        </div>
-                        <div id="imagePreview" class="w-full h-40 rounded-lg bg-gray-50 flex items-center justify-center overflow-hidden">
-                            <span class="text-gray-400">Preview area</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Text Input -->
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Additional Input</label>
-                    <input 
-                        type="text" 
-                        id="textInput" 
-                        class="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Enter additional parameters..."
-                    >
-                </div>
-            </div>
-
-            <!-- Middle Section: DAG Visualization -->
-            <div class="section-card p-6 flex flex-col h-full">
-                <h2 class="text-xl font-semibold text-gray-800 mb-6">DAG Visualization</h2>
-                
-                <div class="flex-1 flex flex-col">
-                    <div id="dagContainer" class="flex-1 bg-gray-50 rounded-lg flex items-center justify-center p-4 mb-4">
-                        <img id="dagImage" class="max-w-full max-h-full object-contain">
-                    </div>
+<body>
+    <div class="container">
+        <div class="concept-diagram">
+            <div id="cy"></div>
+        </div>
+        <div class="selected-details">
+            <div class="details-section">
+                <h2>Input Controls</h2>
+                <div class="input-controls">
+                    <textarea id="code-editor" placeholder="Enter your code here..."></textarea>
                     
-                    <div class="flex justify-between items-center mt-4">
-                        <button 
-                            onclick="updateDAG()" 
-                            class="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors duration-200"
-                        >
-                            Update Visualization
-                        </button>
+                    <div class="image-upload">
+                        <input type="file" id="image-upload" accept="image/*">
+                        <div class="preview-area" id="image-preview">Preview area</div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Right Section: Output & Statistics -->
-            <div class="section-card p-6 flex flex-col h-full">
-                <h2 class="text-xl font-semibold text-gray-800 mb-6">Results & Analytics</h2>
+                <button id="execute-code">Execute Code</button>
                 
-                <div class="flex-1 flex flex-col space-y-6">
-                    <!-- Training Curve -->
-                    <div class="flex-1 bg-gray-50 rounded-lg p-4">
-                        <h3 class="text-sm font-medium text-gray-700 mb-2">Training Progress</h3>
-                        <div id="trainingCurve" class="w-full h-[calc(100%-2rem)]"></div>
-                    </div>
-
-                    <!-- Statistics -->
-                    <div class="flex-1 bg-gray-50 rounded-lg p-4">
-                        <h3 class="text-sm font-medium text-gray-700 mb-2">Performance Metrics</h3>
-                        <div id="barGraph" class="w-full h-[calc(100%-2rem)]"></div>
-                    </div>
+            </div>
+            <div class="details-section">
+                <div id="selected-domain">Select a domain to see details...</div>
+            </div>
+            <div class="details-section" id="image-display">
+                <h2>State Visualization</h2>
+                <div id="image-output">Click a step to visualize state...</div>
+                <div class="visualization-list" id="visualization-list">
+                    <h3>Execution Steps</h3>
+                    <div id="visualization-steps"></div>
                 </div>
             </div>
         </div>
     </div>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.24.0/cytoscape.min.js"></script>
+    <script src="https://unpkg.com/dagre/dist/dagre.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/cytoscape-dagre@2.3.2/cytoscape-dagre.min.js"></script>
     <script>
-        let ws = new WebSocket("ws://" + window.location.host + "/websocket");
-        
-        ws.onmessage = function(event) {
-            const data = JSON.parse(event.data);
-            if (data.type === 'code_result') {
-                console.log('Code execution result:', data.result);
-            } else if (data.type === 'dag_update') {
-                document.getElementById('dagImage').src = 'data:image/png;base64,' + data.image;
-            }
-        };
-
-        function executeCode() {
-            const code = document.getElementById('codeInput').value;
-            ws.send(JSON.stringify({
-                type: 'code',
-                code: code
-            }));
-        }
-
-        function updateDAG() {
-            const dagData = {
-                'A': ['B', 'C'],
-                'B': ['D'],
-                'C': ['D'],
-                'D': []
-            };
-            ws.send(JSON.stringify({
-                type: 'update_dag',
-                dag_data: dagData
-            }));
-        }
-
-        // Image upload preview with drag and drop
-        const dropZone = document.querySelector('label[for="imageUpload"]');
-        const imageUpload = document.getElementById('imageUpload');
-        
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            dropZone.addEventListener(eventName, preventDefaults, false);
-        });
-
-        function preventDefaults(e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-
-        ['dragenter', 'dragover'].forEach(eventName => {
-            dropZone.addEventListener(eventName, highlight, false);
-        });
-
-        ['dragleave', 'drop'].forEach(eventName => {
-            dropZone.addEventListener(eventName, unhighlight, false);
-        });
-
-        function highlight(e) {
-            dropZone.classList.add('border-blue-500', 'bg-blue-50');
-        }
-
-        function unhighlight(e) {
-            dropZone.classList.remove('border-blue-500', 'bg-blue-50');
-        }
-
-        dropZone.addEventListener('drop', handleDrop, false);
-
-        function handleDrop(e) {
-            const dt = e.dataTransfer;
-            const file = dt.files[0];
-            handleFile(file);
-        }
-
-        imageUpload.addEventListener('change', function(e) {
-            handleFile(e.target.files[0]);
-        });
-
-        function handleFile(file) {
-            if (file) {
-                // Validate file type
-                if (!file.type.startsWith('image/')) {
-                    alert('Please upload an image file');
-                    return;
+        document.addEventListener('DOMContentLoaded', () => {
+            const cy = cytoscape({
+                container: document.getElementById('cy'),
+                style: [
+                    {
+                        selector: 'node',
+                        style: {
+                            'background-color': '#007bff',
+                            'label': 'data(label)',
+                            'color': '#fff',
+                            'text-valign': 'center',
+                            'text-halign': 'center',
+                            'width': '100px',
+                            'height': '50px',
+                            'font-size': '12px',
+                            'border-width': 2,
+                            'border-color': '#0056b3',
+                            'shape': 'round-rectangle',
+                        }
+                    },
+                    {
+                        selector: 'edge',
+                        style: {
+                            'width': 3,
+                            'target-arrow-color': '#aaa',
+                            'target-arrow-shape': 'triangle',
+                            'curve-style': 'bezier',
+                            'label': 'data(label)',
+                        }
+                    }
+                ],
+                layout: {
+                    name: 'dagre',
+                    rankDir: 'LR',
+                    padding: 50,
+                    fit: true
                 }
+            });
 
-                // Clear any existing preview
-                const preview = document.getElementById('imagePreview');
-                preview.innerHTML = '<span class="text-gray-400">Uploading...</span>';
+            function updateVisualization(data) {
+                cy.edges().forEach(edge => edge.style('line-color', '#aaa'));
 
-                // Create form data
-                const formData = new FormData();
-                formData.append('file', file);
+                data.path_edges.forEach((edgeId, index) => {
+                    const apply_prob = data.path[index].apply_prob;
+                    const color = `rgba(255, 0, 0, ${apply_prob})`;
+                    cy.$(`#${edgeId}`).style('line-color', color);
+                });
 
-                // Upload to server
-                fetch('/upload', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Upload failed');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.status === 'success') {
-                        // Create new image element
-                        const img = document.createElement('img');
-                        img.classList.add('max-w-full', 'max-h-full', 'object-contain');
-                        
-                        // Set up load handler
-                        img.onload = () => {
-                            preview.innerHTML = '';
-                            preview.appendChild(img);
-                        };
-                        
-                        // Set up error handler
-                        img.onerror = () => {
-                            preview.innerHTML = '<span class="text-red-500">Error loading preview</span>';
-                            console.error('Error loading image from:', data.url);
-                        };
+                const visualizationStepsDiv = document.getElementById("visualization-steps");
+                visualizationStepsDiv.innerHTML = "";
 
-                        // Set image source
-                        img.src = data.url;
-                        console.log('Loading image from:', data.url);
-                    } else {
-                        throw new Error(data.message || 'Upload failed');
-                    }
-                })
-                .catch(error => {
-                    console.error('Upload error:', error);
-                    preview.innerHTML = `<span class="text-red-500">Error: ${error.message}</span>`;
+                data.visualizations.forEach(vis => {
+                    const stepDiv = document.createElement("div");
+                    stepDiv.classList.add("visualization-item");
+                    stepDiv.textContent = `Step ${vis.step}: ${vis.source} → ${vis.target}`;
+                    stepDiv.onclick = () => {
+                        document.getElementById('image-output').innerHTML = `<img src="data:image/png;base64,${vis.image}" style="max-width: 100%;">`;
+                    };
+                    visualizationStepsDiv.appendChild(stepDiv);
                 });
             }
-        }
 
-        // Initialize plots with custom styling
-        const plotLayout = {
-            font: {
-                family: 'Inter, sans-serif'
-            },
-            margin: { t: 20, r: 20, b: 40, l: 40 },
-            paper_bgcolor: 'rgba(0,0,0,0)',
-            plot_bgcolor: 'rgba(0,0,0,0)',
-            showlegend: true,
-            xaxis: {
-                gridcolor: '#E2E8F0',
-                zerolinecolor: '#CBD5E0'
-            },
-            yaxis: {
-                gridcolor: '#E2E8F0',
-                zerolinecolor: '#CBD5E0'
-            }
-        };
+            document.getElementById('execute-code').addEventListener('click', () => {
+                const predicate = document.getElementById('code-editor').value.trim();
+                fetch('/execute', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({ 'code': predicate })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('selected-domain').innerText = "Evaluation Result:\n" + JSON.stringify(data.result, null, 4);
+                    updateVisualization(data);
+                });
+            });
 
-        // Training curve
-        const trainingData = {
-            x: Array.from({length: 100}, (_, i) => i),
-            y: Array.from({length: 100}, () => Math.random()),
-            type: 'scatter',
-            name: 'Training Loss',
-            line: {
-                color: '#4C51BF',
-                width: 2
-            }
-        };
+            fetch('/diagram')
+                .then(response => response.json())
+                .then(data => {
+                    cy.add(data);
+                    cy.layout({ name: 'dagre', rankDir: 'LR', padding: 50, fit: true }).run();
+                });
 
-        Plotly.newPlot('trainingCurve', [trainingData], {
-            ...plotLayout,
-            xaxis: { ...plotLayout.xaxis, title: 'Epoch' },
-            yaxis: { ...plotLayout.yaxis, title: 'Loss' }
-        });
+            cy.on('tap', 'node', evt => {
+                fetch(`/domain-summary/${encodeURIComponent(evt.target.data().id)}`)
+                    .then(response => response.json())
+                    .then(data => document.getElementById('selected-domain').innerText = data.summary);
+            });
 
-        // Bar graph
-        const barData = {
-            x: ['Accuracy', 'Precision', 'Recall', 'F1-Score'],
-            y: [0.92, 0.88, 0.90, 0.89],
-            type: 'bar',
-            marker: {
-                color: '#4C51BF'
-            }
-        };
+            // Image preview functionality
+            const imageUploadInput = document.getElementById('image-upload');
+            const previewArea = document.getElementById('image-preview');
 
-        Plotly.newPlot('barGraph', [barData], {
-            ...plotLayout,
-            xaxis: { ...plotLayout.xaxis, title: 'Metric' },
-            yaxis: { ...plotLayout.yaxis, title: 'Score', range: [0, 1] }
+            imageUploadInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        previewArea.innerHTML = `<img src="${e.target.result}" alt="Image Preview">`;
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    previewArea.innerHTML = 'Preview area';
+                }
+            });
         });
     </script>
 </body>

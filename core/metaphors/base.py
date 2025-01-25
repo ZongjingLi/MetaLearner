@@ -70,8 +70,6 @@ class DomainEmbedding(nn.Module):
     def forward(self) -> torch.Tensor:
         return self.embedding
 
-import torch
-import torch.nn as nn
 
 class StateMapper(nn.Module):
     def __init__(self, source_dim: int, target_dim: int, hidden_dim: int, num_heads: int = 4):
@@ -176,7 +174,7 @@ class StateMapper(nn.Module):
         return torch.cat(outputs, dim=0)
 
 class StateClassifier(nn.Module):
-    def __init__(self, source_dim: int, target_dim: int, hidden_dim: int, num_heads: int = 4):
+    def __init__(self, source_dim: int, latent_dim: int, hidden_dim: int, num_heads: int = 4):
         super().__init__()
         
         # Input projection
@@ -204,21 +202,21 @@ class StateClassifier(nn.Module):
         self.output_proj = nn.Sequential(
             nn.Linear(hidden_dim, hidden_dim),
             nn.ReLU(),
-            nn.Linear(hidden_dim, target_dim)
+            nn.Linear(hidden_dim, latent_dim)
         )
 
         # Additional components for logit computation
         self.logit_attention = nn.MultiheadAttention(
-            embed_dim=target_dim,
+            embed_dim=latent_dim,
             num_heads=1,
             batch_first=True
         )
         
-        self.logit_norm = nn.LayerNorm(target_dim)
+        self.logit_norm = nn.LayerNorm(latent_dim)
         
         # Projection for reducing N states to a single scalar
         self.state_reduction = nn.Sequential(
-            nn.Linear(target_dim, hidden_dim),
+            nn.Linear(latent_dim, hidden_dim),
             nn.ReLU(),
             nn.Linear(hidden_dim, 1)
         )
@@ -297,3 +295,7 @@ def calculate_state_domain_connection(
 ) -> torch.Tensor:
     scale = np.sqrt(state_embedding.shape[0])
     return torch.sigmoid(torch.dot(state_embedding, domain_embedding) / scale)
+
+
+
+

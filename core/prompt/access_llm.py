@@ -50,7 +50,7 @@ if __name__  == "__main__":
             'user': user_prompt.strip()
         }
 
-    questions = ["Explain to me what is Banach-Alaoglu theorem."]
+    questions = ["Explain to me what is Han-Banach theorem in metaphors."]
     
     res = run_gpt(questions, prompts)
     print(res["questions"])

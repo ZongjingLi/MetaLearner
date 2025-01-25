@@ -34,8 +34,15 @@ class PointCloudDecoder(nn.Module):
         self.fc1 = nn.Linear(latent_dim, 256)
         self.fc2 = nn.Linear(256, 512)
         self.fc3 = nn.Linear(512, num_points * 2)
+        if torch.cuda.is_available():
+            self.device = "cuda"
+        elif torch.backends.mps.is_available():
+            self.device = "mps"
+        else:
+            self.device = "cpu"
 
     def forward(self, z: torch.Tensor) -> torch.Tensor:
+        z = z.to(self.device)
         x = F.relu(self.fc1(z))
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
