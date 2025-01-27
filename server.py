@@ -6,7 +6,8 @@ import tornado.escape
 import matplotlib.pyplot as plt
 from io import BytesIO
 import base64
-from meta_construction import *
+import torch
+from core.metaphors.diagram import ConceptDiagram, MetaphorMorphism
 
 import json
 

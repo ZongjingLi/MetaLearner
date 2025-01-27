@@ -33,8 +33,7 @@ class PyBulletSimulator:
         return box_id
     
     def build_tower(self, base_position=[0, 0, 0.05], levels=5):
-        for i in range(levels):
-            self.add_box([base_position[0] + 0.5, base_position[1] + 0.5, base_position[2] + i * 0.2])
+        for i in range(levels): self.add_box([base_position[0] + 0.5, base_position[1] + 0.5, base_position[2] + i * 0.3])
     
     def add_robot_arm(self, position=[0, 0, 0]):
         self.robot = p.loadURDF("kuka_iiwa/model.urdf", position)
@@ -159,10 +158,11 @@ if __name__ == "__main__":
     sim = PyBulletSimulator(gui=True, record_video=True)
     
     sim.add_ground()
-    sim.build_tower(levels=5)
+    sim.build_tower(levels=1)
     robot = sim.add_robot_arm()
     
     box = sim.add_box([-0.5, -0.5, 0.3])
+    box = sim.objects[-2]
     sim.pick_object(box)    
 
     sim.place_object([-0.5, .7, 0.4])
