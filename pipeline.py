@@ -5,26 +5,8 @@
  # @ Modified time: 2024-12-28 18:23:31
  # @ Description: This file is distributed under the MIT license.
 '''
-import os
-import numpy as np
+
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import matplotlib.pyplot as plt
-from io import BytesIO
-import base64
-import heapq
-
-from rinarak.logger import get_logger, KFTLogFormatter
-from rinarak.logger import set_logger_output_file
-
-from rinarak.domain import load_domain_string
-from rinarak.knowledge.executor import CentralExecutor
-
-from typing import Dict, List, Tuple, Optional, Any
-from dataclasses import dataclass
-from collections import defaultdict
-
 device = "mps" if torch.backends.mps.is_available() else "cpu"
 
 if __name__ == "__main__":
@@ -62,7 +44,13 @@ if __name__ == "__main__":
     concept_diagram.add_morphism("GenericDomain", "CurveDomain", MetaphorMorphism(generic_executor, curve_executor))
     concept_diagram.add_morphism("GenericDomain", "PointcloudDomain", MetaphorMorphism(generic_executor, pointcloud_executor))
     
-    concept_diagram.to(device)
+    from core.model import EnsembleModel
+    from config import config
+    model = EnsembleModel(config)
+    model.concept_diagram = concept_diagram
+    model.to(device)
+
+
 
     """generic state space testing"""
     source_state = torch.randn([3, 256]).to(device)
