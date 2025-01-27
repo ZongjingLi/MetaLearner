@@ -35,6 +35,12 @@
                 "id": "DirectionDomain",
                 "label": "DirectionDomain"
             }
+        },
+        {
+            "data": {
+                "id": "PointcloudDomain",
+                "label": "PointcloudDomain"
+            }
         }
     ],
     "edges": [
@@ -107,6 +113,14 @@
                 "id": "0",
                 "source": "GenericDomain",
                 "target": "CurveDomain",
+                "label": "0"
+            }
+        },
+        {
+            "data": {
+                "id": "0",
+                "source": "GenericDomain",
+                "target": "PointcloudDomain",
                 "label": "0"
             }
         }

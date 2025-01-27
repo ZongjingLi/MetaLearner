@@ -39,14 +39,14 @@ class DirectionDataset(Dataset):
         
         # List of all directional relation calculation functions
         self.relation_functions = [
-            (self.direction_domain.north_of, "north_of"),
-            (self.direction_domain.south_of, "south_of"),
-            (self.direction_domain.east_of, "east_of"),
-            (self.direction_domain.west_of, "west_of"),
-            (self.direction_domain.northeast_of, "northeast_of"),
-            (self.direction_domain.northwest_of, "northwest_of"),
-            (self.direction_domain.southeast_of, "southeast_of"),
-            (self.direction_domain.southwest_of, "southwest_of")
+            (self.direction_domain.north, "north_of"),
+            (self.direction_domain.south, "south_of"),
+            (self.direction_domain.east, "east_of"),
+            (self.direction_domain.west, "west_of"),
+            (self.direction_domain.northeast, "northeast_of"),
+            (self.direction_domain.northwest, "northwest_of"),
+            (self.direction_domain.southeast, "southeast_of"),
+            (self.direction_domain.southwest, "southwest_of")
         ]
         
         # Generate dataset

@@ -41,14 +41,14 @@ DIRECTION_DOMAIN = """
 )
 (:predicate
     get_position ?x-state -> position
-    north_of ?x-state ?y-state -> boolean
-    south_of ?x-state ?y-state -> boolean
-    east_of ?x-state ?y-state -> boolean
-    west_of ?x-state ?y-state -> boolean
-    northeast_of ?x-state ?y-state -> boolean
-    northwest_of ?x-state ?y-state -> boolean
-    southeast_of ?x-state ?y-state -> boolean
-    southwest_of ?x-state ?y-state -> boolean
+    north ?x-state ?y-state -> boolean
+    south ?x-state ?y-state -> boolean
+    east ?x-state ?y-state -> boolean
+    west ?x-state ?y-state -> boolean
+    northeast ?x-state ?y-state -> boolean
+    northwest ?x-state ?y-state -> boolean
+    southeast ?x-state ?y-state -> boolean
+    southwest ?x-state ?y-state -> boolean
     angle_between ?x-state ?y-state -> angle
 )
 """
@@ -96,42 +96,42 @@ class DirectionalDomain:
         diff = torch.atan2(torch.sin(diff), torch.cos(diff))
         return torch.sigmoid((width/2 - torch.abs(diff)) / self.temperature)
 
-    def north_of(self, x_state: torch.Tensor, y_state: torch.Tensor) -> torch.Tensor:
+    def north(self, x_state: torch.Tensor, y_state: torch.Tensor) -> torch.Tensor:
         """Differentiable north predicate using angles."""
         angles = self.compute_angle(x_state, y_state)
         return self.angle_membership(angles, torch.pi/2, torch.pi/2)
     
-    def south_of(self, x_state: torch.Tensor, y_state: torch.Tensor) -> torch.Tensor:
+    def south(self, x_state: torch.Tensor, y_state: torch.Tensor) -> torch.Tensor:
         """Differentiable south predicate using angles."""
         angles = self.compute_angle(x_state, y_state)
         return self.angle_membership(angles, -torch.pi/2, torch.pi/2)
     
-    def east_of(self, x_state: torch.Tensor, y_state: torch.Tensor) -> torch.Tensor:
+    def east(self, x_state: torch.Tensor, y_state: torch.Tensor) -> torch.Tensor:
         """Differentiable east predicate using angles."""
         angles = self.compute_angle(x_state, y_state)
         return self.angle_membership(angles, 0.0, torch.pi/2)
     
-    def west_of(self, x_state: torch.Tensor, y_state: torch.Tensor) -> torch.Tensor:
+    def west(self, x_state: torch.Tensor, y_state: torch.Tensor) -> torch.Tensor:
         """Differentiable west predicate using angles."""
         angles = self.compute_angle(x_state, y_state)
         return self.angle_membership(angles, torch.pi, torch.pi/2)
     
-    def northeast_of(self, x_state: torch.Tensor, y_state: torch.Tensor) -> torch.Tensor:
+    def northeast(self, x_state: torch.Tensor, y_state: torch.Tensor) -> torch.Tensor:
         """Differentiable northeast predicate."""
         angles = self.compute_angle(x_state, y_state)
         return self.angle_membership(angles, torch.pi/4, torch.pi/2)
     
-    def northwest_of(self, x_state: torch.Tensor, y_state: torch.Tensor) -> torch.Tensor:
+    def northwest(self, x_state: torch.Tensor, y_state: torch.Tensor) -> torch.Tensor:
         """Differentiable northwest predicate."""
         angles = self.compute_angle(x_state, y_state)
         return self.angle_membership(angles, 3*torch.pi/4, torch.pi/2)
     
-    def southeast_of(self, x_state: torch.Tensor, y_state: torch.Tensor) -> torch.Tensor:
+    def southeast(self, x_state: torch.Tensor, y_state: torch.Tensor) -> torch.Tensor:
         """Differentiable southeast predicate."""
         angles = self.compute_angle(x_state, y_state)
         return self.angle_membership(angles, -torch.pi/4, torch.pi/2)
     
-    def southwest_of(self, x_state: torch.Tensor, y_state: torch.Tensor) -> torch.Tensor:
+    def southwest(self, x_state: torch.Tensor, y_state: torch.Tensor) -> torch.Tensor:
         """Differentiable southwest predicate."""
         angles = self.compute_angle(x_state, y_state)
         return self.angle_membership(angles, -3*torch.pi/4, torch.pi/2)
@@ -269,52 +269,52 @@ class DirectionalDomain:
             lambda x: {**x, "end": x["state"]}
         ),
         
-        "north_of": Primitive(
-            "north_of", 
+        "north": Primitive(
+            "north", 
             arrow(state_type, arrow(state_type, boolean)),
-            lambda x: lambda y: {**x, "end": self.north_of(x["state"], y["state"])}
+            lambda x: lambda y: {**x, "end": self.north(x["state"], y["state"])}
         ),
         
-        "south_of": Primitive(
-            "south_of",
+        "south": Primitive(
+            "south",
             arrow(state_type, arrow(state_type, boolean)),
-            lambda x: lambda y: {**x, "end": self.south_of(x["state"], y["state"])}
+            lambda x: lambda y: {**x, "end": self.south(x["state"], y["state"])}
         ),
         
-        "east_of": Primitive(
-            "east_of",
+        "east": Primitive(
+            "east",
             arrow(state_type, arrow(state_type, boolean)),
-            lambda x: lambda y: {**x, "end": self.east_of(x["state"], y["state"])}
+            lambda x: lambda y: {**x, "end": self.east(x["state"], y["state"])}
         ),
         
-        "west_of": Primitive(
-            "west_of",
+        "west": Primitive(
+            "west",
             arrow(state_type, arrow(state_type, boolean)),
-            lambda x: lambda y: {**x, "end": self.west_of(x["state"], y["state"])}
+            lambda x: lambda y: {**x, "end": self.west(x["state"], y["state"])}
         ),
         
-        "northeast_of": Primitive(
-            "northeast_of",
+        "northeast": Primitive(
+            "northeast",
             arrow(state_type, arrow(state_type, boolean)),
-            lambda x: lambda y: {**x, "end": self.northeast_of(x["state"], y["state"])}
+            lambda x: lambda y: {**x, "end": self.northeast(x["state"], y["state"])}
         ),
         
-        "northwest_of": Primitive(
-            "northwest_of",
+        "northwest": Primitive(
+            "northwest",
             arrow(state_type, arrow(state_type, boolean)),
-            lambda x: lambda y: {**x, "end": self.northwest_of(x["state"], y["state"])}
+            lambda x: lambda y: {**x, "end": self.northwest(x["state"], y["state"])}
         ),
         
-        "southeast_of": Primitive(
-            "southeast_of",
+        "southeast": Primitive(
+            "southeast",
             arrow(state_type, arrow(state_type, boolean)),
-            lambda x: lambda y: {**x, "end": self.southeast_of(x["state"], y["state"])}
+            lambda x: lambda y: {**x, "end": self.southeast(x["state"], y["state"])}
         ),
         
-        "southwest_of": Primitive(
-            "southwest_of",
+        "southwest": Primitive(
+            "southwest",
             arrow(state_type, arrow(state_type, boolean)),
-            lambda x: lambda y: {**x, "end": self.southwest_of(x["state"], y["state"])}
+            lambda x: lambda y: {**x, "end": self.southwest(x["state"], y["state"])}
         ),
         
         "angle_between": Primitive(
@@ -344,14 +344,14 @@ def build_direction_executor(temperature: float = 0.2) -> CentralExecutor:
     executor.visualize = direction_domain.visualize
 
     constraints = {
-    "north_of": 2,
-    "south_of": 2,
-    "east_of": 2,
-    "west_of": 2,
-    "northeast_of": 2,
-    "northwest_of": 2,
-    "southeast_of": 2,
-    "southwest_of": 2
+    "north": 2,
+    "south": 2,
+    "east": 2,
+    "west": 2,
+    "northeast": 2,
+    "northwest": 2,
+    "southeast": 2,
+    "southwest": 2
     }
     executor.costraints = constraints
     

@@ -77,11 +77,12 @@ def train_vae(model: PointCloudVAE,
               train_loader: DataLoader,
               num_epochs: int = 100,
               learning_rate: float = 2e-4,
-              device: str = 'cuda' if torch.cuda.is_available() else 'cpu') -> List[float]:
+              device: str = 'cuda' if torch.cuda.is_available() else 'mps') -> List[float]:
 
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
     model = model.to(device)
     losses = []
+
 
     from tqdm import tqdm
 
@@ -97,7 +98,6 @@ def train_vae(model: PointCloudVAE,
 
             reconstruction, mu, log_var = model(data)
             loss = vae_loss(reconstruction, data, mu, log_var)
-
             loss.backward()
             optimizer.step()
 
@@ -108,8 +108,121 @@ def train_vae(model: PointCloudVAE,
 
         if (epoch + 1) % 10 == 0:
             print(f'Epoch [{epoch+1}/{num_epochs}], Loss: {avg_loss:.4f}')
-
+    torch.save(model.state_dict(), "curve_vae_state.pth")
     return losses
+
+import torch
+from torch.utils.data import Dataset
+import numpy as np
+
+class GeometricDataset(Dataset):
+    """
+    A dataset of point clouds representing 2D curves, including:
+    - Open paths with start and end points (linear, Bezier, sine wave)
+    - Closed loops (circles, ellipses, spirals)
+    """
+
+    def __init__(self, num_samples: int = 1000, num_points: int = 320):
+        """
+        Args:
+            num_samples (int): Number of samples in the dataset.
+            num_points (int): Number of points per curve.
+        """
+        self.num_samples = num_samples
+        self.num_points = num_points
+        self.data = self._generate_dataset()
+
+    def _generate_dataset(self):
+        """Generates a dataset of open and closed curves in 2D."""
+        dataset = []
+
+        for _ in range(self.num_samples):
+            curve_type = np.random.choice(["line", "bezier", "sine", "spiral", "circle", "ellipse"])
+
+            if curve_type == "line":
+                curve = self._generate_linear_path(self.num_points)
+            elif curve_type == "bezier":
+                curve = self._generate_bezier_curve(self.num_points)
+            elif curve_type == "sine":
+                curve = self._generate_sine_wave(self.num_points)
+            elif curve_type == "spiral":
+                curve = self._generate_spiral(self.num_points)
+            elif curve_type == "circle":
+                curve = self._generate_closed_curve(self.num_points, shape="circle")
+            elif curve_type == "ellipse":
+                curve = self._generate_closed_curve(self.num_points, shape="ellipse")
+            else:
+                continue  # Should never happen
+
+            dataset.append(curve)
+
+        return torch.tensor(np.array(dataset), dtype=torch.float32)
+
+    def _generate_linear_path(self, num_points):
+        """Generates a linear path between two random points."""
+        start = np.random.uniform(-1, 1, size=2)
+        end = np.random.uniform(-1, 1, size=2)
+
+        t = np.linspace(0, 1, num_points)
+        x = start[0] * (1 - t) + end[0] * t
+        y = start[1] * (1 - t) + end[1] * t
+
+        return np.stack([x, y], axis=1)
+
+    def _generate_bezier_curve(self, num_points):
+        """Generates a smooth Bezier curve with random control points."""
+        start = np.random.uniform(-1, 1, size=2)
+        end = np.random.uniform(-1, 1, size=2)
+        ctrl1 = np.random.uniform(-1, 1, size=2)
+        ctrl2 = np.random.uniform(-1, 1, size=2)
+
+        t = np.linspace(0, 1, num_points)
+        x = (1 - t) ** 3 * start[0] + 3 * (1 - t) ** 2 * t * ctrl1[0] + 3 * (1 - t) * t ** 2 * ctrl2[0] + t ** 3 * end[0]
+        y = (1 - t) ** 3 * start[1] + 3 * (1 - t) ** 2 * t * ctrl1[1] + 3 * (1 - t) * t ** 2 * ctrl2[1] + t ** 3 * end[1]
+
+        return np.stack([x, y], axis=1)
+
+    def _generate_sine_wave(self, num_points):
+        """Generates a sine wave path."""
+        t = np.linspace(0, 2 * np.pi, num_points)
+        x = np.linspace(-1, 1, num_points)
+        y = np.sin(4 * t) * np.random.uniform(0.2, 0.5)
+
+        return np.stack([x, y], axis=1)
+
+    def _generate_spiral(self, num_points):
+        """Generates an Archimedean spiral."""
+        theta = np.linspace(0, 4 * np.pi, num_points)
+        r = np.linspace(0, 1, num_points)  # Radius grows outward
+
+        x = r * np.cos(theta)
+        y = r * np.sin(theta)
+
+        return np.stack([x, y], axis=1)
+
+    def _generate_closed_curve(self, num_points, shape="circle"):
+        """Generates a closed curve (circle or ellipse)."""
+        theta = np.linspace(0, 2 * np.pi, num_points)
+
+        if shape == "circle":
+            r = np.random.uniform(0.7, 1.2)
+            x = r * np.cos(theta)
+            y = r * np.sin(theta)
+        else:  # Ellipse
+            a, b = np.random.uniform(0.7, 1.2), np.random.uniform(0.5, 1.0)
+            x = a * np.cos(theta)
+            y = b * np.sin(theta)
+
+        return np.stack([x, y], axis=1)
+
+    def __len__(self):
+        return self.num_samples
+
+    def __getitem__(self, idx):
+        return self.data[idx], 0  # Return data and a dummy label (needed for DataLoader)
+
+
+
 
 # Example usage:
 if __name__ == "__main__":

@@ -93,12 +93,14 @@ if True:
     from domains.curve.curve_domain import curve_executor
     from domains.distance.distance_domain import distance_executor
     from domains.direction.direction_domain import direction_executor
+    from domains.pointcloud.pointcloud_domain import pointcloud_executor
     concept_diagram.add_domain("GenericDomain", generic_executor)
     concept_diagram.add_domain("LineDomain", line_executor)
     concept_diagram.add_domain("CurveDomain", curve_executor)
     concept_diagram.add_domain("RCC8Domain", rcc8_executor)
     concept_diagram.add_domain("DistanceDomain", distance_executor)
     concept_diagram.add_domain("DirectionDomain", direction_executor)
+    concept_diagram.add_domain("PointcloudDomain", pointcloud_executor)
 
 
     concept_diagram.add_morphism("GenericDomain", "LineDomain", MetaphorMorphism(generic_executor, line_executor))
@@ -113,6 +115,8 @@ if True:
     concept_diagram.add_morphism("DistanceDomain", "RCC8Domain", MetaphorMorphism(distance_executor, rcc8_executor))
 
     concept_diagram.add_morphism("GenericDomain", "CurveDomain", MetaphorMorphism(generic_executor, curve_executor))
+
+    concept_diagram.add_morphism("GenericDomain", "PointcloudDomain", MetaphorMorphism(generic_executor, pointcloud_executor))
 
     save_concept_diagram_to_json(concept_diagram, "assets/diagram-json")
 

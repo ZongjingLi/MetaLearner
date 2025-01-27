@@ -94,6 +94,26 @@ class PredicateConnectionMatrix(nn.Module):
                     (1 - weights) * torch.log(1 - weights + 1e-10))
         return reg_loss.mean()
 
+    def get_best_match(self, symbol, flag = "target"):
+        assert flag in ["target", "source"], "input symbol must be target or source"
+        if flag == "target":
+            t_idx = self.target_predicates.index(symbol)
+            target_weights = [self.weight[self.connection_to_idx[(s_pred, symbol)]] if (s_pred, symbol) in self.connection_to_idx else 0 for s_pred in self.source_predicates]
+
+            max_weight_idx = torch.argmax(torch.tensor(target_weights))
+            best_match_symbol = self.source_predicates[max_weight_idx]
+
+            best_match_weight = self.get_connection_weight(best_match_symbol, symbol)
+            return best_match_symbol, best_match_weight
+        elif flag == "source":
+            s_idx = self.source_predicates.index(symbol)
+            source_weights = [self.weight[self.connection_to_idx[(symbol, t_pred)]] if (symbol, t_pred) in self.connection_to_idx else 0 for t_pred in self.target_predicates]
+
+            max_weight_idx = torch.argmax(torch.tensor(source_weights))
+            best_match_symbol = self.target_predicates[max_weight_idx]
+            best_match_weight = torch.sigmoid(self.weight[self.connection_to_idx[(symbol, self.target_predicates[max_weight_idx])]])
+            return best_match_symbol, best_match_weight
+
     def forward(self) -> Tuple[torch.Tensor, torch.Tensor]:
         """Return the full connection matrix and regularization loss"""
         if self.weight is None:

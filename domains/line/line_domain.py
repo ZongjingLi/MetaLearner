@@ -146,7 +146,7 @@ class LineDomain:
         y_norm = self._normalize(y_state)
         x_exp = x_norm.unsqueeze(1)  # [B1, 1]
         y_exp = y_norm.unsqueeze(0)  # [1, B2]
-        return torch.sigmoid((y_exp - x_exp) / self.temperature)
+        return torch.sigmoid((y_exp - x_exp) / self.temperature).squeeze(-1)
 
     def after(self, x_state: torch.Tensor, y_state: torch.Tensor) -> torch.Tensor:
         """Check if x points come after y points on line.
