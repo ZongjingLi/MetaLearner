@@ -15,6 +15,8 @@ import os
 from .encoders.image_encoder import ImageEncoder
 from .encoders.text_encoder  import TextEncoder
 
+from .metaphors.diagram import ConceptDiagram
+
 class EnsembleModel(nn.Module):
     def __init__(self, config):
         super().__init__()
@@ -38,6 +40,7 @@ class EnsembleModel(nn.Module):
                 sequences = sequences, punct_to_remove=['.', '!', ',']),
             "image" : ImageEncoder(generic_dim, config.num_channels),
         }
+        self.concept_diagram = ConceptDiagram()
     
     def forward(self, inputs):
         return 
@@ -83,3 +86,6 @@ class EnsembleModel(nn.Module):
         """
         embeddings = self.encoders['text'].encode_text(text)
         return embeddings
+
+    def train(self, ground_dataset):
+        return self

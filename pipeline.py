@@ -21,36 +21,41 @@ if __name__ == "__main__":
 
     concept_diagram = ConceptDiagram()
     curve_executor.to(device)
-    concept_diagram.add_domain("GenericDomain", generic_executor)
-    concept_diagram.add_domain("LineDomain", line_executor)
-    concept_diagram.add_domain("CurveDomain", curve_executor)
-    concept_diagram.add_domain("RCC8Domain", rcc8_executor)
-    concept_diagram.add_domain("DistanceDomain", distance_executor)
-    concept_diagram.add_domain("DirectionDomain", direction_executor)
-    concept_diagram.add_domain("PointcloudDomain", pointcloud_executor)
+
+    domains = {
+    "GenericDomain": generic_executor,
+    "LineDomain": line_executor,
+    "CurveDomain": curve_executor,
+    "RCC8Domain": rcc8_executor,
+    "DistanceDomain": distance_executor,
+    "DirectionDomain": direction_executor,
+    "PointcloudDomain": pointcloud_executor
+    }
+
+    for domain_name, executor in domains.items(): concept_diagram.add_domain(domain_name, executor)
+
+    morphisms = [
+    ("GenericDomain", "LineDomain"),
+    ("GenericDomain", "DistanceDomain"),
+    ("GenericDomain", "DirectionDomain"),
+    ("DistanceDomain", "DirectionDomain"),
+    ("CurveDomain", "LineDomain"),
+    ("LineDomain", "RCC8Domain"),
+    ("DistanceDomain", "RCC8Domain"),
+    ("GenericDomain", "CurveDomain"),
+    ("GenericDomain", "PointcloudDomain")
+    ]
+
+    for source, target in morphisms:
+        concept_diagram.add_morphism(source, target, MetaphorMorphism(domains[source], domains[target]))
 
 
-    concept_diagram.add_morphism("GenericDomain", "LineDomain", MetaphorMorphism(generic_executor, line_executor))
-    concept_diagram.add_morphism("GenericDomain", "DistanceDomain", MetaphorMorphism(generic_executor, distance_executor))
-    concept_diagram.add_morphism("GenericDomain", "DirectionDomain", MetaphorMorphism(generic_executor, direction_executor))
-
-    concept_diagram.add_morphism("DistanceDomain", "DirectionDomain", MetaphorMorphism(distance_executor, direction_executor))
-
-    concept_diagram.add_morphism("CurveDomain", "LineDomain", MetaphorMorphism(curve_executor, line_executor))
-    concept_diagram.add_morphism("LineDomain", "RCC8Domain", MetaphorMorphism(line_executor, rcc8_executor))
-    concept_diagram.add_morphism("LineDomain", "RCC8Domain", MetaphorMorphism(line_executor, rcc8_executor))
-    concept_diagram.add_morphism("DistanceDomain", "RCC8Domain", MetaphorMorphism(distance_executor, rcc8_executor))
-
-    concept_diagram.add_morphism("GenericDomain", "CurveDomain", MetaphorMorphism(generic_executor, curve_executor))
-    concept_diagram.add_morphism("GenericDomain", "PointcloudDomain", MetaphorMorphism(generic_executor, pointcloud_executor))
     
     from core.model import EnsembleModel
     from config import config
     model = EnsembleModel(config)
     model.concept_diagram = concept_diagram
     model.to(device)
-
-
 
     """generic state space testing"""
     source_state = torch.randn([3, 256]).to(device)

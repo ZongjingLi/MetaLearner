@@ -7,7 +7,7 @@ import os
 import open3d as o3d
 
 class PyBulletSimulator:
-    def __init__(self, gui=True, record_video=False, video_path='output.mp4'):
+    def __init__(self, gui=True, record_video=False, video_path='outputs/output.mp4'):
         self.gui = gui
         self.record_video = record_video
         self.video_path = video_path

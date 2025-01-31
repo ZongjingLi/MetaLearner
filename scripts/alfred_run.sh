@@ -1,0 +1,1 @@
+python env/alfred_env.py "configs/base_config.yaml"
