@@ -382,3 +382,5 @@
 [27 02:30:57 566@meta_construction.py:Citadel] create the concept diagram with empty graph.
 [27 02:31:26 566@meta_construction.py:Citadel] create the concept diagram with empty graph.
 [27 02:31:43 566@meta_construction.py:Citadel] create the concept diagram with empty graph.
+[30 21:17:19 162@model.py:Citadel] start the curriculum learning of the model
+[31 01:39:20 162@model.py:Citadel] start the curriculum learning of the model

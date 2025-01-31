@@ -7,3 +7,5 @@
 [20 04:41:12 59@main.py:Main] start the interactive mode of the metaphorical concept learner
 [20 04:41:14 72@main.py:Main] Server running on http://localhost:8888
 [20 04:41:28 78@main.py:Main] Server stopped by user
+[30 21:17:18 82@main.py:Main] WRN Curriculum Learning in Progress do not learn
+[31 01:39:16 82@main.py:Main] WRN Curriculum Learning in Progress do not learn

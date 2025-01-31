@@ -96,6 +96,7 @@ class ConceptDiagram(nn.Module):
         self.domain_logits = nn.ParameterDict()  # Store log p for domains
         self.morphism_logits = nn.ParameterDict()  # Store log p for morphisms
         self.logger = get_logger("concept-diagram", KFTLogFormatter)
+        self.root_name = "Generic"
 
     def add_domain(self, name: str, domain: nn.Module, p: float = 1.0) -> None:
         if name not in self.domains:

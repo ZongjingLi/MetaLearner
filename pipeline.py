@@ -94,3 +94,4 @@ if __name__ == "__main__":
         print("Measure Conf: ",result["probs"][i])
         print("Measure State:",result["states"][i].shape)
         print("\n")
+    

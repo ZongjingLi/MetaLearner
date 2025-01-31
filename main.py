@@ -77,7 +77,12 @@ def process_command(command):
         except KeyboardInterrupt:
             main_logger.info("Server stopped by user")
             tornado.ioloop.IOLoop.current().stop()
-        
+
+    if command == "learn_curriculum":
+        main_logger.warning("Curriculum Learning in Progress do not learn")
+        from core.model import EnsembleModel, curriculum_learning
+        model = EnsembleModel(config)
+        curriculum_learning(model, [])
 
     return command
 
