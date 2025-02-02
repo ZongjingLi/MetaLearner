@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # @Author: Meleko
 # @Date:   2024-10-15 07:17:22
-# @Last Modified by:   Melkor
-# @Last Modified time: 2024-10-16 08:09:15
+# @Last Modified by:   zongjingli
+# @Last Modified time: 2025-02-02 12:45:10
 import math
 import torch
 import torch.nn.functional as F
@@ -228,13 +228,13 @@ class PointEnergyMLP(nn.Module, ModelMixin):
             type_name = edge[-1]
 
 
-            x_inputs = x[obj_idx, :]
+            x_inputs = x[:,obj_idx, :]
 
-            n, d= x_inputs.shape
+            b, n, d= x_inputs.shape
 
             x_inputs = x_inputs.reshape([1, n * d])
 
-            sigma_inputs = sigma[obj_idx[:]]
+            sigma_inputs = sigma
 
 
             comp = self.energies[type_name](x_inputs, sigma_inputs)

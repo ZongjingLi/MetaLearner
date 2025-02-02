@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # @Author: Meleko
 # @Date:   2024-10-15 07:15:21
-# @Last Modified by:   Melkor
-# @Last Modified time: 2024-10-16 08:09:15
+# @Last Modified by:   zongjingli
+# @Last Modified time: 2025-02-02 16:42:37
 import math
 
 import torch
@@ -160,7 +160,10 @@ def training_loop(loader      : DataLoader,
     accelerator = accelerator or Accelerator()
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr)
     model, optimizer, loader = accelerator.prepare(model, optimizer, loader)
+    device = "mps"
+    count = 0
     for _ in (pbar := tqdm(range(epochs))):
+        count += 1
         for sample in loader:
             model.train()
             optimizer.zero_grad()
@@ -171,15 +174,20 @@ def training_loop(loader      : DataLoader,
             #print(conditional)
             #conditional = {"edges" : [(i,"online") for i in range(batchsize)]}
             #print("batchsize:",batchsize,x0.shape)
-            b, d = x0.shape
+            x0 = x0.unsqueeze(0)
+            b, n, d = x0.shape
 
             x0, sigma, eps, cond = generate_train_sample(x0, schedule, conditional)
             #print(x0.shape, sigma.shape, eps.shape)
+
+            #print(x0.shape, sigma.shape)
+
 
             loss = model.get_loss(x0, sigma, eps, cond=conditional)
             yield SimpleNamespace(**locals()) # For extracting training statistics
             accelerator.backward(loss)
             optimizer.step()
+        if count % 100 == 0: torch.save(model.state_dict(),"checkpoints/state.pth")
 
 # Generalizes most commonly-used samplers:
 #   DDPM       : gam=1, mu=0.5
@@ -194,14 +202,16 @@ def samples(model      : nn.Module,
             batchsize  : int = 1,
             xt         : Optional[torch.FloatTensor] = None,
             cond       : Optional[torch.Tensor] = None,
-            accelerator: Optional[Accelerator] = None):
+            accelerator: Optional[Accelerator] = None,
+            device  = "cuda" if torch.cuda.is_available() else "mps"):
+    model.to(device)
     accelerator = accelerator or Accelerator()
     xt = model.rand_input(batchsize).to(accelerator.device) * sigmas[0] if xt is None else xt
-
+    xt = xt.to(device)
     eps = None
     for i, (sig, sig_prev) in enumerate(pairwise(sigmas)):
         model.eval()
-        #print(sig.shape, xt.shape)
+
         eps_prev, eps = eps, model.predict_eps_cfg(xt, sig.to(xt), cond, cfg_scale)
         eps_av = eps * gam + eps_prev * (1-gam)  if i > 0 else eps
         sig_p = (sig_prev/sig**mu)**(1/(1-mu)) # sig_prev == sig**mu sig_p**(1-mu)
