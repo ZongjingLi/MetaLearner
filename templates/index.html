@@ -208,7 +208,7 @@
                             'font-size': '12px',
                             'border-width': 2,
                             'border-color': '#0056b3',
-                            'shape': 'round-rectangle',
+                            'shape': 'round',
                         }
                     },
                     {
@@ -234,8 +234,8 @@
                 cy.edges().forEach(edge => edge.style('line-color', '#aaa'));
 
                 data.path_edges.forEach((edgeId, index) => {
-                    const apply_prob = data.path[index].apply_prob;
-                    const color = `rgba(255, 0, 0, ${apply_prob})`;
+                    const apply_prob = data.path[index].apply_prob * 255;
+                    const color = `rgba(${apply_prob}, 10, 0, 1)`;
                     cy.$(`#${edgeId}`).style('line-color', color);
                 });
 
@@ -262,7 +262,7 @@
                 })
                 .then(response => response.json())
                 .then(data => {
-                    document.getElementById('selected-domain').innerText = "Evaluation Result:\n" + JSON.stringify(data.result, null, 4);
+                    document.getElementById('selected-domain').innerText = "Evaluation Result:\n" + JSON.stringify(data.result, null, 1) + "\nSymbol Path:\n" + JSON.stringify(data.symbs,null,1);
                     updateVisualization(data);
                 });
             });

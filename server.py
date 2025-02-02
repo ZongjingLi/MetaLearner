@@ -1,3 +1,4 @@
+
 import os
 import json
 import tornado.ioloop
@@ -88,6 +89,7 @@ concept_diagram = ConceptDiagram().to(device)
 # concept_diagram.add_morphism("GenericDomain", "LineDomain", MetaphorMorphism(...))
 
 if True:
+    from core.metaphors.diagram import ConceptDiagram, MetaphorMorphism
     from domains.generic.generic_domain import generic_executor
     from domains.line.line_domain import line_executor
     from domains.rcc8.rcc8_domain import rcc8_executor
@@ -95,29 +97,38 @@ if True:
     from domains.distance.distance_domain import distance_executor
     from domains.direction.direction_domain import direction_executor
     from domains.pointcloud.pointcloud_domain import pointcloud_executor
-    concept_diagram.add_domain("GenericDomain", generic_executor)
-    concept_diagram.add_domain("LineDomain", line_executor)
-    concept_diagram.add_domain("CurveDomain", curve_executor)
-    concept_diagram.add_domain("RCC8Domain", rcc8_executor)
-    concept_diagram.add_domain("DistanceDomain", distance_executor)
-    concept_diagram.add_domain("DirectionDomain", direction_executor)
-    concept_diagram.add_domain("PointcloudDomain", pointcloud_executor)
 
+    concept_diagram = ConceptDiagram()
+    curve_executor.to(device)
 
-    concept_diagram.add_morphism("GenericDomain", "LineDomain", MetaphorMorphism(generic_executor, line_executor))
-    concept_diagram.add_morphism("GenericDomain", "DistanceDomain", MetaphorMorphism(generic_executor, distance_executor))
-    concept_diagram.add_morphism("GenericDomain", "DirectionDomain", MetaphorMorphism(generic_executor, direction_executor))
+    domains = {
+    "GenericDomain": generic_executor,
+    "LineDomain": line_executor,
+    "CurveDomain": curve_executor,
+    "RCC8Domain": rcc8_executor,
+    "DistanceDomain": distance_executor,
+    "DirectionDomain": direction_executor,
+    "PointcloudDomain": pointcloud_executor
+    }
 
-    concept_diagram.add_morphism("DistanceDomain", "DirectionDomain", MetaphorMorphism(distance_executor, direction_executor))
+    for domain_name, executor in domains.items(): concept_diagram.add_domain(domain_name, executor)
 
-    concept_diagram.add_morphism("CurveDomain", "LineDomain", MetaphorMorphism(curve_executor, line_executor))
-    concept_diagram.add_morphism("LineDomain", "RCC8Domain", MetaphorMorphism(line_executor, rcc8_executor))
-    concept_diagram.add_morphism("LineDomain", "RCC8Domain", MetaphorMorphism(line_executor, rcc8_executor))
-    concept_diagram.add_morphism("DistanceDomain", "RCC8Domain", MetaphorMorphism(distance_executor, rcc8_executor))
+    morphisms = [
+    ("GenericDomain", "LineDomain"),
+    ("GenericDomain", "DistanceDomain"),
+    ("GenericDomain", "DirectionDomain"),
+    ("DistanceDomain", "DirectionDomain"),
+    ("CurveDomain", "LineDomain"),
+    ("LineDomain", "RCC8Domain"),
+    ("LineDomain", "RCC8Domain"),
+    ("DistanceDomain", "RCC8Domain"),
+    ("GenericDomain", "CurveDomain"),
+    ("GenericDomain", "PointcloudDomain")
+    ]
 
-    concept_diagram.add_morphism("GenericDomain", "CurveDomain", MetaphorMorphism(generic_executor, curve_executor))
+    for source, target in morphisms:
+        concept_diagram.add_morphism(source, target, MetaphorMorphism(domains[source], domains[target]))
 
-    concept_diagram.add_morphism("GenericDomain", "PointcloudDomain", MetaphorMorphism(generic_executor, pointcloud_executor))
 
     save_concept_diagram_to_json(concept_diagram, "assets/diagram-json")
 
@@ -172,7 +183,7 @@ Target Domain: {target.strip()}
 Morphism Name: {morphism_id}
 """
                 self.set_header("Content-Type", "application/json")
-                self.write(json.dumps({"details": structured_details}, indent=4))
+                self.write(json.dumps({"details": structured_details}, indent=1))
                 return
         
         print(f"Metaphor not found: {morphism_id}. Available: {self.concept_diagram.edge_indices}")
@@ -205,7 +216,7 @@ class ExecuteCodeHandler(tornado.web.RequestHandler):
             # Evaluate predicate
             self.concept_diagram.to(device)
  
-            evaluation_result = self.concept_diagram.evaluate(source_state, predicate, domain_name, eval_type="literal")
+            evaluation_result = self.concept_diagram.evaluate(source_state, predicate, domain_name, eval_type="metaphor")
 
             # Extract path details
             import random
@@ -218,6 +229,7 @@ class ExecuteCodeHandler(tornado.web.RequestHandler):
             # Store states for visualization
             path_data = []
             path_edges = []
+            symb_edges = []
 
 
             visualizations = self.concept_diagram.visualize_path(state_path, metas_path, evaluation_result["results"][idx].cpu().detach())
@@ -259,8 +271,10 @@ class ExecuteCodeHandler(tornado.web.RequestHandler):
                 })
 
             # Response data
+            symbs = [float(item) if isinstance(item, torch.Tensor) else item for item in evaluation_result["symbol_path"][idx]]
             response_data = {
-                "result": evaluation_result["results"][0].detach().cpu().tolist(),
+                "result": evaluation_result["results"][idx].detach().cpu().tolist(),
+                "symbs" : symbs,
                 "path": path_data,
                 "path_edges": path_edges,
                 "visualizations": visualized_steps

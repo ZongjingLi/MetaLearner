@@ -41,6 +41,7 @@ if __name__ == "__main__":
     ("DistanceDomain", "DirectionDomain"),
     ("CurveDomain", "LineDomain"),
     ("LineDomain", "RCC8Domain"),
+    ("LineDomain", "RCC8Domain"),
     ("DistanceDomain", "RCC8Domain"),
     ("GenericDomain", "CurveDomain"),
     ("GenericDomain", "PointcloudDomain")
@@ -94,4 +95,16 @@ if __name__ == "__main__":
         print("Measure Conf: ",result["probs"][i])
         print("Measure State:",result["states"][i].shape)
         print("\n")
-    
+
+    b, n, d = 4, 8, 256
+    sample_dict = {
+        "features" : torch.randn([b, n, d], device = device),
+        "end" : torch.randn([b, n], device = device),
+        "predicates" : ["disconnected", "disconnected", "disconnected", "disconnected"]
+    }
+
+
+    result = concept_diagram.batch_evaluation(sample_dict, "literal")
+
+    print(len(concept_diagram.get_path("GenericDomain", "RCC8Domain")))
+    print(concept_diagram.get_path("GenericDomain", "RCC8Domain"))

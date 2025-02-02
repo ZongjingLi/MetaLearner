@@ -13,7 +13,6 @@ import torch.nn.functional as F
 import matplotlib.pyplot as plt
 from io import BytesIO
 import base64
-import heapq
 
 from rinarak.logger import get_logger, KFTLogFormatter
 from rinarak.logger import set_logger_output_file
@@ -149,7 +148,7 @@ class ConceptDiagram(nn.Module):
         return torch.sigmoid(self.morphism_logits[name])
 
     def evaluate(self, state: torch.Tensor, predicate: str, domain: str = None, 
-                eval_type: str = 'literal', top_k: int = 3, count = 10) -> torch.Tensor:
+                eval_type: str = 'literal', top_k: int = 5, count = 10) -> Dict:
         """Evaluate a predicate on the given state using specified evaluation method."""
         
         # Find predicate domain if not specified
@@ -166,17 +165,7 @@ class ConceptDiagram(nn.Module):
             raise ValueError(f"Predicate {predicate} not found in any domain")
 
         # If source domain not specified, find most probable domain for state
-        if domain is None:
-            domain_probs = {}
-            for domain_name, domain_executor in self.domains.items():
-                try:
-                    prob = domain_executor.evaluate_state_compatibility(state)
-                    domain_probs[domain_name] = prob
-                except:
-                    continue
-            if not domain_probs:
-                raise ValueError("Could not determine source domain for state")
-            domain = max(domain_probs.items(), key=lambda x: x[1])[0]
+        if domain is None: domain = "GenericDomain"
         
         if pred_arity == 0:
             predicate = f"({predicate})"
@@ -193,6 +182,47 @@ class ConceptDiagram(nn.Module):
         else:
             raise ValueError(f"Unknown evaluation type: {eval_type}")
 
+    def batch_evaluation(self, sample_dict : Dict, eval_type = "literal"):
+        """ take a diction of sample inputs and outut the evaluation of predicates of result on a batch
+        TODO: This batch like operation sounds incredibly stupid, try to figure this out.
+        Inputs:
+            sample_dict: a diction that contains
+                features : b x n x d shape tensor reprsenting the state features
+                end: b x n shape tensor representing the probbaility of existence of each object
+                predicates : a list of len [b] that contains predicate to evaluate at each batch
+        Returns:
+            outputs: a diction that contains 
+                results : a list of [b] elements each representing the evaluation result on the 
+                conf : a list of [b] scalars each representing the probability of that evaluation
+                end : same as the outputs
+        """
+        features = sample_dict.get('features')  # (b, n, d)
+        end = sample_dict.get('end')            # (b, n)
+        predicates = sample_dict.get('predicates')
+        domains = sample_dict.get("domains") if "domains" in sample_dict else None
+        if features is None or end is None: raise ValueError("sample_dict must contain 'features' and 'end' keys")
+
+        batch_size = features.shape[0]
+        outputs = {
+            'results': [],
+            'conf': [],
+            'end': end
+        }
+
+        for i in range(batch_size):
+            state = features[i]           # (n, d)
+            predicate = predicates[i]
+            domain = domains[i] if domains is not None else domains
+
+            results = self.evaluate(state, predicate, eval_type = eval_type)
+            result = results["results"][0]
+            confidence = results["probs"][0]
+        
+            outputs['results'].append(result)
+            outputs['conf'].append(confidence)
+
+        return outputs
+
     def _evaluate_metaphor(self, state: torch.Tensor, predicate_expr: str,
                           source_domain: str, target_domain: str, top_k: int, eps : float = 0.001, count = 10) -> torch.Tensor:
         """Metaphorical evaluation using earliest valid evaluation point by tracing predicates backwards.
@@ -203,6 +233,7 @@ class ConceptDiagram(nn.Module):
         
         """[1]. get all the paths from the source to target domain"""
         all_paths = self.get_path(source_domain, target_domain)
+
         if not all_paths: raise Exception(f"no path found between domain {source_domain} and {target_domain}")
 
         paths_of_apply = [] # each path is a sequence of appliability
@@ -327,7 +358,7 @@ class ConceptDiagram(nn.Module):
     def get_path(self, 
                  source: str, 
                  target: str, 
-                 max_length: int = 3) -> List[List[Tuple[str, str, int]]]:
+                 max_length: int = 10) -> List[List[Tuple[str, str, int]]]:
         """find all the possible paths from source domain to the target domain.
         Args:
             source: the name of the source domain
@@ -354,7 +385,6 @@ class ConceptDiagram(nn.Module):
                         new_paths = dfs(tgt, new_path, new_visited)
                         paths.extend(new_paths)
             return paths
-            
         return dfs(source, [], {source})
 
     def get_path_prob(self, path: List[Tuple[str, str, int]]) -> torch.Tensor:

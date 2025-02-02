@@ -9,3 +9,4 @@
 [20 04:41:28 78@main.py:Main] Server stopped by user
 [30 21:17:18 82@main.py:Main] WRN Curriculum Learning in Progress do not learn
 [31 01:39:16 82@main.py:Main] WRN Curriculum Learning in Progress do not learn
+[31 04:13:41 49@main.py:Main] start training the metaphorical concept learner

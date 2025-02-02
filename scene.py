@@ -1,75 +1,126 @@
-import random
 import open3d as o3d
 import numpy as np
+import random
 
-# Function to create random 3D object shapes (no need for external models)
-def create_random_object(object_type, size_range=(0.2, 0.5)):
-    # Random position in a 3D space (place objects on a flat surface, z = 0.1 to 0.5 to avoid overlap with the ground)
-    x = random.uniform(-2, 2)
-    y = random.uniform(-2, 2)
-    z = random.uniform(0.1, 0.5)  # Slight height above the floor
-    
-    # Random size for the object
-    size = random.uniform(*size_range)
-    
-    # Create a point cloud for the object
-    if object_type == "Bin" or object_type == "Box":
-        color = [random.random(), random.random(), random.random()]
-        # Create a simple cube for containers like bin and box
-        mesh = o3d.geometry.TriangleMesh.create_box(width=size, height=size, depth=size)
-    elif object_type == "Cup" or object_type == "Bottle":
-        color = [random.random(), random.random(), random.random()]
-        # Create a simple cylinder for cup and bottle
-        mesh = o3d.geometry.TriangleMesh.create_cylinder(radius=size * 0.4, height=size * 2)
-    elif object_type == "Plate":
-        color = [random.random(), random.random(), random.random()]
-        # Create a simple disk for plate
-        mesh = o3d.geometry.TriangleMesh.create_cylinder(radius=size, height=0.05)  # Thin cylinder to simulate a plate
-    elif object_type == "Hammer":
-        color = [random.random(), random.random(), random.random()]
-        # Create a simple cylinder for hammer
-        mesh = o3d.geometry.TriangleMesh.create_cylinder(radius=size * 0.2, height=size * 3)
-    else:
-        color = [random.random(), random.random(), random.random()]
-        # Use a sphere for other types of objects
-        mesh = o3d.geometry.TriangleMesh.create_sphere(radius=size)
-    
-    # Translate the object to its random position
-    mesh.translate([x, y, z])
-    
-    # Set the color of the object
-    mesh.paint_uniform_color(color)
-    
-    # Sample points to create a point cloud
-    pcd = mesh.sample_points_poisson_disk(number_of_points=500)
-    
-    return pcd
+def create_random_sphere():
+    sphere = o3d.geometry.TriangleMesh.create_sphere(radius=random.uniform(0.2, 0.5))
+    sphere.compute_vertex_normals()
+    sphere.paint_uniform_color(np.random.rand(3))
+    return sphere
 
-# Function to generate a random scene with 3-5 objects and realistic distribution
-def generate_random_scene(num_objects=5):
+def create_random_cube():
+    cube = o3d.geometry.TriangleMesh.create_box(width=random.uniform(0.3, 0.7),
+                                                height=random.uniform(0.3, 0.7),
+                                                depth=random.uniform(0.3, 0.7))
+    cube.compute_vertex_normals()
+    cube.paint_uniform_color(np.random.rand(3))
+    return cube
+
+def create_random_cylinder():
+    cylinder = o3d.geometry.TriangleMesh.create_cylinder(radius=random.uniform(0.2, 0.4),
+                                                         height=random.uniform(0.5, 1.0))
+    cylinder.compute_vertex_normals()
+    cylinder.paint_uniform_color(np.random.rand(3))
+    return cylinder
+
+def create_random_cone():
+    cone = o3d.geometry.TriangleMesh.create_cone(radius=random.uniform(0.2, 0.4),
+                                                 height=random.uniform(0.5, 1.0))
+    cone.compute_vertex_normals()
+    cone.paint_uniform_color(np.random.rand(3))
+    return cone
+
+def create_random_torus():
+    torus = o3d.geometry.TriangleMesh.create_torus(torus_radius=random.uniform(0.5, 1.0),
+                                                   tube_radius=random.uniform(0.1, 0.2))
+    torus.compute_vertex_normals()
+    torus.paint_uniform_color(np.random.rand(3))
+    return torus
+
+# List of object generation functions
+object_creators = [
+    create_random_sphere,
+    create_random_cube,
+    create_random_cylinder,
+    create_random_cone,
+    create_random_torus
+]
+
+# Stable objects (excluding cone and torus)
+stable_object_creators = [
+    create_random_sphere,
+    create_random_cube,
+    create_random_cylinder
+]
+
+def is_collision_free(new_obj, existing_objs):
+    new_bbox = new_obj.get_axis_aligned_bounding_box()
+    new_min = new_bbox.get_min_bound()
+    new_max = new_bbox.get_max_bound()
+
+    for obj in existing_objs:
+        existing_bbox = obj.get_axis_aligned_bounding_box()
+        exist_min = existing_bbox.get_min_bound()
+        exist_max = existing_bbox.get_max_bound()
+
+        # Check for overlap along all three axes
+        if (new_min[0] < exist_max[0] and new_max[0] > exist_min[0] and
+            new_min[1] < exist_max[1] and new_max[1] > exist_min[1] and
+            new_min[2] < exist_max[2] and new_max[2] > exist_min[2]):
+            return False  # Collision detected
+
+    return True
+
+def stack_objects(base_objects, k=2):
+    stacked_objects = []
+    stable_bases = [obj for obj in base_objects if obj in stable_object_creators]
+    print(len(stable_bases))
+    selected_objects = random.sample(stable_bases, min(k, len(stable_bases)))
+
+    for obj in selected_objects:
+        stacked_obj_func = random.choice(object_creators)
+        stacked_obj = stacked_obj_func()
+
+        # Get the top of the base object's bounding box
+        base_bbox = obj.get_axis_aligned_bounding_box()
+        base_top_z = base_bbox.get_max_bound()[2]
+
+        # Align the stacked object with the base object's position
+        base_center = base_bbox.get_center()
+        stacked_obj.translate([
+            base_center[0] - stacked_obj.get_center()[0],
+            base_center[1] - stacked_obj.get_center()[1],
+            base_top_z - stacked_obj.get_min_bound()[2]  # Place directly on top
+        ])
+
+        stacked_objects.append(stacked_obj)
+
+    return stacked_objects
+
+def generate_random_scene(num_objects=10, points_per_object=1000, k=2):
     scene = []
-    
-    # Randomly select object types
-    object_types = ["Bin", "Box", "Cup", "Bottle", "Plate", "Hammer"]
-    selected_objects = random.sample(object_types, num_objects)
-    
-    for object_type in selected_objects:
-        # Create a random 3D object as point cloud
-        pcd = create_random_object(object_type)
-        
-        # Randomly position the object in the scene (x, y on a flat plane, z for height)
-        translation = np.array([random.uniform(-2, 2),  # Random x
-                               random.uniform(-2, 2),  # Random y
-                               random.uniform(0.1, 0.5)])  # Slight height above the floor
-        pcd.translate(translation)
-        
-        # Append the point cloud to the scene
-        scene.append(pcd)
-    
-    return scene
+    attempts = 0
+    max_attempts = 1000  # To prevent infinite loops
 
-# Generate a random scene with 3-5 objects
-scene = generate_random_scene(num_objects=random.randint(3, 5))
+    while len(scene) < num_objects and attempts < max_attempts:
+        obj_func = random.choice(object_creators)
+        obj = obj_func()
 
-# Visualize the scene
-o3d.visualization.draw_geometries(scene, window_name="Realistic Scene with Point Clouds", width=800, height=600)
+        # Random translation on the surface
+        translation = np.random.uniform(-2, 2, size=2)
+        obj.translate([translation[0], translation[1], -obj.get_min_bound()[2]])
+
+        if is_collision_free(obj, scene):
+            scene.append(obj)
+
+        attempts += 1
+
+    # Stack objects
+    stacked_objects = stack_objects(scene, k)
+    scene.extend(stacked_objects)
+
+    return [o.sample_points_poisson_disk(number_of_points=points_per_object) for o in scene]
+
+# Generate and visualize the scene
+random_scene = generate_random_scene(num_objects=10, points_per_object=2500, k=2)
+o3d.visualization.draw_geometries(random_scene)
