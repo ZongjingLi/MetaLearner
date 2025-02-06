@@ -12,9 +12,38 @@ import torch
 import torch.nn as nn
 import numpy as np
 from rinarak.logger import get_logger, set_output_file
+#from datasets.scene_dataset import SceneDataset
+from datasets.scene_dataset import SceneDataset, DataLoader, scene_collate
+from tqdm import tqdm
 
 main_logger = get_logger("Main")
 set_output_file("logs/main_logs.txt")
+
+def train_grounding(model, scene_dataset : 'SceneDataset', config):
+    epochs = int(config.epochs)
+    batch_size = int(config.batch_size)
+    ckpt_epochs = int(config.ckpt_epochs)
+    loader  = DataLoader(scene_dataset, batch_size, collate_fn = scene_collate,shuffle = True)
+    for epoch in tqdm(range(epochs)):
+        for batch in loader:
+            batch_loss = 0.0
+            batch_size = len(batch["input"])
+            for i,scene in enumerate(batch["input"]): # this is dump but some kind of batchwise operation
+                scene = torch.stack(scene) # normally a nx... input scene
+                #print(scene.shape)
+                for pred in batch["predicate"]:
+                    if pred == "end": break
+                    pred # the name fo the predicate
+                    batch["predicate"][pred][0][i] # tensor repr of the predicate
+
+                    results = model.evaluate(scene, pred, encoder_name = "pointcloud")
+                    batch_loss += 0.0
+
+            batch_loss = batch_loss / batch_size # normalize across the whole batch
+
+        if not (epoch % ckpt_epochs): main_logger.info(f"At Epoch:{epoch}")
+    torch.save(model, "checkpoints/namomo.ckpt")
+    return model
 
 def process_command(command):
     if regex.match("train_ccsp_*", command):
@@ -52,8 +81,9 @@ def process_command(command):
         model = EnsembleModel(config)
 
         text = "this is a real sentence"
-        print(model.encode_text(text).shape)
-
+        #print(model.encode_text(text).shape) torch.Size([1, 7, 256])
+        dataset = SceneDataset("contact_experiment", "train")
+        model = train_grounding(model, dataset, config)
     
     if command == "interact":
         main_logger.info("start the interactive mode of the metaphorical concept learner")
@@ -89,5 +119,5 @@ def process_command(command):
 if __name__ == "__main__":
     from config import config
     sys.stdout.write(f"command type: {config.command}\n")
-    
+
     process_command(config.command)

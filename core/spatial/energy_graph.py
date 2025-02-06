@@ -2,7 +2,7 @@
 # @Author: Meleko
 # @Date:   2024-10-15 07:17:22
 # @Last Modified by:   zongjingli
-# @Last Modified time: 2025-02-02 12:45:10
+# @Last Modified time: 2025-02-03 03:49:43
 import math
 import torch
 import torch.nn.functional as F
@@ -223,6 +223,7 @@ class PointEnergyMLP(nn.Module, ModelMixin):
         #print("State Size:", x.shape)
         #print("Sigma Size:", sigma.shape)
         #print("Edge Size:", len(cond["edges"]))
+        #print(len(cond["edges"]))
         for edge in cond["edges"]:
             obj_idx = edge[:-1]
             type_name = edge[-1]
@@ -240,6 +241,7 @@ class PointEnergyMLP(nn.Module, ModelMixin):
             comp = self.energies[type_name](x_inputs, sigma_inputs)
 
             total_energy = total_energy + comp["energy"]
+        total_energy /= len(cond["edges"])
 
         grad = torch.autograd.grad(total_energy.flatten().sum(), x,retain_graph = True, create_graph=True)[0]
         return {"energy" : total_energy, "gradient" : grad}

@@ -13,7 +13,6 @@ import torch.nn.functional as F
 import matplotlib.pyplot as plt
 from io import BytesIO
 import base64
-
 from rinarak.logger import get_logger, KFTLogFormatter
 from rinarak.logger import set_logger_output_file
 

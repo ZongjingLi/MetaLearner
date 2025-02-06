@@ -172,12 +172,13 @@ class DirectionalDomain:
         ax1.set_axisbelow(True)
         ax1.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
         ax1.set_title("Spatial Configuration")
+
         
         if program is not None:
             fig.suptitle(f"Program: {program}")
             
         plt.tight_layout()
-        return fig
+        return fig, ax1
 
     def _set_plot_bounds(self, ax: plt.Axes, points: np.ndarray):
         """Set plot bounds to make square box around points."""

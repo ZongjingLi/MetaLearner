@@ -21,6 +21,8 @@ parser.add_argument("--generic_dim",      default = 256,       help = "the dim o
 
 """training commmand epochs"""
 parser.add_argument("--epochs",           default = 5000,      help = "number of epochs for the training")
+parser.add_argument("--batch_size",	      default = 4,         help = "batch size current")
+parser.add_argument("--ckpt_epochs",	  default = 100,       help = "for the epochs to save the checkpoints")
 
 """handle the textual token encoder"""
 parser.add_argument("--corpus",           default = "data/corpus.txt")

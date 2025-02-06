@@ -320,9 +320,10 @@ class RCC8Domain:
             state_sizes[key] = len(state)
             
             for j in range(len(state)):
+                #print(state[j, 2].item())
                 circle = plt.Circle(
                     (state[j, 0].item(), state[j, 1].item()),
-                    state[j, 2].item(),
+                    state[j, 2].item() if state[j, 2].item() > 0 else 0.0,
                     fill=False,
                     color=colors[i % len(colors)],
                     linewidth=2,

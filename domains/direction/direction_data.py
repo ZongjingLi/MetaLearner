@@ -39,14 +39,14 @@ class DirectionDataset(Dataset):
         
         # List of all directional relation calculation functions
         self.relation_functions = [
-            (self.direction_domain.north, "north_of"),
-            (self.direction_domain.south, "south_of"),
-            (self.direction_domain.east, "east_of"),
-            (self.direction_domain.west, "west_of"),
-            (self.direction_domain.northeast, "northeast_of"),
-            (self.direction_domain.northwest, "northwest_of"),
-            (self.direction_domain.southeast, "southeast_of"),
-            (self.direction_domain.southwest, "southwest_of")
+            (self.direction_domain.north, "north"),
+            (self.direction_domain.south, "south"),
+            (self.direction_domain.east, "east"),
+            (self.direction_domain.west, "west"),
+            (self.direction_domain.northeast, "northeast"),
+            (self.direction_domain.northwest, "northwest"),
+            (self.direction_domain.southeast, "southeast"),
+            (self.direction_domain.southwest, "southwest")
         ]
         
         # Generate dataset
@@ -88,14 +88,14 @@ class DirectionDataset(Dataset):
         
         # Generate second point based on relation
         angle_map = {
-            "north_of": np.pi/2,
-            "south_of": -np.pi/2,
-            "east_of": 0,
-            "west_of": np.pi,
-            "northeast_of": np.pi/4,
-            "northwest_of": 3*np.pi/4,
-            "southeast_of": -np.pi/4,
-            "southwest_of": -3*np.pi/4
+            "north": np.pi/2,
+            "south": -np.pi/2,
+            "east": 0,
+            "west": np.pi,
+            "northeast": np.pi/4,
+            "northwest": 3*np.pi/4,
+            "southeast": -np.pi/4,
+            "southwest": -3*np.pi/4
         }
         
         base_angle = angle_map[relation]

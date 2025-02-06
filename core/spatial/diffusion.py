@@ -2,7 +2,7 @@
 # @Author: Meleko
 # @Date:   2024-10-15 07:15:21
 # @Last Modified by:   zongjingli
-# @Last Modified time: 2025-02-02 16:42:37
+# @Last Modified time: 2025-02-03 02:10:39
 import math
 
 import torch
@@ -160,7 +160,7 @@ def training_loop(loader      : DataLoader,
     accelerator = accelerator or Accelerator()
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr)
     model, optimizer, loader = accelerator.prepare(model, optimizer, loader)
-    device = "mps"
+    device  = "cuda" if torch.cuda.is_available() else "mps"
     count = 0
     for _ in (pbar := tqdm(range(epochs))):
         count += 1
@@ -170,6 +170,8 @@ def training_loop(loader      : DataLoader,
             x0 = sample["data"]
             conditional = sample["cond"]
             batchsize = x0.shape[0]
+
+            #print(x0.shape)
 
             #print(conditional)
             #conditional = {"edges" : [(i,"online") for i in range(batchsize)]}

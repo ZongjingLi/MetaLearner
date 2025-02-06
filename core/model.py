@@ -16,6 +16,7 @@ from typing import List, Optional
 """a set of encoder that encode different modalities to the generic domain"""
 from .encoders.image_encoder import ImageEncoder
 from .encoders.text_encoder  import TextEncoder
+from .encoders.pointcloud_encoder import PointCloudEncoder, PointCloudRelationEncoder
 
 """the backend neuro-symbolic concept learner for execution of predicates and actions"""
 from .metaphors.diagram import ConceptDiagram, MetaphorMorphism
@@ -26,6 +27,7 @@ from .prompt.access_llm import run_gpt
 from rinarak.domain import Domain
 
 from rinarak.logger import get_logger, set_logger_output_file
+
 
 class EnsembleModel(nn.Module):
     def __init__(self, config):
@@ -49,6 +51,8 @@ class EnsembleModel(nn.Module):
                 generic_dim, vocab_size = int(config.vocab_size),
                 sequences = sequences, punct_to_remove=['.', '!', ',']),
             "image" : ImageEncoder(generic_dim, config.num_channels),
+            "pointcloud" : PointCloudEncoder(generic_dim),
+            "pointcloud_relation" : PointCloudRelationEncoder(generic_dim)
         }
         self.concept_diagram = ConceptDiagram()
 
@@ -104,6 +108,17 @@ class EnsembleModel(nn.Module):
 
     def train(self, ground_dataset):
         return self
+
+    def evaluate(self, inputs, predicate, encoder_name = "PointcloudObjectEncoder", eval_mode = "literal"):
+        outputs = {}
+        source_state = self.encoders[encoder_name](inputs)
+
+        result = self.concept_diagram.evaluate(source_state, predicate, "GenericDomain", eval_mode)
+
+        return outputs
+
+    def batch_evaluate(self, inputs, predicate):
+        return 
     
     def meta_learn_domain(self, curriculum : MetaCurriculum, epochs = 1000, lr = 2e-4):
         """1) create the template domain executor or use a custom domain executor"""
@@ -157,6 +172,7 @@ class EnsembleModel(nn.Module):
 
         outputs = {}
         return 
+
 
 def curriculum_learning(model : EnsembleModel, meta_curriculums : List[MetaCurriculum]):
     model.logger.info("start the curriculum learning of the model")
