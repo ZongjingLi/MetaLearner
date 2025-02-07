@@ -7,7 +7,7 @@ from typing import List, Optional, Union
 from rinarak.utils.tokens import *
 from rinarak.utils.vocab  import *
 
-class TextEncoder:
+class TextEncoder(nn.Module):
     def __init__(
         self, 
         embedding_dim: int = 300,
@@ -18,6 +18,7 @@ class TextEncoder:
         punct_to_keep: Optional[List[str]] = None,
         punct_to_remove: Optional[List[str]] = None
     ):
+        super().__init__()
         """
         Initialize the text encoder with embedding layer.
         

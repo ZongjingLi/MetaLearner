@@ -125,7 +125,7 @@ if __name__ == "__main__":
     num_train, num_val, num_test = 100, 20, 20  # Set dataset sizes
 
     # Generate and save data for different splits
-    generate = 0
+    generate = 1
     if generate:
         save_data(experiment_name, "train", num_train)
         save_data(experiment_name, "val", num_val)

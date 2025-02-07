@@ -6,7 +6,7 @@
 #
 # This file is part of the Domain-Specific Executor Framework.
 # Distributed under terms of the MIT license.
-
+from functools import reduce
 import itertools
 import re
 import copy
@@ -272,6 +272,21 @@ class PredicateEvaluator:
                 return tensor[args[0], args[1]]
             return tensor
 
+class PredicateNetwork(nn.Module):
+    """Generic neural network for predicates."""
+    def __init__(self, input_dim, output_dim):
+        super().__init__()
+        self.model = nn.Sequential(
+            nn.Linear(input_dim, 128),
+            nn.ReLU(),
+            nn.Linear(128, 64),
+            nn.ReLU(),
+            nn.Linear(64, output_dim),
+        )
+
+    def forward(self, x):
+        return self.model(x).sigmoid()
+
 class CentralExecutor(nn.Module):
     """Central executor for handling domain operations and actions."""
     
@@ -288,7 +303,9 @@ class CentralExecutor(nn.Module):
         self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
         self.domain = domain
         self.concept_registry = build_box_registry(concept_type, concept_dim, 128)
+        self.neural_registry = nn.ModuleDict({})
         self.initialize_domain_components()
+        
         
 
     def initialize_domain_components(self):
@@ -324,7 +341,7 @@ class CentralExecutor(nn.Module):
             
         # Parse state type and dimensions
         self.state_dim, self.state_type = TypeParser.parse_type_dim(self.types["state"])
-        
+        self.state_dim = self.state_dim[-1]
         # Store type constraints
         self.type_constraints = self.domain.type_constraints
         
@@ -371,27 +388,118 @@ class CentralExecutor(nn.Module):
             param.split("-")[1] if "-" in param else "any"
             for param in parameters
         ]
-        
-        # Register predicate by arity
+
+        # Determine arity and function type
+        output_dim,_ = type_dim(return_type)
+
+        output_dim = output_dim[-1]
+
         arity = len(parameters)
+        if arity == 0 or arity == 1:
+            function_type = arrow(boolean, boolean)
+            input_dim = self.state_dim  # Input shape: (N, d), Output: (N,)
+
+        elif arity == 2:
+            function_type = arrow(boolean, boolean, boolean)
+            input_dim = 2 * self.state_dim  # Input shape: (N, N, 2d), Output: (N, N)
+
+        else:  # Arity > 2
+            function_type = reduce(lambda acc, _: arrow(boolean, acc), range(arity - 1), boolean)
+            input_dim = arity * self.state_dim  # (N, N, ..., N, arity*d)
+
+
+        # Create and store the neural network
+
+        self.neural_registry[name] = PredicateNetwork(input_dim, output_dim)
+
+        # Create lambda functions dynamically based on arity
+        predicate_value = self._generate_lambda_function(name, arity)
+
+        # Register predicate by arity
         if arity not in self.predicates:
             self.predicates[arity] = []
             
         self.predicates[arity].append(
             Primitive(
                 name=name,
-                ty = arrow(boolean, boolean),
-                value=lambda x: {
-                    "from": name,
-                    "set": x["end"],
-                    "end": x[name] if name in x else UnknownConceptError(f"{name} is not implemented yet, {x.keys()} is context keys")
-                }
+                ty=function_type,
+                value=predicate_value
             )
         )
-        
+
         # Add to concept vocabulary
         self.concept_vocab.append(name)
+
+    def _generate_lambda_function(self, name, arity):
+        """Generate a nested lambda function to support multi-argument predicates.
+
+        Args:
+            name: Predicate name
+            arity: Number of arguments
+
+        Returns:
+            A nested lambda function matching the arity.
+        """
+        if arity == 0 or arity == 1:
+            return lambda x: self._execute_predicate(name, x)
         
+        # Create nested lambda functions for arity > 1
+        return self._create_nested_lambda(name, arity)
+
+    def _create_nested_lambda(self, name, arity):
+        """Recursively generates nested lambdas based on arity."""
+        if arity == 2:
+            return lambda x: lambda y: self._execute_predicate(name, x, y)
+        elif arity == 3:
+            return lambda x: lambda y: lambda z: self._execute_predicate(name, x, y, z)
+        else:
+            return reduce(lambda acc, _: lambda *args: acc(lambda x: args + (x,)), range(arity), self._execute_predicate)
+
+    def _execute_predicate(self, name, *args):
+        """Execute the predicate by running the corresponding neural network.
+
+        Args:
+            name: Predicate name
+            args: Tuple containing `executor` key with input states
+
+        Returns:
+            Tensor with predicate outputs
+        """
+        if len(args) == 1:
+            input_tensor = args[0]["state"]  # Shape (N, d)
+
+        # Handle binary predicates (N, N, d) → (N, N)
+        elif len(args) == 2:
+
+            N = args[0]["state"].shape[0]
+            M = args[1]["state"].shape[0]
+            #print()
+            state1 = args[0]["state"].unsqueeze(1).repeat(1, M, 1)  # (N, 1, d) → (N, N, d)
+            state2 = args[1]["state"].unsqueeze(0).repeat(N, 1, 1)  # (1, N, d) → (N, N, d)
+            input_tensor = torch.cat([state1, state2], dim=-1)  # (N, N, 2d)
+
+        # Handle ternary predicates (N, N, N, d) → (N, N, N)
+        elif len(args) == 3:
+            N = args[0]["state"].shape[0]
+            M = args[1]["state"].shape[1]
+            M = args[2]["state"].shape[2]
+            state1 = args[0]["state"].unsqueeze(1).unsqueeze(2).repeat(N, M, K, 1)  # (N, 1, 1, d) → (N, N, N, d)
+            state2 = args[1]["state"].unsqueeze(0).unsqueeze(2).repeat(N, M, K, 1)  # (1, N, 1, d) → (N, N, N, d)
+            state3 = args[2]["state"].unsqueeze(0).unsqueeze(1).repeat(N, M, K, 1)  # (1, 1, N, d) → (N, N, N, d)
+            input_tensor = torch.cat([state1, state2, state3], dim=-1)  # (N, N, N, 3d)
+
+        else:
+            raise ValueError(f"Unsupported arity: {len(args)}")
+        # Ensure predicate exists
+        if name not in self.neural_registry:
+            raise ValueError(f"Predicate {name} is not registered with a neural network.")
+
+        # Run the neural network
+        nn_model = self.neural_registry[name]
+
+        return {"end":nn_model(input_tensor).squeeze()}  # Ensure correct shape
+
+
     def _setup_constants(self):
         """Set up domain constants as nullary predicates.
         

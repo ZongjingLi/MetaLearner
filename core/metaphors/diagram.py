@@ -41,7 +41,7 @@ class MetaphorMorphism(nn.Module):
         """f_a: used to check is the metaphor is applicable for the mapping"""
         #print(source_domain.domain.domain_name,source_domain.state_dim[0])
         self.state_checker = StateClassifier(
-            source_dim = source_domain.state_dim[0],
+            source_dim = source_domain.state_dim,
             latent_dim = hidden_dim,
             hidden_dim = hidden_dim
         )
@@ -49,8 +49,8 @@ class MetaphorMorphism(nn.Module):
         
         """f_s: as the state mapping from source state to the target state"""
         self.state_mapper = StateMapper(
-            source_dim=source_domain.state_dim[0],
-            target_dim=target_domain.state_dim[0],
+            source_dim=source_domain.state_dim,
+            target_dim=target_domain.state_dim,
             hidden_dim=hidden_dim
         )
         
@@ -87,7 +87,7 @@ class ConceptDiagram(nn.Module):
     
     def __init__(self):
         super().__init__()
-        self.device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
+        self.device = "cuda:0" if torch.cuda.is_available() else "mps:0" if torch.backends.mps.is_available() else "cpu:0"
         self.domains = nn.ModuleDict()  # Store domains (CentralExecutor instances)
         self.morphisms = nn.ModuleDict()  # Store morphisms (sparse connections)
         self.edge_indices = defaultdict(list)
@@ -95,6 +95,8 @@ class ConceptDiagram(nn.Module):
         self.morphism_logits = nn.ParameterDict()  # Store log p for morphisms
         self.logger = get_logger("concept-diagram", KFTLogFormatter)
         self.root_name = "Generic"
+        self.to(self.device)
+
 
     def add_domain(self, name: str, domain: nn.Module, p: float = 1.0) -> None:
         if name not in self.domains:
@@ -117,9 +119,9 @@ class ConceptDiagram(nn.Module):
             name = f"morphism_{source}_{target}_{len(self.edge_indices[(source, target)])}"
         #if name == "morphism_DistanceDomain_RCC8Domain_0":
             #print(morphism)
-        self.morphisms[name] = morphism
+        self.morphisms[name] = morphism.to(self.device)
         self.edge_indices[(source, target)].append(name)
-        self.morphism_logits[name] = nn.Parameter(torch.logit(torch.ones(1), eps=1e-6))
+        self.morphism_logits[name] = nn.Parameter(torch.logit(torch.ones(1), eps=1e-6)).to(self.device)
 
     def get_morphism(self, source: str, target: str, index: int = 0) -> MetaphorMorphism:
         morphism_names = self.edge_indices[(source, target)]
@@ -141,10 +143,10 @@ class ConceptDiagram(nn.Module):
         return [(name, self.morphisms[name]) for name in morphism_names]
 
     def get_domain_prob(self, name: str) -> torch.Tensor:
-        return torch.sigmoid(self.domain_logits[name])
+        return torch.sigmoid(self.domain_logits[name]).to(self.device)
 
     def get_morphism_prob(self, name: str) -> torch.Tensor:
-        return torch.sigmoid(self.morphism_logits[name])
+        return torch.sigmoid(self.morphism_logits[name]).to(self.device)
 
     def evaluate(self, state: torch.Tensor, predicate: str, domain: str = None, 
                 eval_type: str = 'literal', top_k: int = 5, count = 10) -> Dict:
@@ -164,8 +166,8 @@ class ConceptDiagram(nn.Module):
             raise ValueError(f"Predicate {predicate} not found in any domain")
 
         # If source domain not specified, find most probable domain for state
-        if domain is None: domain = "GenericDomain"
-        
+        if domain is None: domain = self.root_name
+
         if pred_arity == 0:
             predicate = f"({predicate})"
         if pred_arity == 1:

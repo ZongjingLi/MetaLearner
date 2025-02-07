@@ -14,15 +14,20 @@
 
 </ConceptDomain>
 <Metaphor>
-[]
+[
+    (1,2,3,4),
+    (2,4,4,4)
+]
 </Metaphor>
 
 <TrainData>
-LOCAL: "from dataset/domain import TrainDataset"
+from datasets.scene_dataset import SceneDataset
+SceneDataset("contact_experiment","train")
 </TrainData>
 
 <TestData>
-LOCAL: "from dataset/domain import TestDataset"
+from datasets.scene_dataset import SceneDataset
+SceneDataset("contact_experiment", "train")
 </TestData>
 
 </Curriculum>

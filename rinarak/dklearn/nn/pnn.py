@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # @Author: Meleko
 # @Date:   2023-11-10 00:16:27
-# @Last Modified by:   Melkor
-# @Last Modified time: 2023-11-10 08:12:44
+# @Last Modified by:   zongjingli
+# @Last Modified time: 2025-02-07 03:59:03
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -26,6 +26,7 @@ class STN3d(nn.Module):
         self.bn3 = nn.BatchNorm1d(1024)
         self.bn4 = nn.BatchNorm1d(512)
         self.bn5 = nn.BatchNorm1d(256)
+        self.device = "cuda" if torch.cuda.is_available() else "mps"
 
 
     def forward(self, x):
@@ -41,8 +42,10 @@ class STN3d(nn.Module):
         x = self.fc3(x)
 
         iden = Variable(torch.from_numpy(np.array([1,0,0,0,1,0,0,0,1]).astype(np.float32))).view(1,9).repeat(batchsize,1)
+        
         if x.is_cuda:
             iden = iden.cuda()
+        iden = iden.to(self.device)
         x = x + iden
         x = x.view(-1, 3, 3)
         return x

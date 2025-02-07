@@ -16,12 +16,14 @@ parser.add_argument("--command",          default = "train",   help = "the comma
 --train_metaphor_{domain} : to train a specific domain information, this domain is supposed to be in the target model.
 --learn_new_domain
 """
+parser.add_argument("--curriculum_file",  default = "data/contact_curriculum.txt",	help = "the path of curriulum learning config file")
 
 parser.add_argument("--generic_dim",      default = 256,       help = "the dim of the generic embedding space")
 
 """training commmand epochs"""
-parser.add_argument("--epochs",           default = 5000,      help = "number of epochs for the training")
-parser.add_argument("--batch_size",	      default = 4,         help = "batch size current")
+parser.add_argument("--epochs",           default = 2500,      help = "number of epochs for the training")
+parser.add_argument("--lr",               default = 1e-3,      help = "learning rate")
+parser.add_argument("--batch_size",	      default = 10,         help = "batch size current")
 parser.add_argument("--ckpt_epochs",	  default = 100,       help = "for the epochs to save the checkpoints")
 
 """handle the textual token encoder"""

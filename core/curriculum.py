@@ -1,9 +1,19 @@
+# -*- coding: utf-8 -*-
+# @Author: zongjingli
+# @Date:   2025-02-06 05:45:31
+# @Last Modified by:   zongjingli
+# @Last Modified time: 2025-02-06 19:25:30
+import torch
+from torch.utils.data import Dataset, DataLoader
+
 import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 from rinarak.domain import load_domain_string
+from domains.utils import domain_parser
 from rinarak.knowledge.executor import CentralExecutor
 from typing import List, Optional
+import re
 
 class MetaCurriculum:
     """
@@ -22,21 +32,21 @@ class MetaCurriculum:
         if isinstance(concept_domain, CentralExecutor):
             self.concept_domain = concept_domain
         if isinstance(concept_domain, str):
-            self.concept_domain = load_domain_string(concept_domain)
+            self.concept_domain = load_domain_string(concept_domain, domain_parser)
         
         """2) create the dataset for the domain to learn. Can considered as pure grounding dataset or learnd by other methods"""
         self.train_data = train_data if isinstance(train_data, Dataset) else None
         assert self.train_data is not None, "Train data must be a valid Dataset instance"
-        self.train_loader = DataLoader(self.train_data, batch_size=32, shuffle=True)
+
 
         """3) some desciptive sentences that gives the enailment relation between the source domain predicates and target domain"""
         self.descriptive = descriptive  # List of descriptive sentences
-        assert isinstance(self.descriptive, list), "Descriptive must be a list of sentences"
+
+        #assert isinstance(self.descriptive, list), "Descriptive must be a list of sentences"
 
         """4) similar to previous step load the test cases for compositional learning"""
         self.test_data = test_data if isinstance(test_data, Dataset) else None
-        self.test_loader = DataLoader(self.test_data, batch_size=32, shuffle=False) if self.test_data else None
-    
+
     def evaluate(self, model: nn.Module):
         if not self.test_loader:
             print("No test data provided.")
@@ -54,16 +64,45 @@ class MetaCurriculum:
         accuracy = 100 * correct / total
         print(f"Test Accuracy: {accuracy:.2f}%")
 
-def load_curriculum_string(string : str) -> MetaCurriculum:
-    import xml.etree.ElementTree as ET
-    root = ET.fromstring(string)
 
-    concept_domain = root.find('ConceptDomain').text.strip()
-    train_data_code = root.find('TrainData').text.strip()
-    test_data_code = root.find('TestData').text.strip()
-    descriptive = [(m.text.strip()) for m in root.findall('Metaphor')]
+def _parse_curriculum(file_path):
+    with open(file_path, 'r') as f:
+        content = f.read()
     
-    exec(train_data_code)
-    exec(test_data_code)
+    curricula = re.split(r'<Curriculum>', content)[1:]
+    parsed_curricula = []
+    
+    for curriculum in curricula:
+        sections = re.split(r'<([^>]+)>', curriculum)[1:]
+        parsed_data = {}
+        for i in range(0, len(sections), 2):
+            section_name = sections[i].strip()
+            section_content = sections[i+1].strip()
+            
+            if section_name in ['TrainData', 'TestData']:
+                parsed_data[section_name] = section_content.split('\n')
+            else:
+                parsed_data[section_name] = section_content
+        
+        parsed_curricula.append(parsed_data)
+    
+    return parsed_curricula
 
-    return MetaCurriculum(concept_domain, TrainDataset(), descriptive, TestDataset())
+def load_curriculum(file_path):
+    parsed_curricula = _parse_curriculum(file_path)
+    outputs = []
+    for i in range(len(parsed_curricula)):
+        concept_domain = parsed_curricula[i]["ConceptDomain"] # Domain File
+
+        train_data_commands = parsed_curricula[i]["TrainData"] # Load Train Data
+        for line in train_data_commands[:-1]:exec(line)
+        train_dataset = eval(train_data_commands[-1])
+
+        test_data_commands = parsed_curricula[i]["TestData"]
+        for line in test_data_commands[:-1]:exec(line)
+        test_dataset = eval(test_data_commands[-1]) # Load Test Data
+        
+        descriptive = parsed_curricula[i]["Metaphor"] # Metaphors
+        outputs.append(MetaCurriculum(concept_domain, train_dataset, descriptive, test_dataset))
+    return outputs
+

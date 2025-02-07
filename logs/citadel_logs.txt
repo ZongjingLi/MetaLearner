@@ -427,3 +427,78 @@
 [06 06:06:42 43@main.py:Main] At Epoch:0
 [06 06:06:44 43@main.py:Main] At Epoch:100
 [06 06:08:17 44@main.py:Main] At Epoch:0
+[06 16:02:43 70@main.py:Main] At Epoch:0
+[06 16:08:56 78@main.py:Main] At Epoch:0
+[06 16:09:15 73@main.py:Main] At Epoch:0
+[06 16:12:31 79@main.py:Main] At Epoch:0
+[06 16:14:57 79@main.py:Main] At Epoch:0
+[06 16:19:29 86@main.py:Main] At Epoch:0
+[06 16:21:01 86@main.py:Main] At Epoch:0
+[06 16:27:02 87@main.py:Main] At Epoch:0
+[06 16:28:16 87@main.py:Main] At Epoch:0
+[06 16:30:21 87@main.py:Main] At Epoch:0
+[06 16:52:44 95@main.py:Main] At Epoch:0
+[06 16:54:28 98@main.py:Main] At Epoch:0
+[06 16:57:14 99@main.py:Main] At Epoch:0
+[06 17:10:42 109@main.py:Main] At Epoch:0
+[06 17:12:51 111@main.py:Main] At Epoch:0
+[06 17:13:27 110@main.py:Main] At Epoch:0
+[06 17:14:39 110@main.py:Main] At Epoch:0
+[06 17:15:45 110@main.py:Main] At Epoch:0
+[06 17:15:55 111@main.py:Main] At Epoch:0
+[06 17:17:28 111@main.py:Main] At Epoch:0
+[06 17:21:18 112@main.py:Main] At Epoch:0
+[06 17:22:28 113@main.py:Main] At Epoch:0
+[06 17:23:06 114@main.py:Main] At Epoch:0
+[06 17:23:22 114@main.py:Main] At Epoch:0
+[06 17:23:46 114@main.py:Main] At Epoch:0
+[06 17:24:56 114@main.py:Main] At Epoch:0
+[06 17:32:18 114@main.py:Main] At Epoch:100
+[06 17:40:57 114@main.py:Main] At Epoch:0
+[06 18:57:47 114@main.py:Main] At Epoch:100
+[06 20:08:58 114@main.py:Main] At Epoch:200
+[06 21:20:30 114@main.py:Main] At Epoch:300
+[06 22:33:13 114@main.py:Main] At Epoch:400
+[07 01:40:43 114@main.py:Main] At Epoch:500
+[07 03:39:42 236@model.py:Citadel] start the curriculum learning of the model
+[07 03:42:42 237@model.py:Citadel] start the curriculum learning of the model
+[07 03:43:02 237@model.py:Citadel] start the curriculum learning of the model
+[07 03:43:30 239@model.py:Citadel] start the curriculum learning of the model
+[07 03:44:47 241@model.py:Citadel] start the curriculum learning of the model
+[07 03:45:02 241@model.py:Citadel] start the curriculum learning of the model
+[07 03:45:29 243@model.py:Citadel] start the curriculum learning of the model
+[07 03:45:48 243@model.py:Citadel] start the curriculum learning of the model
+[07 03:46:11 243@model.py:Citadel] start the curriculum learning of the model
+[07 03:46:28 243@model.py:Citadel] start the curriculum learning of the model
+[07 03:46:56 244@model.py:Citadel] start the curriculum learning of the model
+[07 03:47:22 244@model.py:Citadel] start the curriculum learning of the model
+[07 03:47:48 243@model.py:Citadel] start the curriculum learning of the model
+[07 03:49:58 245@model.py:Citadel] start the curriculum learning of the model
+[07 03:50:36 245@model.py:Citadel] start the curriculum learning of the model
+[07 03:50:52 245@model.py:Citadel] start the curriculum learning of the model
+[07 03:54:49 250@model.py:Citadel] start the curriculum learning of the model
+[07 03:55:31 250@model.py:Citadel] start the curriculum learning of the model
+[07 03:56:03 250@model.py:Citadel] start the curriculum learning of the model
+[07 03:57:42 250@model.py:Citadel] start the curriculum learning of the model
+[07 03:59:08 250@model.py:Citadel] start the curriculum learning of the model
+[07 03:59:45 250@model.py:Citadel] start the curriculum learning of the model
+[07 04:03:44 252@model.py:Citadel] start the curriculum learning of the model
+[07 04:04:14 252@model.py:Citadel] start the curriculum learning of the model
+[07 04:05:04 252@model.py:Citadel] start the curriculum learning of the model
+[07 04:06:13 252@model.py:Citadel] start the curriculum learning of the model
+[07 04:06:48 252@model.py:Citadel] start the curriculum learning of the model
+[07 04:07:28 252@model.py:Citadel] start the curriculum learning of the model
+[07 04:08:03 252@model.py:Citadel] start the curriculum learning of the model
+[07 04:08:36 252@model.py:Citadel] start the curriculum learning of the model
+[07 04:16:05 253@model.py:Citadel] start the curriculum learning of the model
+[07 04:16:26 253@model.py:Citadel] start the curriculum learning of the model
+[07 04:24:27 255@model.py:Citadel] start the curriculum learning of the model
+[07 04:24:43 255@model.py:Citadel] start the curriculum learning of the model
+[07 04:35:07 255@model.py:Citadel] start the curriculum learning of the model
+[07 04:49:44 255@model.py:Citadel] start the curriculum learning of the model
+[07 04:56:29 255@model.py:Citadel] start the curriculum learning of the model
+[07 05:04:04 255@model.py:Citadel] start the curriculum learning of the model
+[07 05:07:33 255@model.py:Citadel] start the curriculum learning of the model
+[07 05:11:26 255@model.py:Citadel] start the curriculum learning of the model
+[07 05:33:59 256@model.py:Citadel] start the curriculum learning of the model
+[07 05:51:20 257@model.py:Citadel] start the curriculum learning of the model

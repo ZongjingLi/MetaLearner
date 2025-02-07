@@ -19,30 +19,72 @@ from tqdm import tqdm
 main_logger = get_logger("Main")
 set_output_file("logs/main_logs.txt")
 
-def train_grounding(model, scene_dataset : 'SceneDataset', config):
+domain_str = """
+(domain Contact)
+(:type
+    state - vector[float, 256]        ;; [x, y] coordinates
+)
+(:predicate
+    ;; Basic position predicate
+    ref ?x-state -> boolean
+    get_position ?x-state -> vector[float, 2]
+    
+    ;; Qualitative distance predicates
+    contact ?x-state ?y-state -> boolean
+)
+"""
+from rinarak.knowledge.executor import CentralExecutor
+from rinarak.domain import load_domain_string, Domain
+from domains.utils import domain_parser
+import math
+
+
+def train_grounding(config, model, train_scene_dataset : 'SceneDataset', test_scene_dataset = None):
     epochs = int(config.epochs)
     batch_size = int(config.batch_size)
     ckpt_epochs = int(config.ckpt_epochs)
-    loader  = DataLoader(scene_dataset, batch_size, collate_fn = scene_collate,shuffle = True)
+    writer = SummaryWriter("logs")
+    optimizer = torch.optim.Adam(model.parameters(), lr = config.lr)
+
+    trainloader  = DataLoader(train_scene_dataset, batch_size, collate_fn = scene_collate,shuffle = True)
+    if test_scene_dataset is not None:
+        testloader  = DataLoader(test_scene_dataset, batch_size, collate_fn = scene_collate,shuffle = True)
+    else: testloader = None
     for epoch in tqdm(range(epochs)):
-        for batch in loader:
-            batch_loss = 0.0
-            batch_size = len(batch["input"])
-            for i,scene in enumerate(batch["input"]): # this is dump but some kind of batchwise operation
-                scene = torch.stack(scene) # normally a nx... input scene
-                #print(scene.shape)
-                for pred in batch["predicate"]:
-                    if pred == "end": break
-                    pred # the name fo the predicate
-                    batch["predicate"][pred][0][i] # tensor repr of the predicate
+        train_loss = 0.0
+        train_count = 0
+        for batch in trainloader:
+            batch_loss, count = ground_batch(model, batch)
+            #print(count)
+            train_count += count / batch_size
 
-                    results = model.evaluate(scene, pred, encoder_name = "pointcloud")
-                    batch_loss += 0.0
+            batch_loss= batch_loss / batch_size # normalize across the whole batch
 
-            batch_loss = batch_loss / batch_size # normalize across the whole batch
+            optimizer.zero_grad()
+            batch_loss.backward()
+            optimizer.step()
+            
+            torch.save(model.state_dict(), "checkpoints/namomo.ckpt")
+            train_loss += float(batch_loss)
+
+        if testloader: # just checking if the testing scenario actually exists
+            test_loss = 0.0
+            test_count = 0
+            for batch in testloader:
+                batch_loss, count = ground_batch(model, batch)
+                batch_loss = batch_loss / batch_size
+                test_loss += float(batch_loss)
+                test_count += count / batch_size
+
+            writer.add_scalar("test_loss", test_loss / len(testloader), epoch)
+            writer.add_scalar("test_percent", test_count/len(testloader) , epoch)
+        writer.add_scalar("train_loss", train_loss / len(trainloader), epoch)
+        writer.add_scalar("train_percent", train_count /len(trainloader), epoch)
+       
 
         if not (epoch % ckpt_epochs): main_logger.info(f"At Epoch:{epoch}")
-    torch.save(model, "checkpoints/namomo.ckpt")
+    torch.save(model.state_dict(), "checkpoints/namomo.ckpt")
+    writer.close()
     return model
 
 def process_command(command):
@@ -78,12 +120,22 @@ def process_command(command):
         main_logger.info("start training the metaphorical concept learner")
         domain = command[10:]
         from core.model import EnsembleModel
+        from core.metaphors.diagram import MetaphorMorphism
         model = EnsembleModel(config)
+        from domains.generic.generic_domain import generic_executor
+
+        model.concept_diagram.root_name = "Generic"
+        model.concept_diagram.add_domain("Generic", generic_executor)
+        model.concept_diagram.add_domain("Contact", contact_executor)
+        
+        for source, target in morphisms:
+            model.concept_diagram.add_morphism(source, target, MetaphorMorphism(domains[source], domains[target]))
 
         text = "this is a real sentence"
         #print(model.encode_text(text).shape) torch.Size([1, 7, 256])
-        dataset = SceneDataset("contact_experiment", "train")
-        model = train_grounding(model, dataset, config)
+        train_dataset = SceneDataset("contact_experiment", "train")
+        test_dataset = SceneDataset("contact_experiment",   "test")
+        model = train_grounding(config, model, train_dataset, test_dataset)
     
     if command == "interact":
         main_logger.info("start the interactive mode of the metaphorical concept learner")
@@ -111,8 +163,15 @@ def process_command(command):
     if command == "learn_curriculum":
         main_logger.warning("Curriculum Learning in Progress do not learn")
         from core.model import EnsembleModel, curriculum_learning
+        from core.curriculum import load_curriculum
+        from domains.generic.generic_domain import generic_executor
         model = EnsembleModel(config)
-        curriculum_learning(model, [])
+        model.concept_diagram.add_domain("Generic", generic_executor)
+        model.concept_diagram.root_name = "Generic"
+
+        curriculum = load_curriculum(config.curriculum_file) # load the curriculum learning setup
+
+        curriculum_learning(config, model, curriculum) # start the curriculum learning for each blocl
 
     return command
 
