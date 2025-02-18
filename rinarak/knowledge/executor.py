@@ -18,7 +18,6 @@ from typing import List, Tuple, Dict, Any, Optional
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
 from .embedding import build_box_registry
 from .entailment import build_entailment
 from .predicates import PredicateFilter
@@ -279,13 +278,15 @@ class PredicateNetwork(nn.Module):
         self.model = nn.Sequential(
             nn.Linear(input_dim, 128),
             nn.ReLU(),
+            nn.Linear(128, 128),
+            nn.ReLU(),
             nn.Linear(128, 64),
             nn.ReLU(),
             nn.Linear(64, output_dim),
         )
 
     def forward(self, x):
-        return self.model(x).sigmoid()
+        return self.model(x)
 
 class CentralExecutor(nn.Module):
     """Central executor for handling domain operations and actions."""
@@ -932,6 +933,17 @@ class CentralExecutor(nn.Module):
                     new_state[pred_name] = tensor
                     
         return precond_score, new_state
+    def to_dict(self):
+        """Serialize the architecture (excluding weights) for reconstruction."""
+        return {
+            "domain_name": self.domain.domain_name,  # Store domain reference
+            "concept_dim": self.concept_registry.dim,
+            "domain_string" : self.domain.domain_string,
+            "predicates": list(self.neural_registry.keys()),  # Store predicate names
+            "predicate_output_types": self.predicate_output_types,  # Store output types
+            "predicate_params_types": self.predicate_params_types,  # Store parameters
+            "implementations": list(self.implement_registry.keys()),  # Store implemented actions
+        }
 class UnknownArgumentError(Exception):
     """Raised when an unknown argument is encountered."""
     pass

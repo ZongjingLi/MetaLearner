@@ -2,7 +2,7 @@
 # @Author: zongjingli
 # @Date:   2025-02-06 06:22:49
 # @Last Modified by:   zongjingli
-# @Last Modified time: 2025-02-06 07:49:52
+# @Last Modified time: 2025-02-09 05:05:10
 domain_str = """
 (domain Contact)
 (:type
@@ -28,6 +28,16 @@ contact_dom.print_summary()
 
 contact_executor = CentralExecutor(contact_dom, "cone", 256)
 
+from rinarak.program import Primitive, arrow
+from rinarak.dsl.logic_types import boolean
+from rinarak.types import treal, tvector
+state_type = tvector(treal, 2)  # 2D position vector
+position_type = tvector(treal, 2)  # 2D position vector
+distance_type = treal  # scalar distance
+
+#contact_executor.update_registry({
+#    "ref": Primitive("ref",arrow(state_type, position_type), lambda x: {**x, "end": torch.tensor([1.0, 1.0, 0.0])})
+#    })
 
 import torch
 
@@ -45,7 +55,7 @@ context = {0:{"state": state, "end" : 1.0}, 1:{"state": state, "end" : 1.0}}
 
 
 optimizer = torch.optim.Adam(contact_executor.parameters(), lr=0.01)  # Optimizing "end" predictions
-loss_fn = torch.nn.BCELoss() 
+loss_fn = torch.nn.BCEWithLogitsLoss() 
 
 num_epochs = 100  # Set optimization iterations
 for epoch in range(num_epochs):
@@ -54,6 +64,7 @@ for epoch in range(num_epochs):
     # Compute loss
     #res = contact_executor.evaluate("(contact $0 $1)", context)
     res = contact_executor.evaluate("(ref $0)", context)
+
     loss = loss_fn(res["end"], gt)  # Compare model predictions with ground truth
 
     # Backpropagation

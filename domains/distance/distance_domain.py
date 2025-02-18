@@ -99,7 +99,7 @@ class DistanceDomain:
         Returns:
             Tensor of same shape as input with Gaussian kernel values
         """
-        return torch.exp(-0.5 * (x / sigma) ** 2)
+        return torch.logit(torch.exp(-0.5 * (x / sigma) ** 2), eps = 1e-6)
     
     def euclidean_distance(self, x_state: torch.Tensor, y_state: torch.Tensor) -> torch.Tensor:
         """Calculate pairwise Euclidean distances between points.
@@ -145,7 +145,8 @@ class DistanceDomain:
             [B1, B2] tensor of predicate values
         """
         distances = self.euclidean_distance(x_state, y_state)
-        return self._gaussian_kernel(distances - threshold, sigma)
+        #return self._gaussian_kernel(distances - threshold, sigma)
+        return (threshold - distances)/sigma
 
     def very_near(self, x_state: torch.Tensor, y_state: torch.Tensor) -> torch.Tensor:
         """Calculate very near predicate (distance < 0.5).

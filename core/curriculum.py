@@ -2,7 +2,7 @@
 # @Author: zongjingli
 # @Date:   2025-02-06 05:45:31
 # @Last Modified by:   zongjingli
-# @Last Modified time: 2025-02-06 19:25:30
+# @Last Modified time: 2025-02-08 19:54:48
 import torch
 from torch.utils.data import Dataset, DataLoader
 
@@ -14,6 +14,7 @@ from domains.utils import domain_parser
 from rinarak.knowledge.executor import CentralExecutor
 from typing import List, Optional
 import re
+import ast
 
 class MetaCurriculum:
     """
@@ -103,6 +104,8 @@ def load_curriculum(file_path):
         test_dataset = eval(test_data_commands[-1]) # Load Test Data
         
         descriptive = parsed_curricula[i]["Metaphor"] # Metaphors
+        descriptive = ast.literal_eval( re.sub(r'(\w+)', r'"\1"', descriptive) )
+
         outputs.append(MetaCurriculum(concept_domain, train_dataset, descriptive, test_dataset))
     return outputs
 

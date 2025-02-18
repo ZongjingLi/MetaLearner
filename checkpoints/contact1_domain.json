@@ -1,0 +1,1 @@
+{"domain_name": "Generic", "concept_dim": 100, "domain_string": "\n(domain Generic)\n(:type \n    state - vector[float,256]\n)\n(:predicate\n    get_state ?x-state -> state\n)\n", "predicates": ["get_state"], "predicate_output_types": {"get_state": "state"}, "predicate_params_types": {"get_state": ["state"]}, "implementations": []}

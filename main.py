@@ -15,6 +15,7 @@ from rinarak.logger import get_logger, set_output_file
 #from datasets.scene_dataset import SceneDataset
 from datasets.scene_dataset import SceneDataset, DataLoader, scene_collate
 from tqdm import tqdm
+from core.model import save_ensemble_model, load_ensemble_model
 
 main_logger = get_logger("Main")
 set_output_file("logs/main_logs.txt")
@@ -166,12 +167,21 @@ def process_command(command):
         from core.curriculum import load_curriculum
         from domains.generic.generic_domain import generic_executor
         model = EnsembleModel(config)
-        model.concept_diagram.add_domain("Generic", generic_executor)
-        model.concept_diagram.root_name = "Generic"
+
+        if config.load_ckpt:
+            #model = torch.load(f"{config.ckpt_dir}/{config.load_ckpt}")
+            model = load_ensemble_model(config, f"{config.ckpt_dir}/{config.load_ckpt}")
+            main_logger.info(f"loaded checkpoint {config.load_ckpt}")
+        else:
+            model.concept_diagram.add_domain("Generic", generic_executor)
+            model.concept_diagram.root_name = "Generic"
+
+        """load the core knowledge from defined domains"""
+        core_knowledge = eval(config.core_knowledge)
 
         curriculum = load_curriculum(config.curriculum_file) # load the curriculum learning setup
 
-        curriculum_learning(config, model, curriculum) # start the curriculum learning for each blocl
+        curriculum_learning(config, model, curriculum) # start the curriculum learning for each block
 
     return command
 

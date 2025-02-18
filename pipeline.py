@@ -23,33 +23,33 @@ if __name__ == "__main__":
     curve_executor.to(device)
 
     domains = {
-    "GenericDomain": generic_executor,
-    "LineDomain": line_executor,
-    "CurveDomain": curve_executor,
-    "RCC8Domain": rcc8_executor,
-    "DistanceDomain": distance_executor,
-    "DirectionDomain": direction_executor,
-    "PointcloudDomain": pointcloud_executor
+    "Generic": generic_executor,
+    "Line": line_executor,
+    "Curve": curve_executor,
+    "RCC8": rcc8_executor,
+    "Distance": distance_executor,
+    "Direction": direction_executor,
+    "Pointcloud": pointcloud_executor
     }
 
     for domain_name, executor in domains.items(): concept_diagram.add_domain(domain_name, executor)
 
     morphisms = [
-    ("GenericDomain", "LineDomain"),
-    ("GenericDomain", "DistanceDomain"),
-    ("GenericDomain", "DirectionDomain"),
-    ("DistanceDomain", "DirectionDomain"),
-    ("CurveDomain", "LineDomain"),
-    ("LineDomain", "RCC8Domain"),
-    ("LineDomain", "RCC8Domain"),
-    ("DistanceDomain", "RCC8Domain"),
-    ("GenericDomain", "CurveDomain"),
-    ("GenericDomain", "PointcloudDomain")
+    ("Generic", "Line"),
+    ("Generic", "Distance"),
+    ("Generic", "Direction"),
+    ("Distance", "Direction"),
+    ("Curve", "Line"),
+    ("Line", "RCC8"),
+    ("Line", "RCC8"),
+    ("Distance", "RCC8"),
+    ("Generic", "Curve"),
+    ("Generic", "Pointcloud")
     ]
 
     for source, target in morphisms:
         concept_diagram.add_morphism(source, target, MetaphorMorphism(domains[source], domains[target]))
-
+    #print(concept_diagram.get_path(source, target))
 
     
     from core.model import EnsembleModel
@@ -61,21 +61,18 @@ if __name__ == "__main__":
     """generic state space testing"""
     source_state = torch.randn([3, 256]).to(device)
     context = {
-        0 : {"state" : source_state},
-        1 : {"state" : source_state}
-        
+        0 : {"state" : source_state, "domain" : "Generic"},
+        1 : {"state" : source_state, "domain" : "Generic"}   
     }
     #print(concept_diagram.get_morphism('DistanceDomain', 'RCC8Domain', 0))
 
-
-    result = concept_diagram.evaluate(source_state, "disconnected", "GenericDomain", "metaphor")
+    result = concept_diagram.evaluate(source_state, "far", "Generic", "metaphor")
     apply_path = result["apply_path"][0] # [1.0, tensor([0.5170], device='mps:0', grad_fn=<MulBackward0>), tensor([0.2620], device='mps:0', grad_fn=<MulBackward0>)]
     state_path = result["state_path"][0]
     metas_path = result["metas_path"][0] # [('GenericDomain', 'DistanceDomain', 0), ('DistanceDomain', 'DirectionDomain', 0)]
 
     visualizations = concept_diagram.visualize_path(state_path, metas_path, result["results"][0].cpu().detach())
 
-    
     for i in range(len(result["results"])):
         print(result["metas_path"][i])
         print(result["symbol_path"][i])
@@ -86,7 +83,7 @@ if __name__ == "__main__":
         print("\n")
 
 
-    result = concept_diagram.evaluate(source_state, "disconnected", "GenericDomain", "literal")
+    result = concept_diagram.evaluate(source_state, "disconnected", "Generic", "literal")
     print("Done")
     for i in range(len(result["results"])):
         print(result["metas_path"][i])

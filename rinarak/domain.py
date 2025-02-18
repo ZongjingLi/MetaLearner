@@ -45,6 +45,14 @@ class Domain:
         as `state.get(predicate_name)`
         """
         self.implementations = {} 
+        self.domain_string = None
+
+    def to_dict(self):
+        """Serialize the domain using its domain string representation."""
+        return {
+            "domain_name": self.domain_name,
+            "domain_string": self.domain_string,  # Store the full domain definition as a string
+        }
     
     def check_implementation(self) -> bool:
         """
@@ -128,6 +136,7 @@ def load_domain_string(domain_string, default_parser = None):
     tree = default_parser.lark.parse(domain_string)
     icc_transformer = ICCTransformer(default_parser.grammar_file)
     icc_transformer.transform(tree)
+    icc_transformer.domain.domain_string = domain_string
     return icc_transformer.domain
 
 def to_lambda_expression(list):

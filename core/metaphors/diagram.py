@@ -11,6 +11,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import matplotlib.pyplot as plt
+from matplotlib.colors import to_rgba
+import networkx as nx
 from io import BytesIO
 import base64
 from rinarak.logger import get_logger, KFTLogFormatter
@@ -79,8 +81,6 @@ class MetaphorMorphism(nn.Module):
 
 
 
-
-
 class ConceptDiagram(nn.Module):
     """A directed multi-graph G=(V,E) where node set V is the set of learned domains, 
     E as the multi edge set where a pair of nodes is connected by some abstraction-mappings."""
@@ -97,6 +97,112 @@ class ConceptDiagram(nn.Module):
         self.root_name = "Generic"
         self.to(self.device)
 
+    def to_dict(self):
+        """Serialize the architecture (excluding weights) for reconstruction."""
+        return {
+            "domains": list(self.domains.keys()),  # Store domain names
+            "domain_probs": {k: v.item() for k, v in self.domain_logits.items()},  # Store domain probabilities
+            "morphisms": {
+                name: {
+                    "source": source,
+                    "target": target,
+                    "morphism_name": name
+                }
+                for (source, target), morphism_names in self.edge_indices.items()
+                for name in morphism_names
+            }
+        }
+
+    def visualize(self, metaphor_path=None, symbol_path=None):
+        """
+        Visualize the concept diagram as a directed graph.
+
+        Args:
+            metaphor_path (list, optional): List of domain names to highlight
+            symbol_path (list, optional): List of symbols to annotate nodes
+        """
+        # Create directed graph
+        symbol_path = [1.] + symbol_path
+        G = nx.DiGraph()
+
+        # Add nodes with probabilities
+        for domain_name in self.domains:
+            prob = torch.sigmoid(self.domain_logits[domain_name]).item()
+            G.add_node(domain_name, probability=prob)
+
+        # Add edges with probabilities
+        for (src, dst), idx_list in self.edge_indices.items():
+
+            for idx in idx_list:
+                #idx = idx.split("_")[-1]
+                morphism_key = idx
+                if morphism_key in self.morphism_logits:
+                    prob = torch.sigmoid(self.morphism_logits[morphism_key]).item()
+
+                    G.add_edge(src, dst, probability=prob, key=idx)
+
+        # Set up the plot
+        plt.figure(figsize=(12, 8))
+
+        # Create layout (you might want to experiment with different layouts)
+        pos = nx.spring_layout(G)
+
+        # Draw nodes
+        node_colors = []
+        for node in G.nodes():
+            base_color = 'lightblue'
+            prob = G.nodes[node]['probability']
+            if metaphor_path and node in metaphor_path:
+                base_color = 'lightcoral'  # Highlight nodes in metaphor path
+            rgba_color = to_rgba(base_color, alpha=max(0.2, prob))
+            node_colors.append(rgba_color)
+
+        nx.draw_networkx_nodes(G, pos,
+                               node_color=node_colors,
+                               node_size=2000)
+
+        # Draw edges
+        for (u, v, data) in G.edges(data=True):
+            prob = data['probability']
+            edge_color = 'gray'
+            if metaphor_path and u in metaphor_path and v in metaphor_path:
+                # Check if nodes are adjacent in metaphor_path
+                if abs(metaphor_path.index(u) - metaphor_path.index(v)) == 1:
+                    edge_color = 'red'
+
+            nx.draw_networkx_edges(G, pos,
+                                   edgelist=[(u, v)],
+                                   edge_color=edge_color,
+                                   alpha=max(0.2, prob),
+                                   arrows=True,
+                                   arrowsize=20)
+
+        # Draw labels
+        labels = {}
+        for node in G.nodes():
+            label = node
+            if symbol_path and metaphor_path and node in metaphor_path:
+
+                # Find position in metaphor path (from end)
+                pos_from_end = len(metaphor_path) - 1 - metaphor_path.index(node)
+
+                if pos_from_end < len(symbol_path):
+                    # Only add symbols (even indices in symbol_path)
+                    if pos_from_end * 2 < len(symbol_path):
+                        label = f"{node}\n{symbol_path[pos_from_end * 2 + 1]} p:{float(symbol_path[pos_from_end * 2])}"
+            labels[node] = label
+
+        nx.draw_networkx_labels(G, pos, labels)
+
+        # Add title and adjust layout
+        plt.title("Concept Diagram")
+        plt.axis('off')
+
+        # Show plot
+        plt.tight_layout()
+        plt.show()
+
+        return G 
 
     def add_domain(self, name: str, domain: nn.Module, p: float = 1.0) -> None:
         if name not in self.domains:
@@ -108,8 +214,7 @@ class ConceptDiagram(nn.Module):
             self.logger.warning(f"try to add domain `{name}` while this name is already occupied, overriding")
             self.domains[name] = domain
 
-    def add_morphism(self, source: str, target: str, morphism: nn.Module, 
-                    name: Optional[str] = None) -> None:
+    def add_morphism(self, source: str, target: str, morphism: nn.Module, name: Optional[str] = None) -> None:
         if source not in self.domains or target not in self.domains:
             self.logger.warning(f"domain not found: source not in domains:{source not in self.domains}, "
                          f"target not in domains: {target not in self.domains}")
@@ -167,6 +272,7 @@ class ConceptDiagram(nn.Module):
 
         # If source domain not specified, find most probable domain for state
         if domain is None: domain = self.root_name
+
 
         if pred_arity == 0:
             predicate = f"({predicate})"
@@ -568,8 +674,10 @@ class ConceptDiagram(nn.Module):
 
             # Generate visualization
             fig, ax = plt.subplots()
-            target_executor.visualize(context, result.cpu().detach())
-
+            try:
+                target_executor.visualize(context, result.cpu().detach())
+            except:
+                print(target_executor.domain.domain_name)
             ax.set_title(f"Step {i}: {src_domain} → {tgt_domain}")
 
             # Save image

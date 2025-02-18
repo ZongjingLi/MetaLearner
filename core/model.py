@@ -13,6 +13,7 @@ from torch.utils.data import Dataset, DataLoader
 import numpy as np
 import os
 import math
+import json
 from typing import List, Optional
 
 """a set of encoder that encode different modalities to the generic domain"""
@@ -31,9 +32,29 @@ from rinarak.knowledge.executor import CentralExecutor
 
 from rinarak.logger import get_logger, set_logger_output_file
 from torch.utils.tensorboard import SummaryWriter
+from domains.utils import load_domain_string, domain_parser
 
+from itertools import tee
 
+def is_subsequence(subseq, seq):
+    """
+    Check if subseq is a subsequence of seq
+    """
+    it = iter(seq)
+    return all(any(x == y for y in it) for x in subseq)
 
+def contains_subsequence(metaphor_path, metaphor_pattern):
+    """
+    Check if metaphor_path contains at least one subsequence in metaphor_pattern.
+    
+    :param metaphor_path: List of metaphor path elements
+    :param metaphor_pattern: List of tuples, where each tuple represents a subsequence pattern
+    :return: True if at least one pattern is a subsequence of metaphor_path, False otherwise
+    """
+    for pattern in metaphor_pattern:
+        if is_subsequence(pattern, metaphor_path):
+            return True
+    return False
 
 class EnsembleModel(nn.Module):
     def __init__(self, config):
@@ -69,7 +90,17 @@ class EnsembleModel(nn.Module):
         self.device = "cuda:0" if torch.cuda.is_available() else "mps:0"
 
         self.concept_diagram.to(self.device)
-    
+
+    def to_dict(self):
+        """Serialize the model architecture (excluding weights) for reconstruction."""
+        return {
+            "generic_dim": self.config.generic_dim,
+            "vocab_size": self.config.vocab_size,
+            "num_channels": self.config.num_channels,
+            "encoder_types": list(self.encoders.keys()),  # Store encoder names
+            "concept_diagram": self.concept_diagram.to_dict(),  # Store conscept diagram structure
+        }    
+
     def forward(self, inputs):
         return 
     
@@ -123,31 +154,90 @@ class EnsembleModel(nn.Module):
         source_state = self.encoders[encoder_name](inputs)
 
         result = self.concept_diagram.evaluate(source_state, predicate, None, eval_mode)
-
         return result
 
-    def ground_batch(self, batch, device = None):
+    def ground_batch(self, batch, metaphor_patterns = None,eval_mode="metaphor",  device = None):
         if not device : device = self.device
+        root_name = self.concept_diagram.root_name # set the root of the evaluation path
+        """only metaphor chain follows the given pattern will be optimized and the given pattern prob increase"""
+        if not metaphor_patterns : metaphor_patterns = [(root_name,)]
+
+        """initalize the batch loss and count the average metric over the whole batch"""
         batch_loss = 0.0
-        correct_count = 0
-        batch_size = len(batch["input"])
-        for i,scene in enumerate(batch["input"]): # this is dump but some kind of batchwise operation
+        batch_correct_count = 0
+        input_states = batch["input"]
+        batch_size = len(input_states)
+
+        """iterate over all the input states over the batch """
+        for i,scene in enumerate(input_states): # this is dump but some kind of batchwise operation
+            
             scene = torch.stack(scene).to(device) # normally a nx... input scene
-            for pred in batch["predicate"]:
-                if pred == "end": break
+            scene_predicates = batch["predicate"]
+
+            scene_count = 0
+            scene_loss = 0.0
+            
+            for pred in scene_predicates: # iterate over all the predicates to evaluate 
+                if pred == "end": break # #TODO: reserved words handle
                 pred # the name fo the predicate
-                gt = batch["predicate"][pred][0][i].to(self.device) # tensor repr of the predicate
+                gt = scene_predicates[pred][0][i].to(self.device) # tensor repr of the predicate
 
-                result  = self.evaluate(scene, pred, encoder_name = "pointcloud")
-                for i in range(len(result["results"])):
-                    batch_loss += torch.nn.MSELoss()(gt, result["results"][i])
+                result  = self.evaluate(scene, pred, encoder_name = "pointcloud", eval_mode = eval_mode)
+                valid_path_count = 0 # the number of paths that matches the pattern
+                avg_predicate_correct_vals = 0
+                avg_predicate_loss = 0.0
+                """
+                each predicate evaluation have multiple measurement results and confidence.
+                each predicate evaluation come with a path of evaluation (metaphor path)
+                only evaluations with metaphor path that has certain pattern need to be optimized,
+                confidence of measurements with those paths is also enhanced.
+                """
+                measure_results = result["results"]
+                for i in range(len(measure_results)): 
 
-                    gt_mat = (gt+0.5).int()
-                    gt_prd = (result["results"][i] + 0.5).int()
-       
-                    correct_count += (torch.sum((gt_mat == gt_prd))) / math.prod(list(gt_mat.shape))
-        batch_loss /= len(result["results"])
-        return batch_loss, correct_count
+                    #check if the metaphor path of the evalutation matches the pattern
+                    metaphor_path = [root_name,]
+                    for pat in result["metas_path"][i]:metaphor_path += [pat[1]]
+                    path_control = contains_subsequence(metaphor_path, metaphor_patterns)
+                   
+                    # loss of grounding predicate
+                    mask = ~torch.eye(result["results"][i].shape[-1], dtype=torch.bool, device=result["results"][i].device)  # Create a mask to ignore diagonal terms
+                    avg_predicate_loss += torch.nn.BCEWithLogitsLoss()(result["results"][i][mask], gt[mask]) * path_control  # Apply mask
+
+                    # loss of path locating path
+                    avg_predicate_loss += -torch.log(result["probs"][i].reshape([])) * path_control # Path Strength Loss
+
+
+                    gt_mat = (gt+0.5).int() # the ground truth boolean tensor
+                    gt_prd = (result["results"][i].sigmoid() + 0.5).int() # predicted boolean tensor
+
+                    #print(result["results"][i][mask].sigmoid())
+                    #print(result["metas_path"]) #A list of metaphor paths
+                    #print(result["symbol_path"]) #A list of symbol paths
+                    #print(result["results"][i][mask].sigmoid())
+
+                    valid_path_count += path_control # count the number of 
+                    mask = ~torch.eye(gt_mat.shape[0], dtype=torch.bool, device=gt_mat.device)  # Create a mask to ignore diagonal terms
+                    avg_predicate_correct_vals += path_control * (torch.sum((gt_mat[mask] == gt_prd[mask]))) / (gt_mat.shape[0] * (gt_mat.shape[1] - 1))
+                    #print(path_control * (torch.sum((gt_mat == gt_prd))) / math.prod(list(gt_mat.shape)))
+
+                avg_predicate_correct_vals /= valid_path_count
+                avg_predicate_loss /= valid_path_count
+         
+                scene_count += avg_predicate_correct_vals
+                scene_loss += avg_predicate_loss
+
+            scene_count /=  (len(scene_predicates) - 1 )
+            scene_loss /= (len(scene_predicates) - 1)
+            #print(scene_count,  len(scene_predicates))
+
+            batch_correct_count += scene_count
+            batch_loss += scene_loss
+
+        batch_loss /= batch_size
+        batch_correct_count /= batch_size
+
+        return batch_loss, batch_correct_count
 
     def meta_learn_domain(self, config, curriculum : MetaCurriculum, epochs = 1000, lr = 2e-4, meta = False):
         """1) create the template domain executor or use a custom domain executor"""
@@ -168,27 +258,33 @@ class EnsembleModel(nn.Module):
                 'system': system_prmopt.strip(),
                 'user': user_prompt.strip()
             }
+        if curriculum.descriptive:
+            pairings = curriculum.descriptive
         if meta: # if use meta learning approach, add some structure short cut using LLM
             questions = ["Explain to me what is Han-Banach theorem in metaphors."]
             pairings = run_gpt(questions, prompts)
         else:
-            pairings = []
+            pass
 
         # add the target domain to the concept-diagram and add trivial connections
         root_name = self.concept_diagram.root_name
-        self.concept_diagram.add_domain(target_name, target_executor)
-        self.concept_diagram.add_morphism(root_name, target_name, MetaphorMorphism(
-            self.concept_diagram.domains[root_name], self.concept_diagram.domains[target_name]
+        if target_name not in self.concept_diagram.domains:
+            self.concept_diagram.add_domain(target_name, target_executor)
+            self.concept_diagram.add_morphism(root_name, target_name, MetaphorMorphism(
+                self.concept_diagram.domains[root_name], self.concept_diagram.domains[target_name]
             ))
         # add other 'short-cuts' that is not from the generic domain to thte target-domain
         for metaphor_pair in pairings:
             source, target = metaphor_pair[0], metaphor_pair[1]
+
             #TODO: Check for is there any valid morphsims , if not exists, create one, else use the known metaphor
             ref_morphism = None if None else \
                 MetaphorMorphism(
                     self.concept_diagram.domains[source],
                     self.concept_diagram.domains[target])
-            self.concept_diagram.add_morphism(source, target, ref_morphism)
+
+            if source!=root_name:
+                self.concept_diagram.add_morphism(source, target, ref_morphism)
             if len(metaphor_pair) == 4:
                 assert False, "Not implemented the predicate source target pairing."
 
@@ -213,12 +309,13 @@ class EnsembleModel(nn.Module):
                 train_loss = 0.0
                 train_count = 0
                 for batch in trainloader:
-                    loss, count = self.ground_batch(batch)
-                    train_count += count / batch_size
-                    loss = loss / batch_size # normalize across the whole batch
-                    train_loss += loss
+                    loss, count = self.ground_batch(batch, pairings)
+                    train_count += count # normalize across the whole batch
+                    train_loss += loss.detach()
 
                     optimizer.zero_grad()
+
+                    #with torch.autograd.detect_anomaly():
                     loss.backward()
                     optimizer.step()
 
@@ -227,29 +324,30 @@ class EnsembleModel(nn.Module):
                 test_count = 0
                 if testloader: # just checking if the testing scenario actually exists
                     test_loss = 0.0
-                    test_count = 0
                     for batch in testloader:
-                        batch_loss, count = self.ground_batch(batch)
-                        batch_loss = batch_loss / batch_size
+                        batch_loss, count = self.ground_batch(batch, pairings)
+
+                        batch_loss = batch_loss
+                        test_count += count
                         test_loss += float(batch_loss)
-                        test_count += count / batch_size
                     writer.add_scalar("test_loss", test_loss / len(trainloader), epoch)
-                    writer.add_scalar("test_percent", test_count /len(trainloader), epoch)
+                    writer.add_scalar("test_percent", test_count /len(testloader), epoch)
 
                 writer.add_scalar("train_loss", train_loss / len(trainloader), epoch)
                 writer.add_scalar("train_percent", train_count /len(trainloader), epoch)
-                if not(epoch % ckpt_itrs):torch.save(self.state_dict(),f"{config.ckpt_dir}/local_model.ckpt")
+                if not(epoch % ckpt_itrs):save_ensemble_model(self, f"{config.ckpt_dir}/local_model.ckpt")
 
         """4) test the learning results on the given test data"""
-        
+        test_count = 0
         if testloader:
             for batch in tqdm(testloader):
                 batch_loss, count = self.ground_batch(batch)
-                batch_loss = batch_loss / batch_size
+                batch_loss = batch_loss 
                 test_loss += float(batch_loss)
-                test_count += count / batch_size
-        print("Test:",test_count / len(testloader))
+                test_count += count 
+        self.logger.info("Test Percent: {}".format(float(test_count) / len(testloader)))
         outputs = {}
+        save_ensemble_model(self, f"{config.ckpt_dir}/{config.ckpt_name}.ckpt")
         return self
 
 
@@ -258,3 +356,79 @@ def curriculum_learning(config, model : EnsembleModel, meta_curriculums : List[M
 
     for curriculum in meta_curriculums:
         model.meta_learn_domain(config, curriculum)
+
+def save_ensemble_model(model, path="checkpoints/ensemble_model.ckpt"):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+
+    # Save model structure
+    model_config = model.to_dict()
+
+    # Extract all domains from the concept diagram and save only domain strings
+    domain_configs = {}
+    for domain_name, domain_executor in model.concept_diagram.domains.items():
+        domain_configs[domain_name] = domain_executor.domain.to_dict()  # Save domain string
+
+    with open(path.replace(".ckpt", "_model.json"), "w") as f:
+        json.dump(model_config, f)
+
+    with open(path.replace(".ckpt", "_domains.json"), "w") as f:
+        json.dump(domain_configs, f)  # Save all domain strings
+
+    # Save model parameters & optimizer state
+    checkpoint = {
+        "model_state_dict": model.state_dict(),
+    }
+
+    torch.save(checkpoint, path)
+
+
+def load_ensemble_model(config, path="checkpoints/ensemble_model.ckpt"):
+    # Load model structure
+    with open(path.replace(".ckpt", "_model.json"), "r") as f:
+        model_config = json.load(f)
+
+    # Load all domain structures
+    with open(path.replace(".ckpt", "_domains.json"), "r") as f:
+        domain_configs = json.load(f)
+
+    # Reconstruct all domains
+    domains = {}
+    for domain_name, domain_data in domain_configs.items():
+        domains[domain_name] = CentralExecutor(load_domain_string(domain_data["domain_string"], domain_parser))
+
+    # Reconstruct EnsembleModel
+    model = EnsembleModel(config)
+
+    # Restore encoders
+    for encoder_type in model_config["encoder_types"]:
+        if encoder_type not in model.encoders:
+            raise ValueError(f"❌ Unknown encoder type: {encoder_type}")
+
+    # Restore Concept Diagram and domains
+    model.concept_diagram = ConceptDiagram()
+    for domain_name, executor in domains.items():
+        try:
+            exec(f"from domains.{domain_name.lower()}.{domain_name.lower()}_domain import {executor.domain.domain_name}Domain")
+
+            predef_domain = eval(f"{executor.domain.domain_name}Domain()")
+            predef_domain.setup_predicates(executor)
+            executor.visualize = predef_domain.visualize
+        except:
+            model.logger.warning(f"{domain_name}, not loaded")
+        model.concept_diagram.add_domain(domain_name, executor)
+
+    # Restore Morphisms
+    for morphism_name, morphism_info in model_config["concept_diagram"]["morphisms"].items():
+        source = morphism_info["source"]
+        target = morphism_info["target"]
+        morphism = MetaphorMorphism(
+            model.concept_diagram.domains[source],
+            model.concept_diagram.domains[target]
+        )
+        model.concept_diagram.add_morphism(source, target, morphism, name=morphism_name)
+
+    # Load weights
+    checkpoint = torch.load(path)
+    model.load_state_dict(checkpoint["model_state_dict"])
+
+    return model

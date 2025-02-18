@@ -1,0 +1,32 @@
+<Curriculum>
+<ConceptDomain>
+(domain Contact)
+(:type
+    state - vector[float, 256]        ;; [x, y] coordinates
+)
+(:predicate
+    ;; Basic position predicate
+    get_position ?x-state -> vector[float, 2]
+    
+    ;; Qualitative distance predicates
+    contact ?x-state ?y-state -> boolean
+)
+
+</ConceptDomain>
+<Metaphor>
+[
+    (Generic, Distance, Contact),
+]
+</Metaphor>
+
+<TrainData>
+from datasets.scene_dataset import SceneDataset
+SceneDataset("contact_experiment","train")
+</TrainData>
+
+<TestData>
+from datasets.scene_dataset import SceneDataset
+SceneDataset("contact_experiment", "test")
+</TestData>
+
+</Curriculum>

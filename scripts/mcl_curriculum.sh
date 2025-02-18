@@ -1,1 +1,0 @@
-python main.py --command=learn_curriculum

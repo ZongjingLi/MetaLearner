@@ -2,7 +2,7 @@
 # @Author: zongjingli
 # @Date:   2025-02-06 01:14:58
 # @Last Modified by:   zongjingli
-# @Last Modified time: 2025-02-07 05:01:23
+# @Last Modified time: 2025-02-09 23:54:31
 #import open3d as o3d
 import numpy as np
 import random
@@ -52,6 +52,7 @@ class SceneDataset(Dataset):
 
         contact_matrix = torch.tensor(data["contact"], dtype=torch.float32)
         end_score = torch.tensor(data["end"], dtype=torch.float32)
+
         
         return {
             "input": pointclouds,  # List of (n_objects, 1024, 3) tensors

@@ -1,0 +1,1 @@
+python main.py --command=learn_curriculum --load_ckpt="contact1.ckpt" --curriculum_file="data/contact/contact_curriculum_distance.txt" --ckpt_name="contact_distance"

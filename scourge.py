@@ -2,113 +2,168 @@
 # @Author: zongjingli
 # @Date:   2025-02-06 05:45:31
 # @Last Modified by:   zongjingli
-# @Last Modified time: 2025-02-06 19:25:42
+# @Last Modified time: 2025-02-16 17:49:15
+from config import config
+from core.model import save_ensemble_model, load_ensemble_model
+from core.model import EnsembleModel
 import torch
-from torch.utils.data import Dataset, DataLoader
+import numpy as np
+import matplotlib.pyplot as plt
 
-import torch
+def visualize_3d_point_cloud_with_relation(point_cloud, relation_matrix):
+    """
+    Visualizes a (n x 1024 x d) point cloud alongside its relation matrix.
+
+    Args:
+        point_cloud (torch.Tensor or np.ndarray): Shape (n, 1024, d), representing n objects in 3D space.
+        relation_matrix (torch.Tensor or np.ndarray): Shape (n, n), representing relations between objects.
+    """
+    if isinstance(point_cloud, torch.Tensor):
+        point_cloud = point_cloud.cpu().numpy()
+    if isinstance(relation_matrix, torch.Tensor):
+        relation_matrix = relation_matrix.cpu().numpy()
+
+    n, num_points, dim = point_cloud.shape
+    assert dim == 3, "Point cloud must have 3D coordinates (x, y, z)."
+
+    fig = plt.figure(figsize=(12, 6))
+
+    # Left: 3D Point Cloud
+    ax1 = fig.add_subplot(121, projection='3d')
+    for i in range(n):
+        obj_points = point_cloud[i]
+        ax1.scatter(obj_points[:, 0], obj_points[:, 1], obj_points[:, 2], s=5, label=f"Obj {i}")  # Plot 3D points
+        centroid = np.mean(obj_points, axis=0)
+        ax1.text(centroid[0], centroid[1], centroid[2], str(i), fontsize=12, 
+                 bbox=dict(facecolor='white', alpha=0.7, edgecolor='black'))  # Mark object ID
+    
+    ax1.set_title("3D Point Cloud Visualization")
+    ax1.set_xlabel("X-axis")
+    ax1.set_ylabel("Y-axis")
+    ax1.set_zlabel("Z-axis")
+    ax1.legend()
+
+    # Right: Relation Matrix as Heatmap
+    ax2 = fig.add_subplot(122)
+    im = ax2.imshow(relation_matrix, cmap='viridis', interpolation='nearest')
+    plt.colorbar(im, ax=ax2)
+
+    ax2.set_xticks(np.arange(n))
+    ax2.set_yticks(np.arange(n))
+    ax2.set_xticklabels([f"Obj {i}" for i in range(n)], rotation=90)
+    ax2.set_yticklabels([f"Obj {i}" for i in range(n)])
+
+    ax2.set_title("Relation Matrix")
+    
+    plt.tight_layout()
+    plt.show()
+
+device = "mps"
+model = load_ensemble_model(config, "checkpoints/local_model.ckpt")
+
+scourge_domain_str = """
+(domain Scourge)
+(:type
+    state - vector[float,3]
+    position - vector[float,2]
+)
+(:predicate
+    block_position ?x-state -> position
+    on ?x-state ?y-state -> boolean
+    cleared ?x-state -> boolean
+    holding ?x-state -> boolean
+    hand-free -> boolean
+)
+"""
+
+if 0:
+        from core.model import EnsembleModel, curriculum_learning
+        from core.curriculum import load_curriculum
+        from domains.generic.generic_domain import generic_executor
+        model = EnsembleModel(config)
+
+        config.load_ckpt = "contact1.ckpt"
+        if config.load_ckpt:
+            #model = torch.load(f"{config.ckpt_dir}/{config.load_ckpt}")
+            model = load_ensemble_model(config, f"{config.ckpt_dir}/{config.load_ckpt}")
+
+        else:
+            model.concept_diagram.add_domain("Generic", generic_executor)
+            model.concept_diagram.root_name = "Generic"
+
+        """load the core knowledge from defined domains"""
+        core_knowledge = eval(config.core_knowledge)
+        config.curriculum_file = "data/contact_curriculum_distance.txt"
+
+        curriculum = load_curriculum(config.curriculum_file) # load the curriculum learning setup
+
+        curriculum_learning(config, model, curriculum) # start the curriculum learning for each block
+
 import torch.nn as nn
-from torch.utils.data import Dataset, DataLoader
-from rinarak.domain import load_domain_string
-from domains.utils import domain_parser
+from domains.utils import domain_parser, load_domain_string
 from rinarak.knowledge.executor import CentralExecutor
-from typing import List, Optional
-import re
+scourge_domain = load_domain_string(scourge_domain_str, domain_parser)
+scourge_executor = CentralExecutor(scourge_domain)
 
-class MetaCurriculum:
-    """
-    A meta learning cuuriculm is described by the following tuple (c, Xc, Dc, Tc)
-        c : is the new concept domain to learn. 
-        Xc : input cases paired with ground truth experiments.
-        Dc : descriptive sentences that connects the source domain with the target domain
-        Tc : Test cases for the new concepts, possibly ood
-    """
-    def __init__(self, concept_domain, train_data, descriptive, test_data = None):
-        super().__init__()
-        assert isinstance(concept_domain, CentralExecutor) or isinstance(concept_domain, str),\
-              "input concept domain must be an already defined executor or a pddl domain string"
-        
-        """1) set the 'c' executor as the new domain to learn"""
-        if isinstance(concept_domain, CentralExecutor):
-            self.concept_domain = concept_domain
-        if isinstance(concept_domain, str):
-            self.concept_domain = load_domain_string(concept_domain, domain_parser)
-        
-        """2) create the dataset for the domain to learn. Can considered as pure grounding dataset or learnd by other methods"""
-        self.train_data = train_data if isinstance(train_data, Dataset) else None
-        assert self.train_data is not None, "Train data must be a valid Dataset instance"
+#model.concept_diagram.add_domain("Scourge", scourge_executor)
+#model.concept_diagram.add_morphism("Generic", "Scourge", nn.Linear(4,5))
 
+for morph in model.concept_diagram.morphisms:print(morph)
 
-        """3) some desciptive sentences that gives the enailment relation between the source domain predicates and target domain"""
-        self.descriptive = descriptive  # List of descriptive sentences
+from datasets.scene_dataset import SceneDataset, scene_collate
+from torch.utils.data import DataLoader
 
-        #assert isinstance(self.descriptive, list), "Descriptive must be a list of sentences"
+dataset = SceneDataset("contact_experiment", "test")
+loader = DataLoader(dataset, batch_size = 4, collate_fn = scene_collate, shuffle = True)
 
-        """4) similar to previous step load the test cases for compositional learning"""
-        self.test_data = test_data if isinstance(test_data, Dataset) else None
+for sample in loader:
+    raw_inputs = sample["input"]
+    scene_predicates = sample["predicate"]
+    break
 
-    def evaluate(self, model: nn.Module):
-        if not self.test_loader:
-            print("No test data provided.")
-            return
+# here we can combine a subgraph as a single domain as long as we assume the limit of the graph is always possible to find.
+# this an be achieved by assuming we have some generic domain that all the inputs are in the generic domain.
 
-        model.eval()
-        correct, total = 0, 0
-        with torch.no_grad():
-            for batch in self.test_loader:
-                inputs, labels = batch
-                outputs = model(inputs)
-                _, predicted = torch.max(outputs, 1)
-                total += labels.size(0)
-                correct += (predicted == labels).sum().item()
-        accuracy = 100 * correct / total
-        print(f"Test Accuracy: {accuracy:.2f}%")
+model.to(device)
+for b in range(len(raw_inputs)):
+    inputs = torch.stack(raw_inputs[b]).to(device)
+    result = model.evaluate(inputs, "contact", "pointcloud", eval_mode = "metaphor")
+    print(inputs.shape)
+    for i,res in enumerate(result["results"]):
+        print("Pred:")
+        print(np.array((res > 0).float().cpu().detach()) )
+        print("Gt:")
+        print( np.array( (scene_predicates["contact"][0][b].detach() > 0).float() ) )
+        print("Conf:", result["probs"][i])
+        print("Path:",result["metas_path"][i], result["symbol_path"][i])
 
+        apply_path = result["apply_path"][i] # [1.0, tensor([0.517tensorboard --logdir=logs0], device='mps:0', grad_fn=<MulBackward0>), tensor([0.2620], device='mps:0', grad_fn=<MulBackward0>)]
+        state_path = result["state_path"][i]
+        metas_path = result["metas_path"][i] # [('GenericDomain', 'DistanceDomain', 0), ('DistanceDomain', 'DirectionDomain', 0)]
+        print("Apply Path:", apply_path)
 
-def _parse_curriculum(file_path):
-    with open(file_path, 'r') as f:
-        content = f.read()
+        result["metas_path"][i], 
+        metaphor_path = [result["metas_path"][i][0][0]]
+        for it in result["metas_path"][i]: metaphor_path.append(it[1])
+        print(metaphor_path)
+        print(result["symbol_path"][i])
+        model.concept_diagram.visualize(metaphor_path, result["symbol_path"][i])
+
+        #for state in state_path:
+        #print(state.shape)
+
+        #from domains.distance.distance_domain import DistanceDomain
+        #distance_domain = DistanceDomain(0.2)
+
+        context = {
+        0:{"state":result["states"][i].cpu().detach()},
+        1:{"state":result["states"][i].cpu().detach()},
+        }
     
-    curricula = re.split(r'<Curriculum>', content)[1:]
-    parsed_curricula = []
-    
-    for curriculum in curricula:
-        sections = re.split(r'<([^>]+)>', curriculum)[1:]
-        parsed_data = {}
-        for i in range(0, len(sections), 2):
-            section_name = sections[i].strip()
-            section_content = sections[i+1].strip()
-            
-            if section_name in ['TrainData', 'TestData']:
-                parsed_data[section_name] = section_content.split('\n')
-            else:
-                parsed_data[section_name] = section_content
-        
-        parsed_curricula.append(parsed_data)
-    
-    return parsed_curricula
+        #distance_domain.visualize(context,res.cpu().detach())
+        #print(res)
+        #model.concept_diagram.domains["Distance"].visualize(context, res.cpu().detach())
 
-def load_curriculum(file_path):
-    parsed_curricula = _parse_curriculum(file_path)
-    outputs = []
-    for i in range(len(parsed_curricula)):
-        concept_domain = parsed_curricula[i]["ConceptDomain"] # Domain File
+        visualizations = model.concept_diagram.visualize_path(state_path, metas_path, result["results"][0].cpu().detach())
+        visualize_3d_point_cloud_with_relation(inputs, np.array( (scene_predicates["contact"][0][b].detach() > 0).float() ) )
 
-        train_data_commands = parsed_curricula[i]["TrainData"] # Load Train Data
-        for line in train_data_commands[:-1]:exec(line)
-        train_dataset = eval(train_data_commands[-1])
-
-        test_data_commands = parsed_curricula[i]["TestData"]
-        for line in test_data_commands[:-1]:exec(line)
-        test_dataset = eval(test_data_commands[-1]) # Load Test Data
-        
-        descriptive = parsed_curricula[i]["Metaphor"] # Metaphors
-        outputs.append(MetaCurriculum(concept_domain, train_dataset, descriptive, test_dataset))
-    return outputs
-
-
-file_path = "data/contact_curriculum.txt"  # Replace with your actual file
-
-
-
-outputs = load_curriculum(file_path)

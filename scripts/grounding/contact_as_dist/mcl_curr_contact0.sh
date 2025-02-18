@@ -1,0 +1,1 @@
+python main.py --command=learn_curriculum --curriculum_file="data/contact/contact_curriculum_generic.txt" --ckpt_name="contact_generic"

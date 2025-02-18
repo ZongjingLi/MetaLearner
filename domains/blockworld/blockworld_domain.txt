@@ -11,7 +11,7 @@
     
     ;; Stacking predicates
     on ?x-state ?y-state -> boolean
-    clear ?x-state -> boolean
+    cleared ?x-state -> boolean
     
     ;; Manipulation predicates
     holding ?x-state -> boolean
@@ -21,12 +21,12 @@
     (
         name: pick
         parameters: ?o1
-        precondition: (and (clear ?o1) (hand-free) )
+        precondition: (and (cleared ?o1) (hand-free) )
         effect:
         (and-do
             (and-do
                 (assign (holding ?o1) true)
-                (assign (clear ?o1) false)
+                (assign (cleared ?o1) false)
             )
             (assign (hand-free) false)
         )
@@ -35,7 +35,7 @@
         name: place
         parameters: ?o1 ?o2
         precondition:
-            (and (holding ?o1) (clear ?o2))
+            (and (holding ?o1) (cleared ?o2))
         effect :
             (and-do
             (and-do
@@ -43,8 +43,8 @@
                 (and-do
                         (assign (holding ?o1) false)
                     (and-do
-                        (assign (clear ?o2) false)
-                        (assign (clear ?o1) true)
+                        (assign (cleared ?o2) false)
+                        (assign (cleared ?o1) true)
                     )
                 )
                 
