@@ -2,7 +2,7 @@
 # @Author: zongjingli
 # @Date:   2025-02-06 06:22:49
 # @Last Modified by:   zongjingli
-# @Last Modified time: 2025-02-09 05:05:10
+# @Last Modified time: 2025-02-19 20:23:27
 domain_str = """
 (domain Contact)
 (:type
@@ -17,6 +17,23 @@ domain_str = """
     contact ?x-state ?y-state -> boolean
 )
 """
+
+function_domain_str = """
+(domain Function)
+(:type
+    state - vector[float, 256] ;; abstract repr of function
+    set - vector[float, 256] ;; necessary encoding for a state
+    point -vector[float, 128] ;; a point in a set
+)
+(:predicate
+    domain ?x-state -> set
+    codomain ?x-state -> set
+    range ?x-state -> set
+    map ?x-function ?y-point -> point ;; how to represent that, why that repr is good
+)
+
+"""
+
 from rinarak.knowledge.executor import CentralExecutor
 from rinarak.domain import load_domain_string, Domain
 from domains.utils import domain_parser
@@ -49,7 +66,7 @@ gt = torch.tensor([
     [0, 0, 0]
     ]).float()
 
-gt = torch.tensor([1.0, 0.0, 1.0])
+#gt = torch.tensor([1.0, 0.0, 1.0])
 
 context = {0:{"state": state, "end" : 1.0}, 1:{"state": state, "end" : 1.0}}
 
@@ -62,8 +79,8 @@ for epoch in range(num_epochs):
     optimizer.zero_grad()  # Reset gradients
 
     # Compute loss
-    #res = contact_executor.evaluate("(contact $0 $1)", context)
-    res = contact_executor.evaluate("(ref $0)", context)
+    res = contact_executor.evaluate("(contact $0 $1)", context)
+    #res = contact_executor.evaluate("(ref $0)", context)
 
     loss = loss_fn(res["end"], gt)  # Compare model predictions with ground truth
 

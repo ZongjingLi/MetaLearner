@@ -11,65 +11,23 @@ import numpy as np
 from typing import Optional, Tuple, List
 import math
 
-class RelationalStateProjector(nn.Module):
-    def __init__(self, input_dim: int, hidden_dim: int, output_dim: int, num_heads: int = 2):
+
+class StateMapper(nn.Module):
+    def __init__(self, source_dim: int, target_dim: int, hidden_dim: int, num_heads: int = 4):
         super().__init__()
-        self.input_dim = input_dim
-        self.hidden_dim = hidden_dim
-        self.output_dim = output_dim
         
-        # Calculate attention embedding dimension that's divisible by num_heads
-        self.attention_dim = math.ceil(input_dim / num_heads) * num_heads
+        # Input projection
+        self.input_proj = nn.Linear(source_dim, hidden_dim)
         
-        # Add linear projection to make input compatible with attention dimension
-        self.input_projection = nn.Linear(input_dim, self.attention_dim)
-        
-        self.self_attention = nn.MultiheadAttention(
-            embed_dim=self.attention_dim,
-            num_heads=num_heads,
-            batch_first=True
-        )
-        
-        self.layer_norm = nn.LayerNorm(self.attention_dim)
-        
-        # Final MLP projection
-        self.mlp = nn.Sequential(
-            nn.Linear(self.attention_dim, hidden_dim),
+        # Self-attention layer
+        self.output = nn.Sequential(
+            nn.Linear(hidden_dim, hidden_dim),
             nn.ReLU(),
-            nn.Linear(hidden_dim, output_dim)
+            nn.Linear(hidden_dim, target_dim)
         )
-        
-    def forward(self, state: torch.Tensor) -> torch.Tensor:
-        # Handle both 2D and 3D inputs
-
-        if state.dim() == 2:
-            pass
-            #state = state.unsqueeze(0)  # Add batch dimension
-        
-        # Project input to attention-compatible dimension
-        state = self.input_projection(state)
-        
-        # Apply self-attention
-        attended_state, _ = self.self_attention(state, state, state)
-        
-        # Residual connection and layer norm
-        state = self.layer_norm(state + attended_state)
-        
-        # Global average pooling over sequence dimension
-        pooled_state = torch.mean(state, dim=0)
-        
-        # Final MLP projection
-
-        return self.mlp(pooled_state)
-
-class DomainEmbedding(nn.Module):
-    def __init__(self, embedding_dim: int):
-        super().__init__()
-        self.embedding = nn.Parameter(torch.randn(embedding_dim))
-        
-    def forward(self) -> torch.Tensor:
-        return self.embedding
-
+    def forward(self, states):
+        x = self.input_proj(states)
+        return self.output(x)
 
 class StateMapper(nn.Module):
     def __init__(self, source_dim: int, target_dim: int, hidden_dim: int, num_heads: int = 4):

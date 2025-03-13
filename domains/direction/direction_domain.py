@@ -63,6 +63,7 @@ class DirectionalDomain:
             temperature: Smoothing factor for angle calculations
         """
         self.temperature = temperature
+        self.margin = 0.14
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     def compute_angle(self, x_state: torch.Tensor, y_state: torch.Tensor) -> torch.Tensor:
@@ -93,8 +94,8 @@ class DirectionalDomain:
             Membership values tensor
         """
         diff = angles - center
-        diff = torch.atan2(torch.sin(diff), torch.cos(diff))
-        return torch.sigmoid((width/2 - torch.abs(diff)) / self.temperature)
+        #diff = torch.atan2(torch.sin(diff), torch.cos(diff))
+        return (self.margin - torch.abs(diff) ) / self.temperature
 
     def north(self, x_state: torch.Tensor, y_state: torch.Tensor) -> torch.Tensor:
         """Differentiable north predicate using angles."""

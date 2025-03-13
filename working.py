@@ -2,14 +2,14 @@
 # @Author: zongjingli
 # @Date:   2025-02-09 04:56:16
 # @Last Modified by:   zongjingli
-# @Last Modified time: 2025-02-17 09:13:52
+# @Last Modified time: 2025-02-21 12:15:48
 
 
 import torch
 import torch.nn as nn
 
 from core.model import EnsembleModel, curriculum_learning
-from core.metaphors.diagram import MetaphorMorphism
+from core.metaphors.diagram_legacy import MetaphorMorphism
 from core.curriculum import load_curriculum
 from domains.generic.generic_domain import generic_executor
 from domains.distance.distance_domain import distance_executor

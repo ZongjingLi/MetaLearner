@@ -59,10 +59,10 @@ loader   = DataLoader(dataset, batch_size=2048, collate_fn=collate_graph_batch)
 
 model    = PointEnergyMLP(constraints, dim = 3)
 schedule = ScheduleLogLinear(N=500, sigma_min=0.005, sigma_max=10)
-#trainer  = training_loop(loader, model, schedule, epochs=1000)
-#losses   = [ns.loss.item() for ns in trainer]
+trainer  = training_loop(loader, model, schedule, epochs=1000)
+losses   = [ns.loss.item() for ns in trainer]
 #torch.save(model.state_dict(),"checkpoints/circular_state.pth")4
-batchsize = 4
+batchsize = 6
 checkpoint_path = Path(__file__).parent.parent / "checkpoints" / "circular_state.pth"
 model.load_state_dict(torch.load(checkpoint_path, map_location="cpu", weights_only = False))
 
@@ -84,10 +84,9 @@ cond = {"edges":[
 (1,2, "partial_overlap"),
 (1,3, "non_tangential_proper_part"),
 (2,3, "non_tangential_proper_part"),
-]} # Venn Diagram
-#cond = {"edges":[(0,1,"externally_connected"), (1,2,"disconnected"),(2,3,"non_tangential_proper_part")]}
-
-
+(4,5, "partial_overlap"),
+(3,4, "disconnected"),
+]}
 xt = torch.randn([1,batchsize,3]) 
 *xt, x0  = samples(model, schedule.sample_sigmas(320), gam=2, cond = cond, batchsize = batchsize, xt = xt)
 

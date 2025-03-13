@@ -187,6 +187,7 @@ class RCC8Dataset(Dataset):
     
     def _generate_dataset(self) -> List[Tuple[torch.Tensor, List[SpatialConstraint]]]:
         """Generate the complete dataset"""
+
         return [self._generate_configuration() for _ in range(self.num_samples)]
     
     def __len__(self) -> int:
@@ -194,6 +195,8 @@ class RCC8Dataset(Dataset):
     
     def __getitem__(self, idx: int) -> Tuple[torch.Tensor, List[SpatialConstraint]]:
         data = self.data[idx]
+        print(data[0].float())
+        print(data[1])
         return {"data":data[0].float(), "cond":{"edges" : data[1]}}
     
     def visualize_configuration(self, state: torch.Tensor, constraints: List[SpatialConstraint],

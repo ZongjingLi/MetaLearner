@@ -121,7 +121,7 @@ def process_command(command):
         main_logger.info("start training the metaphorical concept learner")
         domain = command[10:]
         from core.model import EnsembleModel
-        from core.metaphors.diagram import MetaphorMorphism
+        from core.metaphors.diagram_legacy import MetaphorMorphism
         model = EnsembleModel(config)
         from domains.generic.generic_domain import generic_executor
 

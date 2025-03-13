@@ -22,7 +22,7 @@ from .encoders.text_encoder  import TextEncoder
 from .encoders.pointcloud_encoder import PointCloudEncoder, PointCloudRelationEncoder
 
 """the backend neuro-symbolic concept learner for execution of predicates and actions"""
-from .metaphors.diagram import ConceptDiagram, MetaphorMorphism
+from .metaphors.diagram_legacy import ConceptDiagram, MetaphorMorphism
 
 """structure for meta-learning of new domains"""
 from .curriculum import MetaCurriculum
@@ -77,7 +77,7 @@ class EnsembleModel(nn.Module):
             "text": TextEncoder(
                 generic_dim, vocab_size = int(config.vocab_size),
                 sequences = sequences, punct_to_remove=['.', '!', ',']),
-            "image" : ImageEncoder(generic_dim, config.num_channels),
+            "image" : ImageEncoder(generic_dim),
             "pointcloud" : PointCloudEncoder(generic_dim),
             "pointcloud_relation" : PointCloudRelationEncoder(generic_dim)
         })

@@ -27,6 +27,7 @@ from rinarak.types import baseType, arrow
 from rinarak.program import Primitive, Program, GlobalContext
 from rinarak.dsl.logic_types import boolean
 from rinarak.algs.search.heuristic_search import run_heuristic_search
+from .grammar import PrimitiveType, ComplexType, LexicalEntry, enumerate_ccg_types
 
 __all__ = [
     'QuantizeTensorState',
@@ -303,11 +304,16 @@ class CentralExecutor(nn.Module):
         super().__init__()
         self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
         self.domain = domain
-        self.concept_registry = build_box_registry(concept_type, concept_dim, 128)
+        #self.concept_registry = build_box_registry(concept_type, concept_dim, 128)
+
+        self.embedding_dim = concept_dim
         self.neural_registry = nn.ModuleDict({})
+        
+        self.lexicon_entries = nn.ModuleList()
         self.initialize_domain_components()
-        
-        
+
+    def get_lexicon_entries(self):
+        return self.lexicon_entries
 
     def initialize_domain_components(self):
         """Initialize all domain-specific components and registries.
@@ -334,15 +340,16 @@ class CentralExecutor(nn.Module):
             AssertionError: If state type is not defined in domain
         """
         self.types = self.domain.types
-        assert "state" in self.types, "State type must be defined in domain"
+        #print(self.domain.types)
+        #assert "state" in self.types, "State type must be defined in domain"
         
         # Initialize base types
         for type_name in self.types:
             baseType(type_name)
             
         # Parse state type and dimensions
-        self.state_dim, self.state_type = TypeParser.parse_type_dim(self.types["state"])
-        self.state_dim = self.state_dim[-1]
+        #self.state_dim, self.state_type = TypeParser.parse_type_dim(self.types["state"])
+        #self.state_dim = self.state_dim[-1]
         # Store type constraints
         self.type_constraints = self.domain.type_constraints
         
@@ -362,12 +369,14 @@ class CentralExecutor(nn.Module):
         self.concept_vocab = []
         
         # Register each predicate from domain
+
         for pred_name, pred_bind in self.domain.predicates.items():
             self._register_predicate(
                 name=pred_bind["name"],
                 parameters=pred_bind["parameters"],
                 return_type=pred_bind["type"]
             )
+
             
     def _register_predicate(self, name: str, parameters: List[str], return_type: str):
         """Register a single predicate with its properties.
@@ -389,27 +398,38 @@ class CentralExecutor(nn.Module):
             param.split("-")[1] if "-" in param else "any"
             for param in parameters
         ]
+        base_types = list(self.types)
+        parameters = self.predicate_params_types[name]
+        return_type = self.predicate_output_types[name]
+        for signature in enumerate_ccg_types(parameters, return_type):
+            program = f"{name}:{parameters} -> {return_type}"
+            self.lexicon_entries.append(LexicalEntry(name, program, signature))
 
         # Determine arity and function type
-        output_dim,_ = type_dim(return_type)
+        try:
+            output_dim,_ = type_dim(self.types[return_type])
+        except:
+            output_dim,_ = type_dim(return_type)
+
 
         output_dim = output_dim[-1]
 
         arity = len(parameters)
         if arity == 0 or arity == 1:
             function_type = arrow(boolean, boolean)
-            input_dim = self.state_dim  # Input shape: (N, d), Output: (N,)
+            input_dim =  sum([type_dim(self.types[param.split("-")[-1]])[0][-1] for param in parameters])#self.state_dim  # Input shape: (N, d), Output: (N,)
 
         elif arity == 2:
             function_type = arrow(boolean, boolean, boolean)
-            input_dim = 2 * self.state_dim  # Input shape: (N, N, 2d), Output: (N, N)
+            input_dim = sum([type_dim(self.types[param.split("-")[-1]])[0][-1] for param in parameters])  # Input shape: (N, N, 2d), Output: (N, N)
 
         else:  # Arity > 2
             function_type = reduce(lambda acc, _: arrow(boolean, acc), range(arity - 1), boolean)
-            input_dim = arity * self.state_dim  # (N, N, ..., N, arity*d)
+            input_dim = sum([type_dim(self.types[param.split("-")[-1]])[0][-1] for param in parameters]) # (N, N, ..., N, arity*d)
 
 
         # Create and store the neural network
+        #print(name, input_dim, output_dim)
 
         self.neural_registry[name] = PredicateNetwork(input_dim, output_dim)
 
@@ -892,7 +912,7 @@ class CentralExecutor(nn.Module):
         evaluator = PredicateEvaluator(state_map)
 
         precond_score = evaluator.evaluate(str(action.precondition), bindings)
-        print(action.precondition, precond_score)
+
         
         if torch.all(precond_score < 0.5):
             return precond_score, context
@@ -944,6 +964,7 @@ class CentralExecutor(nn.Module):
             "predicate_params_types": self.predicate_params_types,  # Store parameters
             "implementations": list(self.implement_registry.keys()),  # Store implemented actions
         }
+
 class UnknownArgumentError(Exception):
     """Raised when an unknown argument is encountered."""
     pass

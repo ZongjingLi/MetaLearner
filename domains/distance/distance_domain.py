@@ -246,7 +246,7 @@ class DistanceDomain:
         x_ref_dist = x_ref_dist.unsqueeze(1)  # [B1, 1, B3]
         y_ref_dist = y_ref_dist.unsqueeze(0)  # [1, B2, B3]
         
-        return torch.sigmoid((y_ref_dist - x_ref_dist) / self.temperature)
+        return (y_ref_dist - x_ref_dist) / self.temperature
     
     def further_than(self, x_state: torch.Tensor, y_state: torch.Tensor,
                     ref_state: torch.Tensor) -> torch.Tensor:

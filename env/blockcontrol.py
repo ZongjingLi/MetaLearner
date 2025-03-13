@@ -14,27 +14,6 @@ import time
 from blockgripper_env import *
 
 
-class ReplayBuffer:
-    def __init__(self, capacity=100000):
-        self.buffer = deque(maxlen=capacity)
-    
-    def push(self, state, action, reward, next_state, done):
-        self.buffer.append((state, action, reward, next_state, done))
-    
-    def sample(self, batch_size):
-        batch = random.sample(self.buffer, batch_size)
-        state, action, reward, next_state, done = zip(*batch)
-        return (
-            torch.FloatTensor(state),
-            torch.FloatTensor(action),
-            torch.FloatTensor(reward).unsqueeze(1),
-            torch.FloatTensor(next_state),
-            torch.FloatTensor(done).unsqueeze(1)
-        )
-    
-    def __len__(self):
-        return len(self.buffer)
-
 class BlockPickingEnv(gym.Env):
     def __init__(self, simulator):
         super().__init__()
@@ -55,7 +34,7 @@ class BlockPickingEnv(gym.Env):
             dtype=np.float32
         )
         
-        self.max_steps = 100
+        self.max_steps = 5
         self.current_step = 0
         self.target_object = None
         self.unique = 1
@@ -71,7 +50,7 @@ class BlockPickingEnv(gym.Env):
             self.unique = 0
         
         return self._get_observation()
-    
+
     def _get_observation(self):
         ee_state = p.getLinkState(self.sim.robot, self.sim.PANDA_EE_INDEX)
         ee_pos = ee_state[0]
@@ -138,15 +117,15 @@ class BlockPickingEnv(gym.Env):
         distance = np.linalg.norm(ee_pos - target_pos)
         
         # Dense reward similar to the paper: 1 - tanh(10.0 * d)
-        dense_reward = 1 - np.tanh(distance * 10.0)
+        dense_reward = 1 - np.tanh(distance * 1.0)
         #print(dense_reward)
         
         # Additional rewards for grasping and lifting
-        if self._is_object_grasped():
-            dense_reward += 1.0
-            if self._is_object_lifted():
-                dense_reward += 2.0
-                print("WOW DONE")
+        #if self._is_object_grasped():
+        #    dense_reward += 1.0
+        #    if self._is_object_lifted():
+        #        dense_reward += 2.0
+        #        print("WOW DONE")
         
         return dense_reward
     
@@ -160,126 +139,104 @@ class BlockPickingEnv(gym.Env):
     def _is_object_lifted(self):
         target_pos, _ = p.getBasePositionAndOrientation(self.target_object)
         return target_pos[2] > 0.15
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.optim as optim
+from torch.distributions import Normal
+import numpy as np
+import time
 
-class SACPolicy(nn.Module):
-    def __init__(self, obs_dim, action_dim, hidden_dim=256):
-        super().__init__()
-        self.network = nn.Sequential(
-            nn.Linear(obs_dim, hidden_dim), nn.ReLU(),
-            nn.Linear(hidden_dim, hidden_dim), nn.ReLU()
-        )
-        self.mean = nn.Linear(hidden_dim, action_dim)
-        self.log_std = nn.Linear(hidden_dim, action_dim)
+class PolicyNetwork(nn.Module):
+    def __init__(self, input_dim, output_dim):
+        super(PolicyNetwork, self).__init__()
+        self.fc1 = nn.Linear(input_dim, 128)
+        self.fc2 = nn.Linear(128, 64)
+        self.fc_mean = nn.Linear(64, output_dim)
+        self.fc_std = nn.Linear(64, output_dim)
     
     def forward(self, x):
-        x = self.network(x)
-        mean = self.mean(x)
-        log_std = torch.clamp(self.log_std(x), -20, 2)
-        return mean, log_std
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        mean = self.fc_mean(x)
+        std = F.softplus(self.fc_std(x)) + 0.001  # Ensure positive std
+        return mean, std
     
     def sample(self, state):
-        mean, log_std = self.forward(state)
-        std = log_std.exp()
-        normal = Normal(mean, std)
-        x_t = normal.rsample()
-        action = torch.tanh(x_t)
-        log_prob = normal.log_prob(x_t) - torch.log(1 - action.pow(2) + 1e-6)
-        return action, log_prob.sum(-1, keepdim=True)
+        mean, std = self.forward(state)
+        dist = Normal(mean, std)
+        action = dist.rsample()  # Use reparameterization trick
+        action = torch.tanh(action)  # Bound actions to [-1, 1]
+        log_prob = dist.log_prob(action).sum(dim=-1, keepdim=True)
+        return action, log_prob
 
-class QNetwork(nn.Module):
-    def __init__(self, obs_dim, action_dim, hidden_dim=256):
-        super().__init__()
-        self.q1 = nn.Sequential(
-            nn.Linear(obs_dim + action_dim, hidden_dim), nn.ReLU(),
-            nn.Linear(hidden_dim, hidden_dim), nn.ReLU(),
-            nn.Linear(hidden_dim, 1)
-        )
-        self.q2 = nn.Sequential(
-            nn.Linear(obs_dim + action_dim, hidden_dim), nn.ReLU(),
-            nn.Linear(hidden_dim, hidden_dim), nn.ReLU(),
-            nn.Linear(hidden_dim, 1)
-        )
-    
-    def forward(self, state, action):
-        action = action.squeeze(1)  # Ensure action is 2D like state
-        #print(action.shape,state.shape)
-        x = torch.cat([state, action], dim=-1)
-        return self.q1(x), self.q2(x)
-
-
-class ReplayBuffer:
-    def __init__(self, capacity=100000):
-        self.buffer = deque(maxlen=capacity)
-    
-    def push(self, *args):
-        self.buffer.append(args)
-    
-    def sample(self, batch_size):
-        batch = random.sample(self.buffer, batch_size)
-        return [torch.FloatTensor(x) for x in zip(*batch)]
-    
-    def __len__(self):
-        return len(self.buffer)
-
-class SACTrainer:
-    def __init__(self, env, hidden_dim=128, lr=3e-4, gamma=0.99, tau=0.005, alpha=0.2):
+class REINFORCETrainer:
+    def __init__(self, env, lr=1e-3, gamma=0.99):
         self.env = env
-        self.gamma, self.tau, self.alpha = gamma, tau, alpha
-        obs_dim, action_dim = env.observation_space.shape[0], env.action_space.shape[0]
+        self.gamma = gamma
         
-        self.policy = SACPolicy(obs_dim, action_dim, hidden_dim)
-        self.q_net = QNetwork(obs_dim, action_dim, hidden_dim)
-        self.q_net_target = QNetwork(obs_dim, action_dim, hidden_dim)
-        self.q_net_target.load_state_dict(self.q_net.state_dict())
+        self.state_dim = env.observation_space.shape[0]
+        self.action_dim = env.action_space.shape[0]
         
-        self.policy_optimizer = optim.Adam(self.policy.parameters(), lr=lr)
-        self.q_optimizer = optim.Adam(self.q_net.parameters(), lr=lr)
-        self.replay_buffer = ReplayBuffer()
+        self.policy = PolicyNetwork(self.state_dim, self.action_dim)
+        self.optimizer = optim.Adam(self.policy.parameters(), lr=lr)
     
-    def train_step(self, batch_size=256):
-        if len(self.replay_buffer) < batch_size:
-            return
-        
-        state, action, reward, next_state, done = self.replay_buffer.sample(batch_size)
-        
-        with torch.no_grad():
-            next_action, next_log_prob = self.policy.sample(next_state)
-            q1_target, q2_target = self.q_net_target(next_state, next_action)
-            q_target = torch.min(q1_target, q2_target) - self.alpha * next_log_prob
-            y = reward + (1 - done) * self.gamma * q_target
-        
-        q1, q2 = self.q_net(state, action)
-        q_loss = (q1 - y).pow(2).mean() + (q2 - y).pow(2).mean()
-        self.q_optimizer.zero_grad()
-        q_loss.backward()
-        self.q_optimizer.step()
-        
-        new_action, log_prob = self.policy.sample(state)
-        q1_new, q2_new = self.q_net(state, new_action)
-        q_new = torch.min(q1_new, q2_new)
-        policy_loss = (self.alpha * log_prob - q_new).mean()
-        self.policy_optimizer.zero_grad()
-        policy_loss.backward()
-        self.policy_optimizer.step()
-        
-        for target_param, param in zip(self.q_net_target.parameters(), self.q_net.parameters()):
-            target_param.data.copy_(self.tau * param.data + (1 - self.tau) * target_param.data)
+    def compute_returns(self, rewards):
+        returns = []
+        G = 0
+        for r in reversed(rewards):
+            G = r + self.gamma * G
+            returns.insert(0, G)
+        returns = torch.FloatTensor(returns)
+        # Normalize returns
+        if len(returns) > 1:
+            returns = (returns - returns.mean()) / (returns.std() + 1e-8)
+        return returns
     
-    def train(self, num_episodes=1000, batch_size=256):
-        rewards = []
-        for episode in range(num_episodes):
-            state, episode_reward, done = self.env.reset(), 0, False
+    def train(self, num_episodes, batch_size=None):  # batch_size included for interface compatibility
+        episode_rewards = []
+        from tqdm import tqdm
+        for episode in tqdm(range(num_episodes)):
+            # Collect trajectory
+            states, actions, rewards = [], [], []
+            state = self.env.reset()
+            done = False
+            episode_reward = 0
+            
             while not done:
-                with torch.no_grad():
-                    action, _ = self.policy.sample(torch.FloatTensor(state).unsqueeze(0))
-                state, reward, done, _ = self.env.step(action.squeeze(0).numpy())
-                self.replay_buffer.push(state, action.numpy(), reward, state, done)
-                self.train_step(batch_size)
+                state_tensor = torch.FloatTensor(state).unsqueeze(0)
+                action, log_prob = self.policy.sample(state_tensor)
+                action = action.squeeze(0).detach().numpy()
+                
+                next_state, reward, done, _ = self.env.step(action)
+                
+                states.append(state_tensor)
+                actions.append(action)
+                rewards.append(reward)
+                
+                state = next_state
                 episode_reward += reward
-            rewards.append(episode_reward)
-            if episode % 10 == 0:
-                print(f"Episode {episode}: Reward = {episode_reward:.2f}")
-        return rewards
+            
+            episode_rewards.append(episode_reward)
+            
+            # Compute returns and update policy
+            returns = self.compute_returns(rewards)
+            
+            loss = 0
+            for state_t, action_t, return_t in zip(states, actions, returns):
+                action_t = torch.FloatTensor(action_t).unsqueeze(0)
+                _, log_prob = self.policy.sample(state_t)
+                loss -= log_prob * return_t
+            
+            self.optimizer.zero_grad()
+            loss.backward()
+            self.optimizer.step()
+            
+            if (episode + 1) % 100 == 0:
+                avg_reward = np.mean(episode_rewards[-100:])
+                print(f"Episode {episode + 1}, Average Reward (last 100): {avg_reward:.2f}")
+        
+        return episode_rewards
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
@@ -287,8 +244,8 @@ if __name__ == "__main__":
     train_sim.add_ground()
     train_sim.add_robot_arm()
     train_env = BlockPickingEnv(train_sim)
-    trainer = SACTrainer(train_env)
-    rewards = trainer.train(num_episodes=int(1e5), batch_size=256)
+    trainer = REINFORCETrainer(train_env)
+    rewards = trainer.train(num_episodes=int(3000))
     
     plt.plot(rewards)
     plt.xlabel("Episode")
@@ -311,4 +268,3 @@ if __name__ == "__main__":
         time.sleep(0.01)
     print(f"Test completed with total reward: {total_reward:.2f}")
     test_sim.close()
-

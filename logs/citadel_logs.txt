@@ -1096,3 +1096,5 @@
 [17 15:49:04 174@main.py:Main] loaded checkpoint contact1.ckpt
 [17 15:49:04 355@model.py:Citadel] start the curriculum learning of the model
 [18 08:41:28 355@model.py:Citadel] start the curriculum learning of the model
+[28 11:08:20 417@model.py:Citadel] WRN Generic, not loaded
+[28 11:08:20 417@model.py:Citadel] WRN Contact, not loaded

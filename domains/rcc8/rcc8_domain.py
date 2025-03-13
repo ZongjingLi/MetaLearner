@@ -432,49 +432,49 @@ class RCC8Domain:
             "disconnected": Primitive(
                 "disconnected",
                 arrow(state_type, arrow(state_type, boolean)),
-                lambda x: lambda y: {**x, "end": self.disconnected(x["state"], y["state"])}
+                lambda x: lambda y: {**x, "end": torch.logit(self.disconnected(x["state"], y["state"]))}
             ),
             
             "externally_connected": Primitive(
                 "externally_connected",
                 arrow(state_type, arrow(state_type, boolean)),
-                lambda x: lambda y: {**x, "end": self.externally_connected(x["state"], y["state"])}
+                lambda x: lambda y: {**x, "end":torch.logit(self.externally_connected(x["state"], y["state"]))}
             ),
             
             "partial_overlap": Primitive(
                 "partial_overlap",
                 arrow(state_type, arrow(state_type, boolean)),
-                lambda x: lambda y: {**x, "end": self.partial_overlap(x["state"], y["state"])}
+                lambda x: lambda y: {**x, "end": torch.logit(self.partial_overlap(x["state"], y["state"]))}
             ),
             
             "equal": Primitive(
                 "equal",
                 arrow(state_type, arrow(state_type, boolean)),
-                lambda x: lambda y: {**x, "end": self.equal(x["state"], y["state"])}
+                lambda x: lambda y: {**x, "end": torch.logit(self.equal(x["state"], y["state"]))}
             ),
             
             "tangential_proper_part": Primitive(
                 "tangential_proper_part",
                 arrow(state_type, arrow(state_type, boolean)),
-                lambda x: lambda y: {**x, "end": self.tangential_proper_part(x["state"], y["state"])}
+                lambda x: lambda y: {**x, "end": torch.logit(self.tangential_proper_part(x["state"], y["state"]))}
             ),
             
             "non_tangential_proper_part": Primitive(
                 "non_tangential_proper_part",
                 arrow(state_type, arrow(state_type, boolean)),
-                lambda x: lambda y: {**x, "end": self.non_tangential_proper_part(x["state"], y["state"])}
+                lambda x: lambda y: {**x, "end": torch.logit(self.non_tangential_proper_part(x["state"], y["state"]))}
             ),
             
             "tangential_proper_part_inverse": Primitive(
                 "tangential_proper_part_inverse",
                 arrow(state_type, arrow(state_type, boolean)),
-                lambda x: lambda y: {**x, "end": self.tangential_proper_part_inverse(x["state"], y["state"])}
+                lambda x: lambda y: {**x, "end": torch.logit(self.tangential_proper_part_inverse(x["state"], y["state"]))}
             ),
             
             "non_tangential_proper_part_inverse": Primitive(
                 "non_tangential_proper_part_inverse",
                 arrow(state_type, arrow(state_type, boolean)),
-                lambda x: lambda y: {**x, "end": self.non_tangential_proper_part_inverse(x["state"], y["state"])}
+                lambda x: lambda y: {**x, "end": torch.logit(self.non_tangential_proper_part_inverse(x["state"], y["state"]))}
             )
         })
 

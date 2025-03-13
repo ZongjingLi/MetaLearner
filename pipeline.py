@@ -10,7 +10,7 @@ import torch
 device = "mps" if torch.backends.mps.is_available() else "cpu"
 
 if __name__ == "__main__":
-    from core.metaphors.diagram import ConceptDiagram, MetaphorMorphism
+    from core.metaphors.diagram_legacy import ConceptDiagram, MetaphorMorphism
     from domains.generic.generic_domain import generic_executor
     from domains.line.line_domain import line_executor
     from domains.rcc8.rcc8_domain import rcc8_executor

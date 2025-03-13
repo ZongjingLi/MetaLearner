@@ -1,7 +1,9 @@
-this is the Aluneth.
 
-Generic Expr:
-Test Percent: 0.9225000143051 
+Generic as Neural Expr:
+Test Percent: 0.9225
 
-Contact Expr:
-Test Percent: 0.9691666364669
+Contact as Distance Expr:
+Test Percent: 0.9691
+
+Contact as RCC8 Expr:
+Test Percent: 0.9832

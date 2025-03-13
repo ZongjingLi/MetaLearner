@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lean Structure Hierarchy Visualization</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        
+        #container {
+            display: flex;
+            height: 100vh;
+        }
+        
+        #sidebar {
+            width: 300px;
+            background-color: #f0f0f0;
+            padding: 20px;
+            overflow-y: auto;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+        
+        #visualization {
+            flex-grow: 1;
+            overflow: auto;
+            position: relative;
+        }
+        
+        #search {
+            margin-bottom: 15px;
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        #info-panel {
+            margin-top: 20px;
+            border-top: 1px solid #ddd;
+            padding-top: 15px;
+        }
+        
+        h1 {
+            font-size: 1.8em;
+            margin-top: 0;
+            color: #333;
+        }
+        
+        h2 {
+            font-size: 1.2em;
+            margin-top: 10px;
+            color: #555;
+        }
+        
+        p {
+            margin: 5px 0;
+            line-height: 1.4;
+        }
+        
+        .node circle {
+            fill: #E8F8F5;
+            stroke: steelblue;
+            stroke-width: 1.5px;
+            cursor: pointer;
+        }
+        
+        .node.virtual circle {
+            fill: #f0f0f0;
+            stroke: #999;
+        }
+        
+        .node.reference circle {
+            fill: #FFE6CC;
+            stroke: #D79B00;
+        }
+        
+        .node text {
+            font: 12px sans-serif;
+        }
+        
+        .node.selected circle {
+            fill: #FFCCBC;
+            stroke: #E64A19;
+            stroke-width: 2.5px;
+        }
+        
+        .link {
+            fill: none;
+            stroke: #ccc;
+            stroke-width: 1.5px;
+        }
+        
+        .controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            z-index: 5;
+        }
+        
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            margin: 2px;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        .stat {
+            display: inline-block;
+            margin-right: 15px;
+            font-weight: bold;
+        }
+        
+        .search-result {
+            padding: 8px;
+            margin: 5px 0;
+            cursor: pointer;
+            border-radius: 3px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+        }
+        
+        .search-result:hover {
+            background-color: #e9f7fe;
+            border-color: #7cc;
+        }
+        
+        .highlight {
+            background-color: yellow;
+        }
+        
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        
+        .code-block {
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        #help-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .close-button {
+            float: right;
+            cursor: pointer;
+            font-size: 24px;
+            color: #999;
+        }
+        
+        .close-button:hover {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="sidebar">
+            <h1>Lean Structure Hierarchy</h1>
+            <input type="text" id="search" placeholder="Search structures...">
+            <div id="search-results"></div>
+            <div id="info-panel">
+                <h2>Structure Information</h2>
+                <p>Click on a node to view details</p>
+            </div>
+            <div id="stats">
+                <h2>Statistics</h2>
+                <div>
+                    <span class="stat">Total: <span id="total-count">0</span></span>
+                    <span class="stat">Levels: <span id="level-count">0</span></span>
+                </div>
+            </div>
+            
+            <button id="help-button" style="margin-top: 20px; background-color: #607d8b;">Help</button>
+            <p style="font-size: 12px; margin-top: 30px; color: #777;">
+                Created with the Lean Structure Hierarchy Extractor
+            </p>
+        </div>
+        <div id="visualization">
+            <div class="controls">
+                <button id="zoom-in">+</button>
+                <button id="zoom-out">-</button>
+                <button id="reset">Reset</button>
+                <button id="expand-all">Expand All</button>
+                <button id="collapse-all">Collapse All</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="help-modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Interactive Hierarchy Visualization Help</h2>
+            
+            <h3>Navigation</h3>
+            <ul>
+                <li><strong>Pan:</strong> Click and drag in the visualization area</li>
+                <li><strong>Zoom:</strong> Use the mouse wheel or the +/- buttons</li>
+                <li><strong>Reset view:</strong> Click the "Reset" button</li>
+            </ul>
+            
+            <h3>Exploring the Hierarchy</h3>
+            <ul>
+                <li><strong>Expand/collapse nodes:</strong> Click on a node to toggle its children</li>
+                <li><strong>Expand all:</strong> Click the "Expand All" button</li>
+                <li><strong>Collapse all:</strong> Click the "Collapse All" button</li>
+                <li><strong>View structure details:</strong> Click on a node to see its information in the sidebar</li>
+            </ul>
+            
+            <h3>Searching</h3>
+            <ol>
+                <li>Type in the search box in the sidebar</li>
+                <li>Matching structures will appear below the search box</li>
+                <li>Click on a search result to navigate to that structure in the tree</li>
+            </ol>
+            
+            <h3>Understanding Node Types</h3>
+            <ul>
+                <li><strong>Standard nodes (light blue):</strong> Regular structure definitions</li>
+                <li><strong>Reference nodes (orange):</strong> Duplicate references to structures that appear elsewhere in the tree</li>
+                <li><strong>Virtual nodes (gray):</strong> Grouping nodes that don't represent actual structures</li>
+                <li><strong>Selected node (highlighted):</strong> Currently selected structure</li>
+            </ul>
+            
+            <p><strong>Tip:</strong> For large hierarchies, try using search to find specific structures, and expand only the branches you're interested in.</p>
+        </div>
+    </div>
+
+    <script>
+        // This is a demo with example data
+        // In a real implementation, this would be populated by the Python script
+        const treeData = {
+            "name": "Root Structures",
+            "isVirtual": true,
+            "children": [
+                {
+                    "name": "Monad",
+                    "fullName": "Lean.Monad",
+                    "namespace": "Lean",
+                    "extends": ["Applicative"],
+                    "size": 5,
+                    "children": [
+                        {
+                            "name": "MonadState",
+                            "fullName": "Lean.MonadState",
+                            "namespace": "Lean",
+                            "extends": ["MonadStateOf"],
+                            "size": 3,
+                            "children": [
+                                {
+                                    "name": "StateT",
+                                    "fullName": "Lean.StateT",
+                                    "namespace": "Lean",
+                                    "extends": ["MonadState"],
+                                    "size": 1,
+                                    "children": []
+                                }
+                            ]
+                        },
+                        {
+                            "name": "MonadExcept",
+                            "fullName": "Lean.MonadExcept",
+                            "namespace": "Lean",
+                            "extends": ["MonadExceptOf"],
+                            "size": 4,
+                            "children": [
+                                {
+                                    "name": "ReaderT",
+                                    "fullName": "Lean.ReaderT",
+                                    "namespace": "Lean",
+                                    "extends": ["MonadExcept"],
+                                    "size": 1,
+                                    "children": []
+                                },
+                                {
+                                    "name": "EStateM",
+                                    "fullName": "Lean.EStateM",
+                                    "namespace": "Lean",
+                                    "extends": ["MonadExcept"],
+                                    "size": 1,
+                                    "children": []
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Functor",
+                    "fullName": "Lean.Functor",
+                    "namespace": "Lean",
+                    "extends": [],
+                    "size": 3,
+                    "children": [
+                        {
+                            "name": "Applicative",
+                            "fullName": "Lean.Applicative",
+                            "namespace": "Lean",
+                            "extends": ["Functor"],
+                            "size": 2,
+                            "children": [
+                                {
+                                    "name": "Monad",
+                                    "isReference": true,
+                                    "size": 1
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Structure",
+                    "fullName": "Lean.Structure",
+                    "namespace": "Lean",
+                    "extends": [],
+                    "size": 6,
+                    "children": [
+                        {
+                            "name": "BEq",
+                            "fullName": "Lean.BEq",
+                            "namespace": "Lean",
+                            "extends": [],
+                            "size": 1,
+                            "children": []
+                        },
+                        {
+                            "name": "Inhabited",
+                            "fullName": "Lean.Inhabited",
+                            "namespace": "Lean",
+                            "extends": [],
+                            "size": 1,
+                            "children": []
+                        },
+                        {
+                            "name": "Setoid",
+                            "fullName": "Lean.Setoid",
+                            "namespace": "Lean",
+                            "extends": [],
+                            "size": 1,
+                            "children": []
+                        },
+                        {
+                            "name": "SizeOf",
+                            "fullName": "Lean.SizeOf",
+                            "namespace": "Lean",
+                            "extends": [],
+                            "size": 1,
+                            "children": []
+                        }
+                    ]
+                }
+            ]
+        };
+        
+        // Keep track of all nodes for search
+        let allNodes = [];
+        
+        // Set dimensions and margins
+        const margin = {top: 50, right: 90, bottom: 50, left: 90};
+        const width = 1200 - margin.left - margin.right;
+        const height = 800 - margin.top - margin.bottom;
+        
+        // Create SVG container
+        const svg = d3.select("#visualization").append("svg")
+            .attr("width", "100%")
+            .attr("height", "100%")
+            .attr("viewBox", [-margin.left, -margin.top, width + margin.left + margin.right, height + margin.top + margin.bottom])
+            .call(d3.zoom().on("zoom", (event) => {
+                g.attr("transform", event.transform);
+            }))
+            .append("g");
+        
+        const g = svg.append("g");
+        
+        // Create tree layout
+        const tree = d3.tree()
+            .size([height, width]);
+        
+        // Compute node positions
+        const root = d3.hierarchy(treeData);
+        root.x0 = height / 2;
+        root.y0 = 0;
+        
+        // Collapse nodes initially
+        root.children.forEach(collapse);
+        
+        update(root);
+        
+        // Calculate statistics
+        collectAllNodes(root);
+        document.getElementById('total-count').textContent = allNodes.length;
+        document.getElementById('level-count').textContent = root.height;
+        
+        // Function to collect all nodes recursively
+        function collectAllNodes(node) {
+            allNodes.push(node.data);
+            if (node.children) {
+                node.children.forEach(collectAllNodes);
+            }
+            if (node._children) {
+                node._children.forEach(collectAllNodes);
+            }
+        }
+        
+        // Function to collapse node
+        function collapse(d) {
+            if (d.children) {
+                d._children = d.children;
+                d._children.forEach(collapse);
+                d.children = null;
+            }
+        }
+        
+        // Function to expand node
+        function expand(d) {
+            if (d._children) {
+                d.children = d._children;
+                d.children.forEach(expand);
+                d._children = null;
+            }
+        }
+        
+        // Toggle node expansion/collapse
+        function toggle(d) {
+            if (d.children) {
+                d._children = d.children;
+                d.children = null;
+            } else if (d._children) {
+                d.children = d._children;
+                d._children = null;
+            }
+            update(d);
+        }
+        
+        // Update the tree visualization
+        function update(source) {
+            // Compute the new tree layout
+            const treeData = tree(root);
+            
+            // Get nodes and links
+            const nodes = treeData.descendants();
+            const links = treeData.links();
+            
+            // Normalize for fixed-depth
+            nodes.forEach(d => {
+                d.y = d.depth * 180;
+            });
+            
+            // ****************** Nodes section ***************************
+            
+            // Update the nodes
+            const node = g.selectAll('.node')
+                .data(nodes, d => d.id || (d.id = ++i));
+            
+            // Enter new nodes at the parent's previous position
+            const nodeEnter = node.enter().append('g')
+                .attr('class', d => {
+                    let className = 'node';
+                    if (d.data.isReference) className += ' reference';
+                    if (d.data.isVirtual) className += ' virtual';
+                    return className;
+                })
+                .attr('transform', d => `translate(${d.y},${d.x})`)
+                .on('click', (event, d) => {
+                    // Clear previous selection
+                    d3.selectAll('.node').classed('selected', false);
+                    
+                    // Select this node
+                    d3.select(event.currentTarget).classed('selected', true);
+                    
+                    // Show info in sidebar
+                    showInfo(d.data);
+                    
+                    // Toggle expansion
+                    toggle(d);
+                });
+            
+            // Add Circle for the nodes
+            nodeEnter.append('circle')
+                .attr('r', d => Math.min(10, 5 + Math.sqrt(d.data.size || 1)))
+                .style('fill', d => d._children ? '#E8F8F5' : '#fff');
+            
+            // Add labels for the nodes
+            nodeEnter.append('text')
+                .attr('dy', '.35em')
+                .attr('x', d => d.children || d._children ? -13 : 13)
+                .attr('text-anchor', d => d.children || d._children ? 'end' : 'start')
+                .text(d => d.data.name);
+            
+            // UPDATE
+            const nodeUpdate = nodeEnter.merge(node);
+            
+            // Transition to the proper position for the nodes
+            nodeUpdate.transition()
+                .duration(500)
+                .attr('transform', d => `translate(${d.y},${d.x})`);
+            
+            // Update node attributes and style
+            nodeUpdate.select('circle')
+                .attr('r', d => Math.min(10, 5 + Math.sqrt(d.data.size || 1)))
+                .style('fill', d => d._children ? '#E8F8F5' : '#fff');
+            
+            // Remove any exiting nodes
+            const nodeExit = node.exit().transition()
+                .duration(500)
+                .attr('transform', d => `translate(${source.y},${source.x})`)
+                .remove();
+            
+            // Reduce the node circles size to 0
+            nodeExit.select('circle')
+                .attr('r', 0);
+            
+            // ****************** links section ***************************
+            
+            // Update the links
+            const link = g.selectAll('path.link')
+                .data(links, d => d.target.id);
+            
+            // Enter any new links at the parent's previous position
+            const linkEnter = link.enter().insert('path', 'g')
+                .attr('class', 'link')
+                .attr('d', d => {
+                    const o = {x: source.x0, y: source.y0};
+                    return diagonal(o, o);
+                });
+            
+            // UPDATE
+            const linkUpdate = linkEnter.merge(link);
+            
+            // Transition back to the parent element position
+            linkUpdate.transition()
+                .duration(500)
+                .attr('d', d => diagonal(d.source, d.target));
+            
+            // Remove any exiting links
+            link.exit().transition()
+                .duration(500)
+                .attr('d', d => {
+                    const o = {x: source.x, y: source.y};
+                    return diagonal(o, o);
+                })
+                .remove();
+            
+            // Store the old positions for transition
+            nodes.forEach(d => {
+                d.x0 = d.x;
+                d.y0 = d.y;
+            });
+        }
+        
+        // Creates a curved (diagonal) path from parent to the child nodes
+        function diagonal(s, d) {
+            return `M ${s.y} ${s.x}
+                    C ${(s.y + d.y) / 2} ${s.x},
+                      ${(s.y + d.y) / 2} ${d.x},
+                      ${d.y} ${d.x}`;
+        }
+        
+        // Show node information in the sidebar
+        function showInfo(nodeData) {
+            const infoPanel = document.getElementById('info-panel');
+            
+            // Don't show details for virtual nodes
+            if (nodeData.isVirtual) {
+                infoPanel.innerHTML = `
+                    <h2>${nodeData.name}</h2>
+                    <p>Virtual node grouping multiple root structures</p>
+                `;
+                return;
+            }
+            
+            // Handle reference nodes
+            if (nodeData.isReference) {
+                infoPanel.innerHTML = `
+                    <h2>${nodeData.name}</h2>
+                    <p>Reference to structure (used elsewhere in hierarchy)</p>
+                `;
+                return;
+            }
+            
+            // Regular node information
+            let html = `
+                <h2>${nodeData.name}</h2>
+            `;
+            
+            if (nodeData.namespace) {
+                html += `<p><strong>Namespace:</strong> ${nodeData.namespace}</p>`;
+            }
+            
+            if (nodeData.fullName) {
+                html += `<p><strong>Full name:</strong> ${nodeData.fullName}</p>`;
+            }
+            
+            if (nodeData.extends && nodeData.extends.length > 0) {
+                html += `<p><strong>Extends:</strong> ${nodeData.extends.join(', ')}</p>`;
+            }
+            
+            // Show children
+            if ((nodeData.children && nodeData.children.length > 0) || 
+                (nodeData._children && nodeData._children.length > 0)) {
+                
+                const children = nodeData.children || nodeData._children;
+                html += `<p><strong>Extended by:</strong> ${children.map(c => c.name).join(', ')}</p>`;
+            }
+            
+            infoPanel.innerHTML = html;
+        }
+        
+        // Search functionality
+        const searchInput = document.getElementById('search');
+        const searchResults = document.getElementById('search-results');
+        
+        searchInput.addEventListener('input', function() {
+            const query = this.value.toLowerCase();
+            if (query.length < 2) {
+                searchResults.innerHTML = '';
+                return;
+            }
+            
+            // Find matching nodes
+            const matches = allNodes.filter(node => 
+                node.name.toLowerCase().includes(query) || 
+                (node.fullName && node.fullName.toLowerCase().includes(query))
+            ).slice(0, 10); // Limit to 10 results
+            
+            // Display results
+            searchResults.innerHTML = matches.map(node => 
+                `<div class="search-result" data-name="${node.name}">
+                    ${highlightText(node.name, query)}
+                    ${node.namespace ? `<small> (${node.namespace})</small>` : ''}
+                </div>`
+            ).join('');
+            
+            // Add click listeners
+            searchResults.querySelectorAll('.search-result').forEach(result => {
+                result.addEventListener('click', function() {
+                    const name = this.dataset.name;
+                    
+                    // Find the node in the tree
+                    const node = findNodeByName(root, name);
+                    if (node) {
+                        // Expand path to node
+                        expandToNode(root, node);
+                        
+                        // Update the tree
+                        update(root);
+                        
+                        // Select the node
+                        setTimeout(() => {
+                            // Clear previous selection
+                            d3.selectAll('.node').classed('selected', false);
+                            
+                            // Find the matching node element
+                            const nodeElements = document.querySelectorAll('g.node');
+                            for (let elem of nodeElements) {
+                                const nodeName = elem.querySelector('text').textContent;
+                                if (nodeName === name) {
+                                    // Select it
+                                    d3.select(elem).classed('selected', true);
+                                    
+                                    // Show info
+                                    showInfo(node.data);
+                                    
+                                    // Scroll to the node (if needed)
+                                    elem.scrollIntoView({
+                                        behavior: 'smooth',
+                                        block: 'center'
+                                    });
+                                    
+                                    break;
+                                }
+                            }
+                        }, 600);
+                    }
+                });
+            });
+        });
+        
+        // Helper to find a node by name
+        function findNodeByName(root, name) {
+            if (root.data.name === name) {
+                return root;
+            }
+            
+            if (root.children) {
+                for (const child of root.children) {
+                    const found = findNodeByName(child, name);
+                    if (found) return found;
+                }
+            }
+            
+            if (root._children) {
+                for (const child of root._children) {
+                    const found = findNodeByName(child, name);
+                    if (found) return found;
+                }
+            }
+            
+            return null;
+        }
+        
+        // Expand path to a specific node
+        function expandToNode(root, target) {
+            if (root === target) {
+                return true;
+            }
+            
+            if (root._children) {
+                root.children = root._children;
+                root._children = null;
+                
+                for (const child of root.children) {
+                    if (expandToNode(child, target)) {
+                        return true;
+                    }
+                }
+                
+                // If not found in any children, collapse again
+                root._children = root.children;
+                root.children = null;
+            }
+            
+            return false;
+        }
+        
+        // Helper to highlight search matches
+        function highlightText(text, query) {
+            const index = text.toLowerCase().indexOf(query.toLowerCase());
+            if (index >= 0) {
+                return text.substring(0, index) + 
+                    `<span class="highlight">${text.substring(index, index + query.length)}</span>` + 
+                    text.substring(index + query.length);
+            }
+            return text;
+        }
+        
+        // Control buttons
+        document.getElementById('zoom-in').addEventListener('click', function() {
+            const zoom = d3.zoom().on("zoom", (event) => {
+                g.attr("transform", event.transform);
+            });
+            
+            svg.transition().call(zoom.scaleBy, 1.3);
+        });
+        
+        document.getElementById('zoom-out').addEventListener('click', function() {
+            const zoom = d3.zoom().on("zoom", (event) => {
+                g.attr("transform", event.transform);
+            });
+            
+            svg.transition().call(zoom.scaleBy, 0.7);
+        });
+        
+        document.getElementById('reset').addEventListener('click', function() {
+            const zoom = d3.zoom().on("zoom", (event) => {
+                g.attr("transform", event.transform);
+            });
+            
+            svg.transition().call(zoom.transform, d3.zoomIdentity);
+            update(root);
+        });
+        
+        document.getElementById('expand-all').addEventListener('click', function() {
+            expand(root);
+            update(root);
+        });
+        
+        document.getElementById('collapse-all').addEventListener('click', function() {
+            root.children.forEach(collapse);
+            update(root);
+        });
+        
+        // Help modal functionality
+        document.getElementById('help-button').addEventListener('click', function() {
+            document.getElementById('help-modal').style.display = 'flex';
+        });
+        
+        document.querySelector('.close-button').addEventListener('click', function() {
+            document.getElementById('help-modal').style.display = 'none';
+        });
+        
+        // Close modal when clicking outside the content
+        document.getElementById('help-modal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                this.style.display = 'none';
+            }
+        });
+        
+        // Fix selection for D3 v7
+        let i = 0;
+        
+        // In a complete implementation, we would load a JSON file with hierarchy data
+        // generated by the Python script, but this demo uses hardcoded sample data
+    </script>
+</body>
+</html>

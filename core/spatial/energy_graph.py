@@ -206,14 +206,14 @@ class GeometricEnergyMLP(nn.Module, ModelMixin):
 
 
 class PointEnergyMLP(nn.Module, ModelMixin):
-    def __init__(self, constraints, dim=2, hidden_dims=(16,128,256,128,16)):
+    def __init__(self, constraints, dim=2, attr_dim = 0, hidden_dims=(16,128,256,128,16)):
         super().__init__()
         layers = []
         self.energies = nn.ModuleDict({})
         for name in constraints:
             arity = constraints[name]
-            self.energies[name] = TimeInputEnergyMLP(arity * dim)
-        self.input_dims = (dim,)
+            self.energies[name] = TimeInputEnergyMLP(arity * (dim + attr_dim))
+        self.input_dims = (dim + attr_dim,)
 
     def forward(self, x, sigma, cond = None):
 

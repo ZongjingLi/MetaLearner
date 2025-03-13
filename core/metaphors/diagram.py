@@ -1,694 +1,714 @@
-'''
- # @ Author: Zongjing Li
- # @ Create Time: 2024-11-10 12:01:37
- # @ Modified by: Zongjing Li
- # @ Modified time: 2024-12-28 18:23:31
- # @ Description: This file is distributed under the MIT license.
-'''
 import os
-import numpy as np
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-import matplotlib.pyplot as plt
-from matplotlib.colors import to_rgba
-import networkx as nx
-from io import BytesIO
-import base64
-from rinarak.logger import get_logger, KFTLogFormatter
-from rinarak.logger import set_logger_output_file
 
-from rinarak.domain import load_domain_string
+from dataclasses import dataclass, field
+from typing import Dict, List, Tuple, Optional
+import functools
+
 from rinarak.knowledge.executor import CentralExecutor
+from rinarak.knowledge.executor import type_dim
 
-from typing import Dict, List, Tuple, Optional, Any
-from dataclasses import dataclass
-from collections import defaultdict
+from core.metaphors.base import StateMapper
 
-from core.metaphors.base import StateMapper, StateClassifier
-from core.metaphors.legacy import PredicateConnectionMatrix, ActionConnectionMatrix
-from rinarak.utils.data import combine_dict_lists
+"""Schema Class: 
+a dataclass that stores
+"""
+@dataclass
+class Schema(object):
+    end : torch.Tensor
+    mask : torch.Tensor
+    dtype : str
+    domain : str
 
+def product(*schemas: Schema) -> Schema:
+    """
+    Compute the tensor product of multiple Schema objects without in-place operations
+    to maintain differentiability.
+    
+    Args:
+        *schemas: Variable number of Schema objects to combine
+        
+    Returns:
+        Schema: A new Schema with combined dimensions according to tensor product rules
+        
+    Raises:
+        ValueError: If schemas have different domains or if no schemas are provided
+    """
+    if len(schemas) == 0:
+        raise ValueError("At least one Schema must be provided")
+    
+    # Check if all schemas are in the same domain
+    domains = {schema.domain for schema in schemas}
+    if len(domains) > 1:
+        raise ValueError(f"All schemas must be in the same domain. Found: {domains}")
+    
+    # Extract the first schema to use its domain and dtype
+    first_schema = schemas[0]
+    
+    # For the case of a single schema, return it directly
+    if len(schemas) == 1:
+        return first_schema
+    
+    # Get masks and ends from all schemas
+    masks = [schema.mask for schema in schemas]
+    ends = [schema.end for schema in schemas]
+    
+    # Calculate the shape of the final mask and end tensors
+    leading_dims = [end.shape[0] for end in ends]
+    last_dims = [end.shape[1] for end in ends]
+    
+    # Calculate final shapes
+    final_mask_shape = leading_dims + [1]
+    final_end_shape = leading_dims + [sum(last_dims)]
+    
+    # Step 1: Process the masks using einsum for tensor product
+    # First, create a mask tensor for each schema that's expanded correctly
+    expanded_masks = []
+    
+    for i, mask in enumerate(masks):
+        # For n schemas, we need a tensor with n+1 dimensions
+        # All dimensions should be 1 except for the i-th dimension (which should match the original)
+        # and the last dimension (which is always 1)
+        shape = [1] * (len(schemas) + 1)
+        shape[i] = leading_dims[i]
+        
+        # Reshape to this shape
+        expanded_mask = mask.reshape(shape)
+        expanded_masks.append(expanded_mask)
+    
+    # Multiply all masks together (broadcasting will handle the expansion)
+    final_mask = expanded_masks[0]
+    for i in range(1, len(expanded_masks)):
+        final_mask = final_mask * expanded_masks[i]
+    
+    # Step 2: Process the end tensors
+    # We'll build up the end tensor by concatenating slices
+    
+    # Initialize list to hold slices
+    slices = []
+    
+    # Current offset in the last dimension of the output tensor
+    offset = 0
+    
+    # We need to handle all combinations of indices from the leading dimensions
+    # Do this by creating a CartesianProduct of ranges
+    indices_list = [range(dim) for dim in leading_dims]
+    
+    # Loop through all combinations of indices
+    from itertools import product as cartesian_product
+    for indices in cartesian_product(*indices_list):
+        # Create a slice for this combination of indices
+        # It will have shape [sum(last_dims)]
+        slice_parts = []
+        
+        # Extract the corresponding slice from each schema's end tensor
+        for schema_idx, schema in enumerate(schemas):
+            end = schema.end
+            idx = indices[schema_idx]
+            
+            # Extract the slice from this schema at the given index
+            end_slice = end[idx]  # Shape: [last_dim_i]
+            slice_parts.append(end_slice)
+        
+        # Concatenate all parts to form this slice
+        full_slice = torch.cat(slice_parts)
+        slices.append(full_slice)
+    
+    # Reshape all slices into the final tensor shape
+    # First, stack all slices into a tensor of shape [num_combinations, sum(last_dims)]
+    stacked_slices = torch.stack(slices)
+    
+    # Then reshape to the final shape [d1, d2, ..., dn, sum(last_dims)]
+    final_end = stacked_slices.reshape(final_end_shape)
+    
+    return Schema(
+        end=final_end,
+        mask=final_mask,
+        dtype=first_schema.dtype,
+        domain=first_schema.domain
+    )
 
+def schemas_to_context(schemas):
+    """
+    Transform a list of Schema objects into a context dictionary.
+    
+    Args:
+        schemas (List[Schema]): List of Schema objects to transform
+        
+    Returns:
+        dict: A context dictionary with indices as keys and dictionaries containing
+              'state' and 'end' as values.
+              
+    Example:
+        If schemas is a list of Schema objects, the output will be:
+        {
+            0: {"state": state_0, "end": 1.0},
+            1: {"state": state_1, "end": 1.0},
+            ...
+        }
+    """
+    context = {}
+    
+    for i, schema in enumerate(schemas):
+        # Extract the state from the schema
+        # Assuming the schema.end tensor represents the state or can be converted to it
+        # You may need to adjust this based on your actual schema structure
+        state = schema.end
+        
+        # Create the context entry for this schema
+        context[i] = {
+            "state": state,
+            "end": schema.mask  # Fixed end value as per requirement
+        }
+    
+    return context
+
+def generate_lambda_predicate(predicate_name, num_params):
+    """
+    Generate a predicate string with numbered parameters.
+    
+    Args:
+        predicate_name (str): The name of the predicate
+        num_params (int): The number of parameters for the predicate
+        
+    Returns:
+        str: A formatted predicate string with numbered parameters
+        
+    Example:
+        generate_predicate("contact", 2) returns "(contact $0 $1)"
+    """
+    # Create the list of parameters
+    params = [f"${i}" for i in range(num_params)]
+    
+    # Join parameters with spaces
+    params_str = " ".join(params)
+    
+    # Format the complete predicate
+    predicate = f"({predicate_name} {params_str})"
+    
+    return predicate
+
+"""Concept Domain"""
+class ConceptDomain(nn.Module):
+    """this is just a wrapper class of the central executor"""
+    def __init__(self, executor : CentralExecutor):
+        super().__init__()
+        domain = executor.domain
+        self.name = domain.domain_name
+        self.domain = domain
+        self.types = domain.types
+        self.predicates = domain.predicates
+        self.executor = executor
+
+    
+    def get_lexicon_entries(self):
+        entries = self.executor.get_lexicon_entries()
+
+        return entries
+
+"""Metaphor Morphism Class:
+connection between two domains, matchings types and scores between source type and target type"""
 class MetaphorMorphism(nn.Module):
-    """A conceptual metaphor from source domain to target domain"""
-    def __init__(self, 
-                 source_domain: CentralExecutor,
-                 target_domain: CentralExecutor,
-                 hidden_dim: int = 256):
+    def __init__(self, source_domain : ConceptDomain, target_domain : ConceptDomain, hidden_dim = 128):
         super().__init__()
         self.source_domain = source_domain
         self.target_domain = target_domain
 
-        """f_a: used to check is the metaphor is applicable for the mapping"""
-        #print(source_domain.domain.domain_name,source_domain.state_dim[0])
-        self.state_checker = StateClassifier(
-            source_dim = source_domain.state_dim,
-            latent_dim = hidden_dim,
-            hidden_dim = hidden_dim
-        )
+        """entailment relations between source types and target types"""
+        self.source_types = list(source_domain.types)
+        self.target_types = list(target_domain.types)
+        # here type matching is stored as the logits, some default connections are fixed
+        self.type_matching = nn.Parameter(torch.randn(len(self.source_types), len(self.target_types)))
 
-        
-        """f_s: as the state mapping from source state to the target state"""
-        self.state_mapper = StateMapper(
-            source_dim=source_domain.state_dim,
-            target_dim=target_domain.state_dim,
-            hidden_dim=hidden_dim
-        )
-        
-        """f_d: as the predicate and action connections between the source domain and target domain"""
-        self.predicate_matrix = PredicateConnectionMatrix(
-            source_domain.domain, target_domain.domain
-        )
-        self.action_matrix = ActionConnectionMatrix(
-            source_domain.domain, target_domain.domain
-        )
+        self.type_mappers = nn.ModuleDict({})
+        for s_type in source_domain.types:
+            s_dim = type_dim(source_domain.types[s_type])[0][0]
+            for t_type in target_domain.types:
+                t_dim = type_dim(target_domain.types[t_type])[0][0]
+                """f_s: as the state mapping from source state to the target state"""
+                self.type_mappers[f"{s_type}_{t_type}_map"] = \
+                    StateMapper(
+                        source_dim=s_dim,
+                        target_dim=t_dim,
+                        hidden_dim=hidden_dim
+                    )
+                self.type_mappers[f"{s_type}_{t_type}_classify"] = \
+                    StateMapper(
+                        source_dim = s_dim,
+                        target_dim = 1,
+                        hidden_dim = hidden_dim
+                    )
 
-    def forward(self, state: torch.Tensor) -> torch.Tensor:
-        """Map state from source to target domain
-        Inputs:
-            state : should be a 
-        """
-        return self.state_checker.compute_logit(state), self.state_mapper(state)
-        
-    def get_predicate_mapping(self, source_pred: str, target_pred: str) -> torch.Tensor:
-        """Get mapping weight between predicates"""
-        return self.predicate_matrix.get_connection_weight(source_pred, target_pred)
-        
-    def get_action_mapping(self, source_action: str, target_action: str) -> torch.Tensor:
-        """Get mapping weight between actions"""
-        return self.action_matrix.get_cnnection_weight(source_action, target_action)
-
-
-
-class ConceptDiagram(nn.Module):
-    """A directed multi-graph G=(V,E) where node set V is the set of learned domains, 
-    E as the multi edge set where a pair of nodes is connected by some abstraction-mappings."""
+        """source symbols and target symbols can be mapped by a connection matrix"""
+        self.source_symbols = list(source_domain.predicates)
+        self.target_symbols = list(target_domain.predicates)
+        # store the symbol conections
+        self.symbol_matching = nn.Parameter(torch.randn(len(self.source_symbols), len(self.target_symbols)))
     
+    def forward(self, schema: Schema, target_type=None) -> Schema:
+        """Map a schema to the target type schema and update the feature and the logit scores
+        If the target_type is None, then choose the most probable mapping in the type matching and perform transition
+        """
+        # First, get the source type from the schema
+        source_type = schema.dtype
+        source_idx = self.source_types.index(source_type)
+        
+        # If target_type is not specified, choose the most probable one based on type_matching
+        if target_type is None:
+            type_logits = self.type_matching[source_idx]
+            target_idx = torch.argmax(type_logits).item()
+            target_type = self.target_types[target_idx]
+            # Get the confidence score for this mapping
+            type_confidence = type_logits[target_idx]
+        else:
+            # If target_type is specified, get its index and confidence
+            target_idx = self.target_types.index(target_type)
+            type_confidence = self.type_matching[source_idx, target_idx]
+        
+        # Apply the appropriate state mapper to transform the source state to target state
+        mapper_key = f"{source_type}_{target_type}_map"
+        classifier_key = f"{source_type}_{target_type}_classify"
+        
+        # Apply the feature mapping - transform from source state to target state
+        mapped_state = self.type_mappers[mapper_key](schema.end)
+        
+        # Get the classification confidence (how well this maps)
+        mapping_confidence = self.type_mappers[classifier_key](schema.end).squeeze(-1)
+        
+        # Compute the final confidence as a combination of type matching and state mapping confidence
+        # Using sigmoid to convert logits to probability domain for multiplication, then back to logit
+        combined_conf_prob = torch.sigmoid(type_confidence) * torch.sigmoid(mapping_confidence)
+        # Add small epsilon to avoid numerical issues
+        epsilon = 1e-10
+        combined_conf_prob = torch.clamp(combined_conf_prob, epsilon, 1 - epsilon)
+        #final_confidence = torch.log(combined_conf_prob / (1 - combined_conf_prob))
+        
+        # Create a new mask that combines the original mask with the confidence
+        new_mask = schema.mask * combined_conf_prob
+        
+        # Return a new Schema with the mapped state and updated mask
+        return Schema(
+            end=mapped_state,
+            mask=new_mask,
+            dtype=target_type,
+            domain=self.target_domain.name
+        ), torch.sigmoid(type_confidence)
+
+"""Concept Diagram Class :
+the skeleton graph of the somains connected by the Metaphor Morphisms
+"""
+class ConceptDiagram(nn.Module):
     def __init__(self):
         super().__init__()
-        self.device = "cuda:0" if torch.cuda.is_available() else "mps:0" if torch.backends.mps.is_available() else "cpu:0"
-        self.domains = nn.ModuleDict()  # Store domains (CentralExecutor instances)
-        self.morphisms = nn.ModuleDict()  # Store morphisms (sparse connections)
-        self.edge_indices = defaultdict(list)
-        self.domain_logits = nn.ParameterDict()  # Store log p for domains
-        self.morphism_logits = nn.ParameterDict()  # Store log p for morphisms
-        self.logger = get_logger("concept-diagram", KFTLogFormatter)
-        self.root_name = "Generic"
-        self.to(self.device)
+        self.device = (
+            "cuda:0" if torch.cuda.is_available()
+            else "mps:0" if torch.backends.mps.is_available()
+            else "cpu"
+        )
+        
+        self.domains = nn.ModuleDict({})
+        self.metaphors = nn.ModuleDict({})
+        
+        self.eps = 1e-6
 
-    def to_dict(self):
-        """Serialize the architecture (excluding weights) for reconstruction."""
+    """Basic Setup for the nodes and edges in the Conceptual Diagram"""
+    def add_node(self, domain, executor, logits=False):
+        """
+        Adds a domain (node) to the concept diagram.
+        
+        Args:
+            domain (str): The name of the domain
+            executor (CentralExecutor): The executor for this domain
+            logits (bool or torch.Tensor): Confidence logits for this domain. 
+                                          If bool, converts to tensor with default confidence
+        
+        Returns:
+            None
+        """
+        if isinstance(logits, bool): 
+            logits = torch.logit(torch.tensor(1.0 - self.eps))
+        self.domains[domain] = ConceptDomain(executor)
+
+    def get_node(self, domain, logits=True) -> ConceptDomain:
+        """
+        Retrieves a domain (node) from the concept diagram.
+        
+        Args:
+            domain (str): The name of the domain to retrieve
+            logits (bool): Flag indicating whether to return confidence logits
+        
+        Returns:
+            ConceptDomain: The domain object for the specified name
+        
+        Raises:
+            KeyError: If the domain doesn't exist in the diagram
+        """
+        return self.domains[domain]
+
+    def add_edge(self, source, target, edge_id=None, morphism=None):
+        """
+        Adds an edge (metaphor) between source and target domains.
+        In a multigraph, multiple edges can connect the same pair of domains.
+        
+        Args:
+            source (str): The source domain name
+            target (str): The target domain name
+            edge_id (str, optional): Identifier for this specific edge. If None, will generate one
+            morphism (MetaphorMorphism, optional): The morphism to use. If None, creates a new one
+        
+        Returns:
+            str: The edge_id used for storing this edge
+        """
+        # Create default morphism if none provided
+        if morphism is None:
+            morphism = MetaphorMorphism(self.get_node(source), self.get_node(target))
+        
+        if edge_id is None:
+            # Generate a unique identifier based on existing edges between these domains
+            existing_count = sum(1 for key in self.metaphors.keys() 
+                               if key.startswith(f"{source}__{target}__"))
+            edge_id = f"{source}__{target}__{existing_count}"
+        
+        # Store the morphism in the metaphors dictionary
+        self.metaphors[edge_id] = morphism
+        
+        return edge_id
+
+    def get_edge(self, edge_id):
+        """
+        Get a specific edge by its ID.
+        
+        Args:
+            edge_id (str): The identifier for the edge
+            
+        Returns:
+            MetaphorMorphism: The morphism associated with this edge
+        
+        Raises:
+            KeyError: If the edge_id doesn't exist
+        """
+        if edge_id in self.metaphors:
+            return self.metaphors[edge_id]
+        raise KeyError(f"Edge with ID '{edge_id}' not found in the diagram")
+    
+    def get_edges_between(self, source, target):
+        """
+        Get all edges between two domains.
+        
+        Args:
+            source (str): The source domain name
+            target (str): The target domain name
+            
+        Returns:
+            dict: Dictionary of {edge_id: morphism} for all edges between source and target
+        """
+        prefix = f"{source}__{target}__"
         return {
-            "domains": list(self.domains.keys()),  # Store domain names
-            "domain_probs": {k: v.item() for k, v in self.domain_logits.items()},  # Store domain probabilities
-            "morphisms": {
-                name: {
-                    "source": source,
-                    "target": target,
-                    "morphism_name": name
-                }
-                for (source, target), morphism_names in self.edge_indices.items()
-                for name in morphism_names
-            }
+            edge_id: morphism for edge_id, morphism in self.metaphors.items()
+            if edge_id.startswith(prefix)
         }
-
-    def visualize(self, metaphor_path=None, symbol_path=None):
-        """
-        Visualize the concept diagram as a directed graph.
-
-        Args:
-            metaphor_path (list, optional): List of domain names to highlight
-            symbol_path (list, optional): List of symbols to annotate nodes
-        """
-        # Create directed graph
-        symbol_path = [1.] + symbol_path
-        G = nx.DiGraph()
-
-        # Add nodes with probabilities
-        for domain_name in self.domains:
-            prob = torch.sigmoid(self.domain_logits[domain_name]).item()
-            G.add_node(domain_name, probability=prob)
-
-        # Add edges with probabilities
-        for (src, dst), idx_list in self.edge_indices.items():
-
-            for idx in idx_list:
-                #idx = idx.split("_")[-1]
-                morphism_key = idx
-                if morphism_key in self.morphism_logits:
-                    prob = torch.sigmoid(self.morphism_logits[morphism_key]).item()
-
-                    G.add_edge(src, dst, probability=prob, key=idx)
-
-        # Set up the plot
-        plt.figure(figsize=(12, 8))
-
-        # Create layout (you might want to experiment with different layouts)
-        pos = nx.spring_layout(G)
-
-        # Draw nodes
-        node_colors = []
-        for node in G.nodes():
-            base_color = 'lightblue'
-            prob = G.nodes[node]['probability']
-            if metaphor_path and node in metaphor_path:
-                base_color = 'lightcoral'  # Highlight nodes in metaphor path
-            rgba_color = to_rgba(base_color, alpha=max(0.2, prob))
-            node_colors.append(rgba_color)
-
-        nx.draw_networkx_nodes(G, pos,
-                               node_color=node_colors,
-                               node_size=2000)
-
-        # Draw edges
-        for (u, v, data) in G.edges(data=True):
-            prob = data['probability']
-            edge_color = 'gray'
-            if metaphor_path and u in metaphor_path and v in metaphor_path:
-                # Check if nodes are adjacent in metaphor_path
-                if abs(metaphor_path.index(u) - metaphor_path.index(v)) == 1:
-                    edge_color = 'red'
-
-            nx.draw_networkx_edges(G, pos,
-                                   edgelist=[(u, v)],
-                                   edge_color=edge_color,
-                                   alpha=max(0.2, prob),
-                                   arrows=True,
-                                   arrowsize=20)
-
-        # Draw labels
-        labels = {}
-        for node in G.nodes():
-            label = node
-            if symbol_path and metaphor_path and node in metaphor_path:
-
-                # Find position in metaphor path (from end)
-                pos_from_end = len(metaphor_path) - 1 - metaphor_path.index(node)
-
-                if pos_from_end < len(symbol_path):
-                    # Only add symbols (even indices in symbol_path)
-                    if pos_from_end * 2 < len(symbol_path):
-                        label = f"{node}\n{symbol_path[pos_from_end * 2 + 1]} p:{float(symbol_path[pos_from_end * 2])}"
-            labels[node] = label
-
-        nx.draw_networkx_labels(G, pos, labels)
-
-        # Add title and adjust layout
-        plt.title("Concept Diagram")
-        plt.axis('off')
-
-        # Show plot
-        plt.tight_layout()
-        plt.show()
-
-        return G 
-
-    def add_domain(self, name: str, domain: nn.Module, p: float = 1.0) -> None:
-        if name not in self.domains:
-            self.domains[name] = domain
-            if p > 1.0 or p < 0.0:
-                self.logger.warning(f"Input p:{p} is not within the range of [0,1]")
-            self.domain_logits[name] = nn.Parameter(torch.logit(torch.ones(1) * p, eps=1e-6))
-        else:
-            self.logger.warning(f"try to add domain `{name}` while this name is already occupied, overriding")
-            self.domains[name] = domain
-
-    def add_morphism(self, source: str, target: str, morphism: nn.Module, name: Optional[str] = None) -> None:
-        if source not in self.domains or target not in self.domains:
-            self.logger.warning(f"domain not found: source not in domains:{source not in self.domains}, "
-                         f"target not in domains: {target not in self.domains}")
-            raise ValueError(f"Domain not found: {source} or {target}")
-            
-        if name is None:
-            name = f"morphism_{source}_{target}_{len(self.edge_indices[(source, target)])}"
-        #if name == "morphism_DistanceDomain_RCC8Domain_0":
-            #print(morphism)
-        self.morphisms[name] = morphism.to(self.device)
-        self.edge_indices[(source, target)].append(name)
-        self.morphism_logits[name] = nn.Parameter(torch.logit(torch.ones(1), eps=1e-6)).to(self.device)
-
-    def get_morphism(self, source: str, target: str, index: int = 0) -> MetaphorMorphism:
-        morphism_names = self.edge_indices[(source, target)]
-        if not morphism_names: raise ValueError(f"No morphism found from {source} to {target}")
-        morphism_name = morphism_names[index]
-        return self.morphisms[morphism_name]
     
-    def get_all_morphisms(self, source: str, target: str) -> List[Tuple[str, nn.Module]]:
-        """Get all morphisms between the source domain and target domain.
-    
-        Args:
-            source (str): Name of the source domain
-            target (str): Name of the target domain
+    def get_all_edges(self):
+        """
+        Get all edges in the diagram.
         
         Returns:
-            List of tuples containing (morphism_name, morphism_module)
+            dict: Dictionary of all {edge_id: morphism} pairs
         """
-        morphism_names = self.edge_indices[(source, target)]
-        return [(name, self.morphisms[name]) for name in morphism_names]
-
-    def get_domain_prob(self, name: str) -> torch.Tensor:
-        return torch.sigmoid(self.domain_logits[name]).to(self.device)
-
-    def get_morphism_prob(self, name: str) -> torch.Tensor:
-        return torch.sigmoid(self.morphism_logits[name]).to(self.device)
-
-    def evaluate(self, state: torch.Tensor, predicate: str, domain: str = None, 
-                eval_type: str = 'literal', top_k: int = 5, count = 10) -> Dict:
-        """Evaluate a predicate on the given state using specified evaluation method."""
-        
-        # Find predicate domain if not specified
-        pred_domain = None
-        pred_arity = -1
-        for domain_name, domain_ in self.domains.items():
-            for arity in domain_.predicates:
-                for dom_pred in domain_.predicates[arity]:
-                    if str(predicate) == str(dom_pred):
-                        pred_domain = domain_name
-                        pred_arity = arity
-                        break
-        if pred_domain is None or pred_arity == -1:
-            raise ValueError(f"Predicate {predicate} not found in any domain")
-
-        # If source domain not specified, find most probable domain for state
-        if domain is None: domain = self.root_name
-
-
-        if pred_arity == 0:
-            predicate = f"({predicate})"
-        if pred_arity == 1:
-            predicate = f"({predicate} $0)"
-        if pred_arity == 2:
-            predicate = f"({predicate} $0 $1)"
-
-        # Choose evaluation method
-        if eval_type == 'literal':
-            return self._evaluate_metaphor(state, predicate, domain, pred_domain, top_k, count = 0)
-        elif eval_type == 'metaphor':
-            return self._evaluate_metaphor(state, predicate, domain, pred_domain, top_k, count = count)
-        else:
-            raise ValueError(f"Unknown evaluation type: {eval_type}")
-
-    def batch_evaluation(self, sample_dict : Dict, eval_type = "literal"):
-        """ take a diction of sample inputs and outut the evaluation of predicates of result on a batch
-        TODO: This batch like operation sounds incredibly stupid, try to figure this out.
-        Inputs:
-            sample_dict: a diction that contains
-                features : b x n x d shape tensor reprsenting the state features
-                end: b x n shape tensor representing the probbaility of existence of each object
-                predicates : a list of len [b] that contains predicate to evaluate at each batch
-        Returns:
-            outputs: a diction that contains 
-                results : a list of [b] elements each representing the evaluation result on the 
-                conf : a list of [b] scalars each representing the probability of that evaluation
-                end : same as the outputs
-        """
-        features = sample_dict.get('features')  # (b, n, d)
-        end = sample_dict.get('end')            # (b, n)
-        predicates = sample_dict.get('predicates')
-        domains = sample_dict.get("domains") if "domains" in sample_dict else None
-        if features is None or end is None: raise ValueError("sample_dict must contain 'features' and 'end' keys")
-
-        batch_size = features.shape[0]
-        outputs = {
-            'results': [],
-            'conf': [],
-            'end': end
-        }
-
-        for i in range(batch_size):
-            state = features[i]           # (n, d)
-            predicate = predicates[i]
-            domain = domains[i] if domains is not None else domains
-
-            results = self.evaluate(state, predicate, eval_type = eval_type)
-            result = results["results"][0]
-            confidence = results["probs"][0]
-        
-            outputs['results'].append(result)
-            outputs['conf'].append(confidence)
-
-        return outputs
-
-    def _evaluate_metaphor(self, state: torch.Tensor, predicate_expr: str,
-                          source_domain: str, target_domain: str, top_k: int, eps : float = 0.001, count = 10) -> torch.Tensor:
-        """Metaphorical evaluation using earliest valid evaluation point by tracing predicates backwards.
-        For a predicate p in target domain, we trace back through the path to find where it
-        originates from (where it has strong connections to source predicates). The evaluation position is chosen
-        undeterminstically controllerd by the path probability.
-        """
-        
-        """[1]. get all the paths from the source to target domain"""
-        all_paths = self.get_path(source_domain, target_domain)
-
-        if not all_paths: raise Exception(f"no path found between domain {source_domain} and {target_domain}")
-
-        paths_of_apply = [] # each path is a sequence of appliability
-        paths_of_state = [] # each path is a sequence of state (no cumulative)
-        paths_of_probs = [] # each path actually exist in the concept diagram
-
-        """[2]. calculate each possible metaphor path if it is applicable for the init_state"""
-        
-        for path in all_paths[:top_k]:
-            backsource_state = state # start with the working current state
-            apply_path = [1.0] # maintain a sequence of apply, the first state is always applicable
-            state_path = [backsource_state] # maintain a sequence of state, correspond with applicable
+        return dict(self.metaphors)
     
-            apply_prob = 1.0 # cumulative applicable probability along a path
-            for src, tgt, idx in path:
-                morphism = self.get_morphism(src, tgt, idx)
-
-                applicable_logit, transformed_state = morphism(backsource_state)
-    
-                backsource_state = transformed_state # iterate to the next state
-                apply_prob = apply_prob * torch.sigmoid(applicable_logit) # maintain the apply_prob
-
-                # add transoformed states and path probability according to the way
-                apply_path.append(apply_prob)
-                state_path.append(backsource_state)
-            
-            paths_of_apply.append(apply_path)
-            paths_of_state.append(state_path)
-            paths_of_probs.append(apply_prob * torch.exp(self.get_path_prob(path))  )# control the probability of this path actually exists.
+    def get_outgoing_edges(self, source):
+        """
+        Get all edges that originate from a specific domain.
         
-        # sort the top-K metpahor paths
-        sorted_indices      =  torch.argsort(torch.stack(paths_of_probs).flatten(), descending = True)
-        sorted_probs        =  [paths_of_probs[i] for i in sorted_indices]
-        sorted_state_paths  =  [paths_of_state[i] for i in sorted_indices]
-        sorted_apply_paths  =  [paths_of_apply[i] for i in sorted_indices]
-        sorted_paths        =  [all_paths[i]     for i in sorted_indices]
-        """[3]. calculate the probability each predicate path is actually feasible (backward search)"""
-        paths_of_symbols = [] # a symbol_path is a sequence [p0,c1,p1,...], each path controlled by the probs
-
-
-        for i,path in enumerate(sorted_paths):
-            target_symbol = predicate_expr.split(" ")[0][1:] # TODO: something very stupid, recall to replace by regex
-            backward_path = list(reversed(path))
-            symbolic_path = [target_symbol] # contains (pi,fi+1, pi+1) tuples
-            
-            meta_count = 0 # maximum allowed number of retract, count = 0 means the literal evaluation
-            for src, tgt, idx in backward_path:
-                meta_count += 1
-                morph = self.get_morphism(src, tgt, idx)
-                f_conn = morph.predicate_matrix #TODO: write a method that handles the Action Also
-                #source_vocab = f_conn.source_predicates
-                #target_vocab = f_conn.target_predicates
-                #connection, reg_loss  = f_conn()
-                # get probability of a pair of predicate p, p'
-                source_symbol, conn = f_conn.get_best_match(target_symbol)
-                if conn > eps and meta_count < count:
-                    target_symbol = source_symbol
-                    symbolic_path.append(conn)
-                    symbolic_path.append(source_symbol)
-                else:
-                    break
-
-            paths_of_symbols.append(symbolic_path)
-        # the final output probability of each path is compose of two parts 1) the path is valid 2) the retreat is valid.
-
-        """[4]. choose the most probable predicate path, executed on the cooresponding repr in metaphor path"""
-        final_results = []
-        final_states  = []
-        final_domains = []
-        final_conf    = []
-        target_symbol = predicate_expr.split(" ")[0][1:]
-        for i,symbol_path in enumerate(paths_of_symbols):
-            retract_length = (len(symbol_path) - 1 ) // 2 # retract along the metaphor path length
-
-            backsource_domain = sorted_paths[i][ - 1 - retract_length][1] # retract to one of the source domain
-            backsource_state  = sorted_state_paths[i][ - 1 - retract_length] # retract to 
-            backsource_state.to(self.device)
-            source_symbol = symbol_path[-1]
-
-            final_states.append(backsource_state)
-            final_domains.append(backsource_domain)
-    
-            backsource_executor = self.domains[backsource_domain] # find the executor for the final state.
-            assert isinstance(backsource_executor, CentralExecutor), "not an central executor"
-            backsource_context = {0:{"state" : backsource_state}, 1:{"state" : backsource_state}} # create the evaluation context
-            #print("Domain:",backsource_domain, "state:",backsource_state.shape, predicate_expr.replace(target_symbol, source_symbol))
-
-            pred_result = backsource_executor.evaluate(predicate_expr.replace(target_symbol, source_symbol), backsource_context)
-
-            dual_path_conf = sorted_apply_paths[i][ - 1 - 0] # TODO: 0 and retract_length??? consider the contribution from both parts
-            for j in range(retract_length):
-                dual_path_conf = dual_path_conf * symbol_path[1 + 2 * j]
-
-            final_results.append(pred_result["end"].squeeze(-1)) # append the output diction
-            final_conf.append(dual_path_conf)
-
-        outputs = {
-            "results" : final_results,
-            "probs"   : final_conf,
-            "states"  : final_states,
-            "state_path" : sorted_state_paths,
-            "apply_path" : sorted_apply_paths,
-            "metas_path" : sorted_paths,
-            "symbol_path": paths_of_symbols}
-        return outputs
-
-
-    def _compute_confidence(self, path: List[Tuple[str, str, int]], predicate: str) -> torch.Tensor:
-        """Compute confidence score for a path and predicate."""
-        confidence = torch.tensor(1.0)
-        length_penalty = 1.0 / (len(path) + 1)
-        confidence *= length_penalty
-
-        for src, tgt, idx in path:
-            morphism = self.get_morphism(src, tgt, idx)
-            pred_matrix, _ = morphism.predicate_matrix()
-            max_connection = pred_matrix.max()
-            confidence *= max_connection
-
-        return confidence
-
-    def get_path(self, 
-                 source: str, 
-                 target: str, 
-                 max_length: int = 10) -> List[List[Tuple[str, str, int]]]:
-        """find all the possible paths from source domain to the target domain.
         Args:
-            source: the name of the source domain
-            target: the name of the target domain
-            max_length: maximum length of the 
+            source (str): The source domain name
             
         Returns:
-            a list of all the paths, each path is a list of tuples of (source, target, index)
+            dict: Dictionary of {edge_id: morphism} for all edges starting from source
         """
-        def dfs(current: str, 
-               path: List[Tuple[str, str, int]], 
-               visited: set) -> List[List[Tuple[str, str, int]]]:
-            if len(path) > max_length:
-                return []
-            if current == target:
-                return [path]
-                
-            paths = []
-            for (src, tgt), morphism_names in self.edge_indices.items():
-                if src == current and tgt not in visited:
-                    for idx, _ in enumerate(morphism_names):
-                        new_visited = visited | {tgt}
-                        new_path = path + [(src, tgt, idx)]
-                        new_paths = dfs(tgt, new_path, new_visited)
-                        paths.extend(new_paths)
-            return paths
-        return dfs(source, [], {source})
-
-    def get_path_prob(self, path: List[Tuple[str, str, int]]) -> torch.Tensor:
-        """Calculate the log probability of a path by summing log probabilities"""
-        log_prob = 0.0
-        # Add source domain probability
-        if path:
-            source_domain = path[0][0]
-            log_prob += torch.log(self.get_domain_prob(source_domain))
-
-        # Add probabilities along the path
-        for source, target, idx in path:
-            log_prob += torch.log(self.get_domain_prob(target)) # Add target domain probability
-            morphism_name = self.edge_indices[(source, target)][idx]
-            log_prob += torch.log(self.get_morphism_prob(morphism_name))# Add morphism probability
-            
-        return log_prob
-
-    def compose_path(self, path: List[Tuple[str, str, int]]) -> nn.Module:
-        """compose morphisms along the path
-        Args:
-            path: path a list of tuples of (source, target,index)
-        Returns:
-            a composed module that applis the state transition according to path
-        """
-        class ComposedMorphism(nn.Module):
-            def __init__(self, morphisms: List[nn.Module]):
-                super().__init__()
-                self.morphisms = nn.ModuleList(morphisms)
-                
-            def forward(self, x):
-                for morphism in self.morphisms:
-                    x = morphism(x)
-                return x
-                
-        # get the morphisms along the path
-        morphisms = []
-        for source, target, idx in path:
-            morphism = self.get_morphism(source, target, idx)
-            morphisms.append(morphism)
-            
-        return ComposedMorphism(morphisms)
-
-    def exists_path(self, source : str, target : str) -> torch.Tensor:
-        """probability mask of there exists a path between source domain and target domain
-        Args:
-            source : the source domain name
-            target : the target domain name
-        Returns:
-            the probbaility there exists a path between the source domain and the target domain
-        """
-        all_paths = self.get_path(source, target)
-        
-        if not all_paths:
-            return torch.tensor(0.0)
-            
-        # Calculate log probability for each path
-        path_log_probs = torch.stack([self.get_path_prob(path) for path in all_paths])
-        
-        # Return max probability (using log-sum-exp trick for numerical stability)
-        max_log_prob = torch.max(path_log_probs)
-        return max_log_prob.exp()
-    
-    def get_most_probable_path(self, source: str, target: str) -> Tuple[List[Tuple[str, str, int]], torch.Tensor]:
-        """Get the path with highest probability and its probability"""
-        all_paths = self.get_path(source, target)
-        
-        if not all_paths:
-            return None, torch.tensor(0.0)
-            
-        path_probs = [(path, self.get_path_prob(path)) for path in all_paths]
-        best_path, best_prob = max(path_probs, key=lambda x: x[1])
-        
-        return best_path, best_prob.exp()
-
-    def metaphorical_evaluation(self, source_state: torch.Tensor, target_predicate: str,
-                                source_predicate: Optional[str] = None, source_domain : Optional[str] = None, eval_type : str = "literal",
-                                visualize: bool = False) -> Dict[str, Any]:
-        """
-        Perform metaphorical evaluation between source and target domains.
-
-        Args:
-            source_state: State tensor in the source domain
-            target_predicate: Corresponding predicate in the target domain
-            source_predicate: Predicate to evaluate in the source domain (optional)
-            visualize: Whether to visualize the evaluation process (default: False)
-
-        Returns:
-            Dictionary containing evaluation results, states, and other relevant information
-        """
-        # Find source and target domain executors
-        source_executor = None
-        target_executor = None
-        source_domain_name = source_domain
-        target_domain_name = None
-
-        for domain_name, executor in self.domains.items():
-            for predicate in combine_dict_lists(executor.predicates):
-                if source_predicate is not None and str(predicate) == source_predicate:
-                    source_executor = executor
-                    source_domain_name = domain_name
-                if str(predicate) == target_predicate:
-                    target_executor = executor
-                    target_domain_name = domain_name
-        
-        if target_executor is None:
-            raise ValueError(f"Could not find executor for target predicate: {target_predicate}")
-
-        # If source predicate not provided, use target domain for source evaluation
-        if source_predicate is None:
-            source_executor = target_executor
-
-        # Evaluate source predicate
-        source_context = {
-            0: {"end": 1.0, "state": source_state},
-            1: {"end": 1.0, "state": source_state}
-        }
-
-        if source_predicate is not None:
-            source_result = source_executor.evaluate(f"({source_predicate} $0 $1)", source_context)
-        else:
-            n = source_state.shape[0]
-            source_result = {"end":torch.zeros([n,n]), "state" : source_state}
-
-        # Perform metaphorical evaluation
-        evaluation_result = self.evaluate(source_state, target_predicate,
-                                          source_domain_name, eval_type)
-        
-
-        target_results = evaluation_result["results"]
-        target_states = evaluation_result["states"]
-
-        # Prepare target context for visualization
-
-        #print("target:",target_states[0].shape)
-        target_context = {
-            0: {"end": 1.0, "state": target_states[0].detach()},
-            1: {"end": 1.0, "state": target_states[0].detach()}
-        }
-
-        # Visualize source and target domains (optional)
-        if visualize:
-            if "Generic" not in source_domain:
-                source_executor.visualize(source_context, source_result["end"].detach())
-            target_executor.visualize(target_context, target_results[0].detach())
-            plt.show()
-
+        prefix = f"{source}__"
         return {
-            "source_result": source_result,
-            "target_results": target_results,
-            "target_states": target_states,
-            "source_context": source_context,
-            "target_context": target_context
+            edge_id: morphism for edge_id, morphism in self.metaphors.items()
+            if edge_id.startswith(prefix)
         }
-
-    def visualize_path(self, state_path, metas_path, result = None, save_dir="outputs"):
+    
+    def get_incoming_edges(self, target):
         """
-        Visualizes each state in the path using the corresponding executors.
+        Get all edges that point to a specific domain.
+        
+        Args:
+            target (str): The target domain name
+            
+        Returns:
+            dict: Dictionary of {edge_id: morphism} for all edges pointing to target
+        """
+        # This requires parsing the edge_id to extract parts
+        return {
+            edge_id: morphism for edge_id, morphism in self.metaphors.items()
+            if edge_id.split("__")[1] == target
+        }
+    
+    def parse_edge_id(self, edge_id):
+        """
+        Parse an edge_id to get source, target, and index.
+        
+        Args:
+            edge_id (str): The edge identifier in format "source__target__index"
+            
+        Returns:
+            tuple: (source, target, index)
+        """
+        parts = edge_id.split("__")
+        if len(parts) != 3:
+            raise ValueError(f"Invalid edge_id format: {edge_id}")
+        return parts[0], parts[1], parts[2]
+    
+    """Collect the Lexicon Entries for each Concept Domain"""
+    def get_lexicon_entries(self):
+        """collect all the lexicon entries in each of the ConceptDomain"""
+        entries = []
+        for key, concept_domain in self.domains.items():
+            for entry in concept_domain.get_lexicon_entries():
+                entries.append(entry)
+        return entries
+
+    def get_predicate(self, predicate):
+        """return the predicate diction {name, parameters, type}"""
+        for name, domain in self.domains.items():
+            for pname in domain.predicates:
+                if pname == predicate:
+                    return name, domain.predicates[pname]
+        return
+
+    """Conceptual Metaphor Extentions the Concept Domains"""
+    def get_schema_path(self, source_schema, target_domain, target_type):
+        """Given a source schema, find all the paths from its domain to the target domain and target_type
+        transitions between schemas using the Metaphor Morphisms
+        
+        Args:
+            source_schema (Schema): The starting schema
+            target_domain (str): The name of the target domain
+            target_type (str): The type in the target domain to reach
+            
+        Returns:
+            list: List of tuples (edge_path, schema_path, probability) where:
+                - edge_path is a list of edge_ids representing the path
+                - schema_path is a list of schemas representing the transformations
+                - probability is the cumulative probability of the entire path
+        """
+        source_domain = source_schema.domain
+        
+        # If already in target domain with correct type, return empty path with probability 1.0
+        if source_domain == target_domain and source_schema.dtype == target_type:
+            return [([], [source_schema], 1.0)]
+        
+        # Track visited states to avoid cycles
+        visited = set()
+        
+        # Use BFS to find paths
+        def bfs_paths():
+            # Queue entries are (current_domain, current_schema, edge_path, schema_path, cumulative_prob)
+            queue = [(source_domain, source_schema, [], [source_schema], 1.0)]
+            results = []
+            
+            while queue:
+                current_domain, current_schema, edge_path, schema_path, cum_prob = queue.pop(0)
+                
+                # Generate a state key to track visited states
+                state_key = (current_domain, current_schema.dtype)
+                if state_key in visited:
+                    continue
+                visited.add(state_key)
+                
+                # Get all outgoing edges from current domain
+                outgoing_edges = self.get_outgoing_edges(current_domain)
+                
+                for edge_id, morphism in outgoing_edges.items():
+                    # Parse the edge to get target domain
+                    _, edge_target, _ = self.parse_edge_id(edge_id)
+                    
+                    # Apply the morphism to get the new schema
+                    # If target_type specified and we're at target domain, use it
+                    if edge_target == target_domain:
+                        new_schema, transition_prob = morphism(current_schema, target_type=target_type)
+                    else:
+                        new_schema, transition_prob = morphism(current_schema)
+                    
+                    # Calculate transition probability from the mask values
+                    # The mask in schema contains confidence values in probability space
+                    # Take the average confidence as the probability of this transition
+                    #transition_prob = torch.mean(new_schema.mask).item()
+                    #print(transition_prob)
+                    
+                    # Update cumulative probability (multiply by transition probability)
+                    new_cum_prob = cum_prob * transition_prob
+                    #print(new_cum_prob, transition_prob)
+                    
+                    # New path information
+                    new_edge_path = edge_path + [edge_id]
+                    new_schema_path = schema_path + [new_schema]
+                    
+                    # Check if we've reached the target
+                    if new_schema.domain == target_domain and new_schema.dtype == target_type:
+                        results.append((new_edge_path, new_schema_path, new_cum_prob))
+                    else:
+                        # Continue searching (only if probability is not too low)
+                        if new_cum_prob > 1e-5:  # Threshold to avoid exploring very unlikely paths
+                            queue.append((
+                                edge_target, 
+                                new_schema, 
+                                new_edge_path, 
+                                new_schema_path, 
+                                new_cum_prob
+                            ))
+            
+            return results
+        
+        # Run BFS to find all paths
+        paths = bfs_paths()
+        
+        # Sort paths by probability (highest first)
+        paths.sort(key=lambda p: p[2], reverse=True)
+        
+        return paths
+    
+    def get_transformed_schema(self, input_schema, target_domain, expected_type):
+        """
+        Get the transformed schema by finding paths from input_schema to target_domain with expected_type.
+        Returns a weighted combination of transformed schemas from all valid paths,
+        where the weights are normalized path probabilities.
 
         Args:
-            state_path (list): List of states along the path.
-            metas_path (list): List of tuples (source, target, morphism index) representing metaphors.
-            save_dir (str): Directory to save visualized images.
+            input_schema (Schema): The starting schema
+            target_domain (str): The name of the target domain
+            expected_type (str): The type in the target domain to reach
+
+        Returns:
+            Schema: A weighted combination of all possible transformed schemas
         """
-        os.makedirs(save_dir, exist_ok=True)
-        visualizations = []
+        # Use the existing get_schema_path method
+        paths = self.get_schema_path(input_schema, target_domain, expected_type)
 
-        for i, ((src_domain, tgt_domain, morphism_index), state) in enumerate(zip(metas_path[:], state_path[1:])):
-            if src_domain not in self.domains or tgt_domain not in self.domains:
-                print(f"Domain missing: {src_domain} or {tgt_domain}")
-                continue
+        if not paths:
+            raise ValueError(f"No valid path found from {input_schema.domain} to {target_domain} with type {expected_type}")
 
-            # Get the executor for the target domain
-            target_executor = self.domains[tgt_domain]
-            assert isinstance(target_executor, CentralExecutor), "Target domain must be a CentralExecutor"
+        # Extract all final schemas and their probabilities
+        final_schemas = [path[1][-1] for path in paths]  # Last schema in each path
+        path_probs = [path[2] for path in paths]  # Probability of each path
 
-            # Create context
-            state = state.cpu().detach()
-            context = {0: {"state": state}, 1: {"state": state}}
+        # Normalize the probabilities to sum to 1
+        total_prob = sum(path_probs)
+        normalized_probs = [prob / total_prob for prob in path_probs]
 
-            # Generate visualization
-            fig, ax = plt.subplots()
-            try:
-                target_executor.visualize(context, result.cpu().detach())
-            except:
-                print(target_executor.domain.domain_name)
-            ax.set_title(f"Step {i}: {src_domain} → {tgt_domain}")
 
-            # Save image
-            img_path = os.path.join(save_dir, f"path_step_{i}.png")
-            plt.savefig(img_path)
-            plt.close(fig)
+        # If there's only one path, return its schema directly
+        if len(paths) == 1:
+            #print(paths[0][1][-1].end.shape)
+            return final_schemas[0]
 
-            # Convert to base64 for inline display
-            img_buffer = BytesIO()
-            with open(img_path, "rb") as img_file:
-                base64_image = base64.b64encode(img_file.read()).decode()
-            visualizations.append({"step": i, "source": src_domain, "target": tgt_domain, "image": base64_image})
+        # Create a weighted combination of all schemas
+        # First, verify that all schemas have compatible shapes
+        # We'll assume that the "end" tensors should have the same shape except possibly the last dimension
+        # and that "mask" tensors should have the same shape
 
-        return visualizations
+        # Check end tensor shapes
+        end_shapes = [schema.end.shape[:-1] for schema in final_schemas]
+        if not all(shape == end_shapes[0] for shape in end_shapes):
+            raise ValueError("Cannot combine schemas with incompatible end tensor shapes")
+
+        # Check mask tensor shapes
+        mask_shapes = [schema.mask.shape for schema in final_schemas]
+        if not all(shape == mask_shapes[0] for shape in mask_shapes):
+            raise ValueError("Cannot combine schemas with incompatible mask tensor shapes")
+
+        # Get the maximum last dimension size for "end" tensors to determine the combined size
+        max_last_dim = max(schema.end.shape[-1] for schema in final_schemas)
+
+        # Create a new "end" tensor with the combined shape
+        leading_dims = list(final_schemas[0].end.shape[:-1])  # All dimensions except the last
+        new_end_shape = leading_dims + [max_last_dim]
+
+        new_end = torch.zeros(
+            new_end_shape,
+            dtype=final_schemas[0].end.dtype,
+            device=final_schemas[0].end.device
+        )
+
+        # Create a new "mask" tensor with the same shape as the original masks
+        new_mask = torch.zeros(
+            final_schemas[0].mask.shape,
+            dtype=final_schemas[0].mask.dtype,
+            device=final_schemas[0].mask.device
+        )
+
+
+        # Fill in the new tensors as a weighted combination of the original tensors
+        for i, (schema, weight) in enumerate(zip(final_schemas, normalized_probs)):
+            # For the "end" tensor, we need to handle possibly different last dimension sizes
+            last_dim_size = schema.end.shape[-1]
+
+            # Create slices for the leading dimensions (all of them)
+            indices = [slice(None)] * len(new_end_shape)
+
+            # Set the last dimension slice to only include the relevant portion
+            indices[-1] = slice(0, last_dim_size)
+
+            # Update the new_end tensor with the weighted contribution from this schema
+            new_end[tuple(indices)] += schema.end * weight
+            #print(schema.end)
+            # Update the new_mask tensor with the weighted contribution
+            new_mask += schema.mask * weight
+
+        # Create and return the combined schema
+        return Schema(
+            end=new_end,
+            mask=new_mask,
+            dtype=final_schemas[0].dtype,
+            domain=target_domain
+        )
+
+    """TODO: 实在理不清了, 先按照每个参数按照概率加权然后合并来算，以后再考虑topK(真的服了)"""
+    def evaluate_predicate(self, predicate, input_schemas, top_k = None):
+        """
+        for each argument
+            1. search paths from the source schema (arg) to the domain predicate located (and the corresponding arg type)
+            2. find the expected "end" and "mask" according to the path probability (normalize them)
+        then we have the expected arguments.
+        make the product of them to get the new product schema, then execute on the predicate using the corresponding domain executor
+        on the "end" of the product schema
+        """
+        domain, predicate_bind = self.get_predicate(predicate) # like {'name': 'domain', 'parameters': ['?x-function'], 'type': 'set'}
+        expected_params = predicate_bind['parameters']
+        result_type = predicate_bind['type']
+        domain_executor = self.domains[domain].executor
+        
+        if len(input_schemas) != len(expected_params):
+            raise ValueError(f"Expected {len(expected_params)} arguments for predicate {predicate}, got {len(input_schemas)}")
+
+        """collect the expected transform from source to target"""
+        argument_schemas = []
+
+        for i, (param, input_schema) in enumerate(zip(expected_params, input_schemas)):
+            # Extract the expected type from the parameter (e.g., '?x-function' -> 'function')
+            expected_type = param.split('-')[1] if '-' in param else None
+            if expected_type is None:
+                raise ValueError(f"Could not determine type for parameter {param}")
+
+            transformed_schema = self.get_transformed_schema(input_schema, domain, expected_type)
+
+            argument_schemas.append(transformed_schema)
+        """if input in same source domain, the find the retraction"""
+    
+        # Make the product of the argument schemas to get the new product schema
+        # Use the product function we defined earlier
+        product_schema = product(*argument_schemas)
+
+        expression = generate_lambda_predicate(predicate, len(expected_params))
+        context = schemas_to_context(argument_schemas)
+
+        results = domain_executor.evaluate(expression, context)
+
+ 
+        return Schema(end = results["end"], mask = product_schema.mask, dtype = result_type, domain = domain)

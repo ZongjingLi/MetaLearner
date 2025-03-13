@@ -1,3 +1,9 @@
 
 *.pth
 core/prompt/access_llm.py
+*.md
+*.json
+*.gif
+*.csv
+*.png
+/data

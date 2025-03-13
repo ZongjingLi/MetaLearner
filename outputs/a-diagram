@@ -1,0 +1,15 @@
+digraph {
+	Objects
+	Function
+	RCC8
+	Set
+	Logic
+	Objects -> Function [label=1.0 penwidth=1.0]
+	Objects -> Set [label=1.0 penwidth=1.0]
+	Objects -> Set [label=1.0 penwidth=1.0]
+	Objects -> RCC8 [label=1.0 penwidth=1.0]
+	Function -> Set [label=1.0 penwidth=1.0]
+	Set -> RCC8 [label=1.0 penwidth=1.0]
+	RCC8 -> Set [label=1.0 penwidth=1.0]
+	Objects -> Logic [label=1.0 penwidth=1.0]
+}

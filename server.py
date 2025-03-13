@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from io import BytesIO
 import base64
 import torch
-from core.metaphors.diagram import ConceptDiagram, MetaphorMorphism
+from core.metaphors.diagram_legacy import ConceptDiagram, MetaphorMorphism
 
 import json
 
@@ -89,7 +89,7 @@ concept_diagram = ConceptDiagram().to(device)
 # concept_diagram.add_morphism("GenericDomain", "LineDomain", MetaphorMorphism(...))
 
 if True:
-    from core.metaphors.diagram import ConceptDiagram, MetaphorMorphism
+    from core.metaphors.diagram_legacy import ConceptDiagram, MetaphorMorphism
     from domains.generic.generic_domain import generic_executor
     from domains.line.line_domain import line_executor
     from domains.rcc8.rcc8_domain import rcc8_executor
