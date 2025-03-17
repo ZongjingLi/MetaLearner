@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Particle Movement</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="particleCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById('particleCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let particles = [];
+
+        const ws = new WebSocket("ws://localhost:8889/particles");
+        ws.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            particles = data.particles;
+        };
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = 0; i < particles.length; i++) {
+                let p = particles[i];
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+                ctx.fillStyle = 'white';
+                ctx.fill();
+
+                // 更新粒子位置
+                p.x += p.speedX;
+                p.y += p.speedY;
+
+                // 边界检测，超出边界则反向移动
+                if (p.x > canvas.width || p.x < 0) {
+                    p.speedX = -p.speedX;
+                }
+                if (p.y > canvas.height || p.y < 0) {
+                    p.speedY = -p.speedY;
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>

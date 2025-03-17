@@ -12,6 +12,8 @@ from datasets.ccsp_dataset import collate_graph_batch
 from core.spatial.energy_graph import PointEnergyMLP
 from core.spatial.diffusion import ScheduleLogLinear, training_loop
 
+
+
 constraints = {
         "valid-grasp": 1,
     }
