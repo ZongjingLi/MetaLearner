@@ -660,6 +660,86 @@ class ShapeSortingDatasetGenerator:
         anim.save(filename, writer='pillow', fps=10)
         plt.close(fig)
 
+    def generate_dataset(self):
+        """Generate the complete dataset of shape-hole pairs"""
+        print(f"Generating dataset with {self.num_samples} samples...")
+    
+        # Parameters for shape generation
+        shape_params = {
+        "cube": {"size": 0.5, "num_points": 1000, "noise_level": 0.02},
+        "cylinder": {"radius": 0.3, "height": 0.6, "num_points": 1000, "noise_level": 0.02},
+        "sphere": {"radius": 0.3, "num_points": 1000, "noise_level": 0.02},
+        "pyramid": {"base_size": 0.5, "height": 0.7, "num_points": 1000, "noise_level": 0.02},
+        "pentagon": {"radius": 0.4, "height": 0.3, "num_points": 1000, "noise_level": 0.02},
+        "star": {"outer_radius": 0.4, "inner_radius": 0.2, "height": 0.3, "num_points": 1000, "noise_level": 0.02}
+        }
+    
+        # Parameters for hole generation
+        hole_params = {
+        "clearance": 0.05,
+        "thickness": 0.1,
+        "base_size": 2.0
+        }
+    
+        for i in range(self.num_samples):
+            # Randomly select a shape type
+            shape_type = np.random.choice(self.shape_types)
+        
+            print(f"Sample {i+1}/{self.num_samples}: Generating {shape_type}...")
+        
+            # Generate shape point cloud
+            shape_points = self.generate_shape_points(shape_type, **shape_params[shape_type])
+        
+            # Generate matching hole point cloud
+            hole_points = self.generate_hole_from_shape(shape_points, **hole_params)
+        
+            # Generate success transformation
+            transform = self.generate_success_transform(shape_points, hole_points, shape_type)
+        
+            # Save shape and hole point clouds to CSV files
+            shape_file = os.path.join("objects", f"shape_{i:04d}_{shape_type}.csv")
+            hole_file = os.path.join("holes", f"hole_{i:04d}_{shape_type}.csv")
+        
+            shape_path = os.path.join(self.output_dir, shape_file)
+            hole_path = os.path.join(self.output_dir, hole_file)
+        
+            # Save as CSV with headers
+            np.savetxt(shape_path, shape_points, delimiter=',', header='x,y,z', comments='')
+            np.savetxt(hole_path, hole_points, delimiter=',', header='x,y,z', comments='')
+        
+            # Create visualization
+            vis_file = os.path.join("visualizations", f"vis_{i:04d}_{shape_type}.png")
+            vis_path = os.path.join(self.output_dir, vis_file)
+            self.visualize_shape_hole_pair(shape_points, hole_points, transform, vis_path)
+        
+            # Create animation
+            anim_file = os.path.join("animations", f"anim_{i:04d}_{shape_type}.gif")
+            anim_path = os.path.join(self.output_dir, anim_file)
+            self.create_animation(shape_points, hole_points, transform, anim_path)
+        
+            # Add sample to dataset info
+            sample_info = {
+            "id": i,
+            "shape_type": shape_type,
+            "shape_file": shape_file,
+            "hole_file": hole_file,
+            "visualization_file": vis_file,
+            "animation_file": anim_file,
+            "success_transform": transform.tolist(),
+            "parameters": {
+                "shape": shape_params[shape_type],
+                "hole": hole_params
+                }
+            }
+        
+            self.dataset_info["samples"].append(sample_info)
+    
+        # Save dataset metadata
+        with open(os.path.join(self.output_dir, "dataset_info.json"), "w") as f:
+            json.dump(self.dataset_info, f, indent=2)
+    
+        print(f"Dataset generation complete. Generated {self.num_samples} samples.")
+
 import os
 import json
 import numpy as np
