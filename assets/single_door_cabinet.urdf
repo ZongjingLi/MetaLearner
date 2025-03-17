@@ -1,0 +1,199 @@
+<?xml version="1.0" ?>
+<robot name="single_door_cabinet">
+  <!-- Cabinet base/frame (hollow inside) -->
+  <link name="cabinet_base">
+    <inertial>
+      <mass value="10"/>
+      <origin rpy="0 0 0" xyz="0 0 0.4"/>
+      <inertia ixx="1.5" ixy="0" ixz="0" iyy="1.5" iyz="0" izz="0.7"/>
+    </inertial>
+    
+    <!-- Bottom panel -->
+    <visual name="bottom">
+      <origin rpy="0 0 0" xyz="0 0 0.01"/>
+      <geometry>
+        <box size="0.6 0.4 0.02"/>
+      </geometry>
+      <material name="cabinet_color">
+        <color rgba="0.7 0.5 0.3 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0.01"/>
+      <geometry>
+        <box size="0.6 0.4 0.02"/>
+      </geometry>
+    </collision>
+    
+    <!-- Top panel -->
+    <visual name="top">
+      <origin rpy="0 0 0" xyz="0 0 0.8"/>
+      <geometry>
+        <box size="0.6 0.4 0.02"/>
+      </geometry>
+      <material name="cabinet_color"/>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0.8"/>
+      <geometry>
+        <box size="0.6 0.4 0.02"/>
+      </geometry>
+    </collision>
+    
+    <!-- Left panel -->
+    <visual name="left">
+      <origin rpy="0 0 0" xyz="-0.3 0 0.4"/>
+      <geometry>
+        <box size="0.02 0.4 0.8"/>
+      </geometry>
+      <material name="cabinet_color"/>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="-0.3 0 0.4"/>
+      <geometry>
+        <box size="0.02 0.4 0.8"/>
+      </geometry>
+    </collision>
+    
+    <!-- Right panel -->
+    <visual name="right">
+      <origin rpy="0 0 0" xyz="0.3 0 0.4"/>
+      <geometry>
+        <box size="0.02 0.4 0.8"/>
+      </geometry>
+      <material name="cabinet_color"/>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0.3 0 0.4"/>
+      <geometry>
+        <box size="0.02 0.4 0.8"/>
+      </geometry>
+    </collision>
+    
+    <!-- Back panel -->
+    <visual name="back">
+      <origin rpy="0 0 0" xyz="0 -0.2 0.4"/>
+      <geometry>
+        <box size="0.6 0.02 0.8"/>
+      </geometry>
+      <material name="cabinet_color"/>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 -0.2 0.4"/>
+      <geometry>
+        <box size="0.6 0.02 0.8"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- Single Door -->
+  <link name="door">
+    <inertial>
+      <mass value="3"/>
+      <origin rpy="0 0 0" xyz="0.29 0 0"/>
+      <inertia ixx="0.18" ixy="0" ixz="0" iyy="0.18" iyz="0" izz="0.02"/>
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0" xyz="0.29 0 0"/>
+      <geometry>
+        <box size="0.58 0.02 0.78"/>
+      </geometry>
+      <material name="door_color">
+        <color rgba="0.6 0.4 0.2 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0.29 0 0"/>
+      <geometry>
+        <box size="0.58 0.02 0.78"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- Door Handle -->
+  <link name="door_handle">
+    <inertial>
+      <mass value="0.1"/>
+      <origin rpy="0 0 0" xyz="0 0.04 0"/>
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001"/>
+    </inertial>
+    
+    <!-- Handle base -->
+    <visual name="handle_base">
+      <origin rpy="0 0 0" xyz="0 0.02 0"/>
+      <geometry>
+        <box size="0.03 0.04 0.08"/>
+      </geometry>
+      <material name="handle_color">
+        <color rgba="0.8 0.8 0.8 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0.02 0"/>
+      <geometry>
+        <box size="0.03 0.04 0.08"/>
+      </geometry>
+    </collision>
+    
+    <!-- Handle grip -->
+    <visual name="handle_grip">
+      <origin rpy="1.57 0 0" xyz="0 0.04 0"/>
+      <geometry>
+        <cylinder radius="0.01" length="0.08"/>
+      </geometry>
+      <material name="handle_color"/>
+    </visual>
+    <collision>
+      <origin rpy="1.57 0 0" xyz="0 0.04 0"/>
+      <geometry>
+        <cylinder radius="0.01" length="0.08"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- Shelf -->
+  <link name="shelf">
+    <inertial>
+      <mass value="2"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <inertia ixx="0.1" ixy="0" ixz="0" iyy="0.1" iyz="0" izz="0.1"/>
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <box size="0.58 0.38 0.02"/>
+      </geometry>
+      <material name="cabinet_color"/>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <box size="0.58 0.38 0.02"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- Door hinge joint -->
+  <joint name="door_joint" type="revolute">
+    <parent link="cabinet_base"/>
+    <child link="door"/>
+    <origin rpy="0 0 0" xyz="-0.3 0.2 0.4"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="10" lower="0" upper="2.0" velocity="1.0"/>
+    <dynamics damping="0.5" friction="0.0"/>
+  </joint>
+
+  <!-- Handle attachment -->
+  <joint name="handle_joint" type="fixed">
+    <parent link="door"/>
+    <child link="door_handle"/>
+    <origin rpy="0 0 0" xyz="0.54 0 0"/>
+  </joint>
+
+  <!-- Shelf attachment -->
+  <joint name="shelf_joint" type="fixed">
+    <parent link="cabinet_base"/>
+    <child link="shelf"/>
+    <origin rpy="0 0 0" xyz="0 0 0.4"/>
+  </joint>
+</robot>

@@ -215,21 +215,24 @@ class PointEnergyMLP(nn.Module, ModelMixin):
             self.energies[name] = TimeInputEnergyMLP(arity * (dim + attr_dim))
         self.input_dims = (dim + attr_dim,)
 
-    def forward(self, x, sigma, cond = None):
+    def forward(self, x, sigma, attr = None, cond = None):
 
         assert cond is not None, """cond requires edge parameters"""
         total_energy = 0.0
         x.requires_grad = True
-        #print("State Size:", x.shape)
-        #print("Sigma Size:", sigma.shape)
-        #print("Edge Size:", len(cond["edges"]))
-        #print(len(cond["edges"]))
+        
+        """handle the case of inputs are conditioned by the attributes"""
+        if attr is not None:
+            attr.required_grad = False
+            attr_cond_inputs = torch.cat([x, attr], dim = -1)
+        else:
+            attr_cond_inputs = x
+
         for edge in cond["edges"]:
             obj_idx = edge[:-1]
             type_name = edge[-1]
 
-
-            x_inputs = x[:,obj_idx, :]
+            x_inputs = attr_cond_inputs[:, obj_idx, :]#x[:,obj_idx, :]
 
             b, n, d= x_inputs.shape
 

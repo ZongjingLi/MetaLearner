@@ -144,7 +144,7 @@ def process_command(command):
         model = EnsembleModel(config)
         
         # Import and start the server
-        from server import make_app
+        from experiments.server import make_app
         import tornado
         
         # Create and start the server with the model

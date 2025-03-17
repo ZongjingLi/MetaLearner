@@ -157,7 +157,7 @@ image_files.append(final_image_path)
 
 # Load saved images and compile them into a GIF
 frames = [imageio.imread(img) for img in image_files]
-imageio.mimsave('visualization.gif', frames, duration=0.5)
+imageio.mimsave('outputs/visualization.gif', frames, duration=0.5)
 print("Done saved at outputs/visualization.gif")
 
 

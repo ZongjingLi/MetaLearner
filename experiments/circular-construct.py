@@ -59,7 +59,7 @@ loader   = DataLoader(dataset, batch_size=2048, collate_fn=collate_graph_batch)
 
 model    = PointEnergyMLP(constraints, dim = 3)
 schedule = ScheduleLogLinear(N=500, sigma_min=0.005, sigma_max=10)
-trainer  = training_loop(loader, model, schedule, epochs=1000)
+trainer  = training_loop(loader, model, schedule, epochs=000)
 losses   = [ns.loss.item() for ns in trainer]
 #torch.save(model.state_dict(),"checkpoints/circular_state.pth")4
 batchsize = 6
