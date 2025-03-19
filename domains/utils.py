@@ -15,6 +15,10 @@ from networkx.drawing.nx_agraph import to_agraph
 from typing import Dict, List, Tuple, Union, Optional
 from rinarak.knowledge.executor import CentralExecutor
 from rinarak.domain import load_domain_string, Domain
+import os
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+grammar_path = os.path.join(current_dir, "base.grammar")
 
 __all__ = [
     'build_domain_executor',
@@ -26,7 +30,7 @@ __all__ = [
     'draw_knowledge_graph',
     'DifferentiableOps'
 ]
-domain_parser = Domain()
+domain_parser = Domain(grammar_path)
 
 def build_domain_executor(domain: str, embedding_dim: int = 128) -> 'CentralExecutor':
     """Build domain executor from domain file.

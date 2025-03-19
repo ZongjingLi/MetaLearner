@@ -15,7 +15,9 @@ blockworld_domain_str = """
     on ?x-state ?y-state -> boolean
     clear-above ?x-state -> boolean
     holding ?x-state -> boolean
-    hand-free -> boolean
+)
+(: constant
+    hand-free - boolean
 )
 (:action
     (
@@ -54,7 +56,7 @@ blockworld_domain_str = """
     )
 )
 """
-
+import open3d as o3d
 from rinarak.knowledge.executor import CentralExecutor
 from rinarak.domain import load_domain_string, Domain
 from domains.utils import domain_parser
@@ -79,6 +81,7 @@ if __name__ == "__main__":
 
     context = {0:{"state": state, "end" : 1.0}, 1:{"state": state, "end" : 1.0}}
     context["hand-free"] = 1.0
+    
 
     res = blockworld_executor.evaluate("(block_position $0)", context)
     #res = blockworld_executor.evaluate("(hand-free)", context)
