@@ -5,11 +5,8 @@
 # @Last Modified time: 2025-02-28 12:42:51
 import torch
 import torch.nn as nn
-
-"""create some test domains """
 from rinarak.knowledge.executor import CentralExecutor
-from rinarak.domain import load_domain_string, Domain
-from domains.utils import domain_parser
+from rinarak.domain import load_domain_string
 
 function_domain_str = """
 (domain Function)
@@ -19,15 +16,28 @@ function_domain_str = """
     point -vector[float, 64] ;; a point in a set
 )
 (:predicate
-    domain ?x-function -> set
-    codomain ?x-function -> set
+    func_domain ?x-function -> set
+    func_codomain ?x-function -> set
     range ?x-function -> set
     map ?x-function ?y-point -> point ;; how to represent that, why that repr is good
 )
 
 """
-function_domain = load_domain_string(function_domain_str, domain_parser)
-function_executor = CentralExecutor(function_domain, "cone", 256)
+
+
+function_domain = load_domain_string(function_domain_str)
+
+class FunctionalExecutor(CentralExecutor):
+    def func_domain(self, function):
+        return
+    
+    def func_codomain(self, function):
+        return 
+    
+    def range(self):
+        return self.grounding
+
+function_executor = FunctionalExecutor(function_domain, concept_dim = 128)
 
 
 objects_domain_str = """
@@ -40,8 +50,8 @@ objects_domain_str = """
 )
 
 """
-objects_domain = load_domain_string(objects_domain_str, domain_parser)
-objects_executor = CentralExecutor(objects_domain, "cone", 256)
+objects_domain = load_domain_string(objects_domain_str)
+objects_executor = CentralExecutor(objects_domain, concept_dim = 128)
 
 path_domain_str = """
 (domain Path)
@@ -56,8 +66,8 @@ path_domain_str = """
 )
 
 """
-path_domain = load_domain_string(path_domain_str, domain_parser)
-path_executor = CentralExecutor(path_domain, "cone", 256)
+path_domain = load_domain_string(path_domain_str)
+path_executor = CentralExecutor(path_domain, concept_dim = 128)
 
 set_domain_str = """
 (domain Set)
@@ -73,8 +83,8 @@ set_domain_str = """
     in ?x-point ?y-set -> bool
 )
 """
-set_domain = load_domain_string(set_domain_str, domain_parser)
-set_executor = CentralExecutor(set_domain, "cone", 256)
+set_domain = load_domain_string(set_domain_str)
+set_executor = CentralExecutor(set_domain, concept_dim = 128)
 
 group_domain_str = """
 (domain Group)
@@ -89,8 +99,8 @@ group_domain_str = """
     id -> point
 )
 """
-group_domain = load_domain_string(group_domain_str, domain_parser)
-group_executor = CentralExecutor(group_domain, "cone", 256)
+group_domain = load_domain_string(group_domain_str)
+group_executor = CentralExecutor(group_domain, concept_dim = 128)
 
 complex_domain_str = """
 (domain Complex)
@@ -107,79 +117,40 @@ complex_domain_str = """
 )
 """
 
-from domains.rcc8.rcc8_domain import rcc8_executor
-from domains.logic.logic_domain import build_logic_executor
-logic_executor = build_logic_executor()
 
-from core.metaphors.base import *
-from core.metaphors.diagram_legacy import *
-from core.metaphors.diagram import *
-
-plt.show()
-diagram = ConceptDiagram()
-
-"""1. Create the test Concept Diagram"""
-
-nodes = {
-	"Objects" : objects_executor,
-	"Function" : function_executor,
-	"RCC8" : rcc8_executor,
-    "Set" : set_executor,
-    "Logic" : logic_executor
-}
-edges = [
-	("Objects", "Function"),
-	("Objects", "Set"),
-    ("Objects", "Set"),
-    ("Objects", "RCC8"),
-	("Function", "Set"),
-    ("Set", "RCC8"),
-    ("RCC8", "Set"),
-    ("Objects", "Logic")
+domains = [
+    function_executor, objects_executor, path_executor
 ]
 
-
-for domain in nodes: diagram.add_domain(domain, nodes[domain])
-for morph in edges: diagram.add_morphism(morph[0], morph[1], MetaphorMorphism(nodes[morph[0]], nodes[morph[1]]))
-
-diagram.visualize("outputs/a-diagram")
-
-device = "mps"
-diagram.to(device)
+from rinarak import stprint
+from core.metaphors.diagram_executor import MetaphorExecutor
 
 
-"""2. Evaluate an input for the Concept Diagram (Expectation)"""
-
-scores = torch.tensor([1.0, 0.1, 1.0, ], device = device)
-
-args = [
-    {"end" : torch.randn([3,256], device = device), "type":"objects", "domain" : "Objects","score" : scores},
-    {"end" : torch.randn([3,256], device = device), "type":"objects", "domain" : "Objects","score" : torch.ones([3], device = device)}
-]
-
-sample_path, sample_prob, results = diagram.sample_state_path(
-args, "Objects", "Set", "set")
+executor = MetaphorExecutor(domains, concept_dim = 128)
 
 
-path_dist, masks, states = diagram.gather(results)
+executor.add_caster("point:Path", "set:Function") # a point as a function
 
 
-paths = results["paths"]
-weights = results["path_scores"]
+point_type = torch.randn([4,64])
+
+val, p = executor.cast_type(point_type, "point:Path", "set:Function")
+
+grounding = {"Grounding": "HaHa"}
 
 
-masks = results["path_masks"][0]
+from rinarak.knowledge.symbolic import Expression
+expr = Expression.parse_program_string("go:Path(1)")
+
+print(expr)
+
+executor.chainer.add_edge("go:Path", "map:Function")
+executor.evaluate(expr, grounding)
 
 
-dot_code = diagram.visualize_paths(paths, weights, masks)
-from graphviz import Source
-graph = Source(dot_code)
-graph.render('outputs/paths_visualization', format='png', cleanup=True)
-
-
-#tree, edges, node_map = diagram.tree_expansion("Objects")
-#diagram.visualize_tree("Objects")
-
-
-results = diagram.evaluate_predicate("subset", args)
-
+"""
+import matplotlib.pyplot as plt
+result = executor.chainer.find_most_far_reaching_nodes("go:Path")
+executor.chainer.visualize_graph("go:Path", result)
+plt.show()"
+"""

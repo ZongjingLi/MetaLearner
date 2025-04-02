@@ -1,223 +1,234 @@
 import torch
 import torch.nn as nn
-from typing import Optional, Tuple, List, Dict
+import torch.nn.functional as F
+from typing import Optional, Tuple, List, Dict, Union, Any
+import re
 
-class TypeChecker:
+class TypeSpaceBase:
+    """Base class for type spaces that handle different kinds of data tensors"""
+    
+    @property
+    def n_dim(self) -> int:
+        """Return the number of dimensions for this type"""
+        raise NotImplementedError
+    
+    @property
+    def dtype(self) -> str:
+        """Return the data type for this type space"""
+        raise NotImplementedError
+    
+    def validate(self, value: Any) -> bool:
+        """Check if the given value conforms to this type space"""
+        raise NotImplementedError
+    
+    def create_empty(self, batch_size: Optional[int] = None) -> torch.Tensor:
+        """Create an empty tensor of this type with optional batch dimension"""
+        raise NotImplementedError
+    
     @staticmethod
-    def parse_vector_type(type_str: str) -> Optional[Tuple[str, List[str]]]:
-        """Parse vector type string like "vector[float,['64']]" into (base_type, dimensions)"""
-        if not type_str.startswith("vector["):
-            return None
-        try:
-            content = type_str[7:-1]
-            base_type, dims = content.split(',', 1)
-            dims = eval(dims)
-            return (base_type, dims)
-        except:
-            return None
+    def parse_type(type_str):
+        """
+        Parse a type string and return the corresponding TypeSpace object.
+        
+        Formats:
+        - "bool" -> BooleanTypeSpace()
+        - "vector[float,[128]]" -> VectorTypeSpace('float', [128])
+        - "vector[int,[8,16]]" -> VectorTypeSpace('int', [8, 16])
+        """
+        # Handle boolean type
+        if type_str.lower() == "bool":
+            return BooleanTypeSpace()
+        
+        # Handle vector types with format: vector[dtype,[dim1,dim2,...]]
+        vector_pattern = r"vector\[(.*?),\[(.*?)\]\]"
+        match = re.match(vector_pattern, type_str)
+        
+        if match:
+            # Extract dtype and dimensions
+            dtype = match.group(1).strip()
+            dims_str = match.group(2).strip()
+            
+            # Parse dimensions
+            try:
+                # Split by comma and convert to integers
+                dims = [int(d.strip()) for d in dims_str.split(',')]
+                return VectorTypeSpace(dtype, dims)
+            except ValueError:
+                raise ValueError(f"Invalid dimensions in vector type: {dims_str}. Expected integers.")
+        
+        # If we get here, the format is not recognized
+        raise ValueError(f"Unrecognized type format: {type_str}. Expected 'bool' or 'vector[dtype,[dim1,dim2,...]]'")
 
-    @staticmethod
-    def is_type_congruent(type1: str, type2: str) -> bool:
-        """Check if two types are congruent (can be mapped between)"""
-        if type1 == 'object' or type2 == 'object' or type1 is None or type2 is None:
-            return True
 
-        vec1 = TypeChecker.parse_vector_type(type1)
-        vec2 = TypeChecker.parse_vector_type(type2)
+class BooleanTypeSpace(TypeSpaceBase):
+    """Type space for boolean values (represented as 1D vector)"""
+    
+    @property
+    def n_dim(self) -> int:
+        return 1
+    
+    @property
+    def dtype(self) -> str:
+        return 'bool'
+    
+    def validate(self, value: Any) -> bool:
+        if isinstance(value, torch.Tensor):
+            return value.dtype == torch.bool
+        return isinstance(value, bool)
+    
+    def create_empty(self, batch_size: Optional[int] = None) -> torch.Tensor:
+        if batch_size is None:
+            return torch.zeros((1,), dtype=torch.bool)
+        return torch.zeros((batch_size, 1), dtype=torch.bool)
+    
+    def __str__(self) -> str:
+        return "bool"
 
-        if vec1 and vec2:
-            base1, dims1 = vec1
-            base2, dims2 = vec2
-            if base1 != base2:
-                return False
-            if all(isinstance(d, str) and d.isdigit() for d in dims1) and \
-               all(isinstance(d, str) and d.isdigit() for d in dims2):
-                return True
-            return False
+class VectorTypeSpace(TypeSpaceBase):
+    """Type space for fixed-dimension vectors"""
+    
+    def __init__(self, dtype: str, dims: List[int]):
+        self.dtype_str = dtype
+        self.dims = dims
+    
+    @property
+    def n_dim(self) -> int:
+        return len(self.dims)
+    
+    @property
+    def dtype(self) -> str:
+        return self.dtype_str
+    
+    @property
+    def num_elements(self) -> int:
+        """Return the total number of elements in this type space"""
+        return int(torch.prod(torch.tensor(self.dims)).item())
+    
+    def _torch_dtype(self) -> torch.dtype:
+        """Convert string dtype to torch dtype"""
+        dtype_map = {
+            'float': torch.float32,
+            'float32': torch.float32,
+            'float64': torch.float64,
+            'int': torch.int32,
+            'int32': torch.int32,
+            'int64': torch.int64,
+            'bool': torch.bool,
+        }
+        return dtype_map.get(self.dtype_str.lower(), torch.float32)
 
-        if not vec1 and not vec2:
-            return type1 == type2
 
-        return False
 
-class PredicateConnectionMatrix(nn.Module):
-    def __init__(self, source_domain, target_domain):
+class TypeCaster(nn.Module):
+    """
+    Neural network that performs batched differentiable type casting between
+    a specific source type space and target type space.
+    """
+    
+    def __init__(self, source_type: TypeSpaceBase, target_type: TypeSpaceBase, hidden_dim=256):
         super().__init__()
-        self.source_predicates = list(source_domain.predicates.keys())
-        self.target_predicates = list(target_domain.predicates.keys())
+        self.source_type = source_type
+        self.target_type = target_type
         
-        compatible_pairs = []
-        connections_count = 0
+        # Calculate total elements for source and target
+        self.source_elements = self.source_type.num_elements
+        self.target_elements = self.target_type.num_elements
         
-        for s_pred in self.source_predicates:
-            s_info = source_domain.predicates[s_pred]
-            s_type = s_info['type']
+        # Determine if this is a simple reshape or more complex transformation
+        self.requires_transformation = (
+            self.source_elements != self.target_elements or 
+            self.source_type.dtype != self.target_type.dtype
+        )
+        
+        # Main transformation network
+        if self.requires_transformation:
+            self.transformer = nn.Sequential(
+                nn.Linear(self.source_elements, hidden_dim),
+                nn.ReLU(),
+                nn.Linear(hidden_dim, hidden_dim),
+                nn.ReLU(),
+                nn.Linear(hidden_dim, self.target_elements)
+            )
+        
+        # Confidence prediction network (predicts probability of successful conversion)
+        self.confidence_net = nn.Sequential(
+            nn.Linear(self.target_elements, hidden_dim // 2),
+            nn.ReLU(),
+            nn.Linear(hidden_dim // 2, 1),
+            nn.Sigmoid()
+        )
+    
+    def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+        """
+        Perform batched type casting operation
+        
+        Args:
+            x: Input tensor or batch of tensors conforming to source_type
+              - For single input: shape should match source_type.dims
+              - For batched input: first dimension is batch size, rest should match source_type.dims
             
-            for t_pred in self.target_predicates:
-                t_info = target_domain.predicates[t_pred]
-                t_type = t_info['type']
-                
-                if not TypeChecker.is_type_congruent(s_type, t_type):
-                    continue
-                
-                if len(s_info['parameters']) != len(t_info['parameters']):
-                    continue
-                
-                types_compatible = True
-                for s_param, t_param in zip(s_info['parameters'], t_info['parameters']):
-                    s_param_type = s_param.split('-')[1] if '-' in s_param else None
-                    t_param_type = t_param.split('-')[1] if '-' in t_param else None
-                    
-                    if s_param_type and t_param_type:
-                        s_full_type = source_domain.types.get(s_param_type)
-                        t_full_type = target_domain.types.get(t_param_type)
-                        
-                        if not TypeChecker.is_type_congruent(s_full_type, t_full_type):
-                            types_compatible = False
-                            break
-                
-                if types_compatible:
-                    compatible_pairs.append((s_pred, t_pred))
-                    connections_count += 1
+        Returns:
+            Tuple of (cast_tensor, confidence)
+            - cast_tensor: The transformed tensor(s) that conform to target_type
+            - confidence: Confidence score (0-1) for each transformation
+        """
+        # Determine if input has batch dimension
+        original_shape = x.shape
+        is_batched = len(original_shape) > len(self.source_type.dims)
         
-        self.weight = nn.Parameter(torch.rand(connections_count)) if connections_count > 0 else None
-        self.connection_to_idx = {pair: idx for idx, pair in enumerate(compatible_pairs)}
+        if is_batched:
+            batch_size = original_shape[0]
+            # Reshape to (batch_size, source_elements)
+            x_flat = x.reshape(batch_size, -1)
+        else:
+            # Add batch dimension for processing
+            batch_size = 1
+            x_flat = x.reshape(1, -1)
+        
+        # Validate input shape
+        expected_flat_size = self.source_elements
+        if x_flat.shape[1] != expected_flat_size:
+            raise ValueError(
+                f"Input tensor has wrong number of elements. "
+                f"Got {x_flat.shape[1]}, expected {expected_flat_size}"
+            )
+        
+        # Apply transformation if needed
+        if self.requires_transformation:
+            transformed = self.transformer(x_flat)
+        else:
+            # Simple reshape
+            transformed = x_flat
+        
+        # Compute confidence score for each item in batch
+        confidence = self.confidence_net(transformed).squeeze(-1)
+        
+        # Reshape to target dimensions
+        target_shape = tuple(self.target_type.dims)
+        if is_batched:
+            reshaped = transformed.reshape(batch_size, *target_shape)
+        else:
+            # Remove batch dimension for single inputs
+            reshaped = transformed.reshape(*target_shape)
+        
+        # Convert to target data type
+        result = reshaped.to(self.target_type._torch_dtype())
+        
+        return result, confidence
 
-    def get_binary_regularization_loss(self) -> torch.Tensor:
-        """Calculate regularization loss to encourage binary weights"""
-        if self.weight is None:
-            return torch.tensor(0.0)
-        
-        weights = torch.sigmoid(self.weight)
-        # Encourage weights to be either 0 or 1 using binary cross entropy
-        reg_loss = -(weights * torch.log(weights + 1e-10) + 
-                    (1 - weights) * torch.log(1 - weights + 1e-10))
-        return reg_loss.mean()
 
-    def get_best_match(self, symbol, flag = "target"):
-        assert flag in ["target", "source"], "input symbol must be target or source"
-        if flag == "target":
-            t_idx = self.target_predicates.index(symbol)
-            target_weights = [self.weight[self.connection_to_idx[(s_pred, symbol)]] if (s_pred, symbol) in self.connection_to_idx else 0 for s_pred in self.source_predicates]
-
-            max_weight_idx = torch.argmax(torch.tensor(target_weights))
-            best_match_symbol = self.source_predicates[max_weight_idx]
-
-            best_match_weight = self.get_connection_weight(best_match_symbol, symbol)
-            return best_match_symbol, best_match_weight
-        elif flag == "source":
-            s_idx = self.source_predicates.index(symbol)
-            source_weights = [self.weight[self.connection_to_idx[(symbol, t_pred)]] if (symbol, t_pred) in self.connection_to_idx else 0 for t_pred in self.target_predicates]
-
-            max_weight_idx = torch.argmax(torch.tensor(source_weights))
-            best_match_symbol = self.target_predicates[max_weight_idx]
-            best_match_weight = torch.sigmoid(self.weight[self.connection_to_idx[(symbol, self.target_predicates[max_weight_idx])]])
-            return best_match_symbol, best_match_weight
-
-    def forward(self) -> Tuple[torch.Tensor, torch.Tensor]:
-        """Return the full connection matrix and regularization loss"""
-        if self.weight is None:
-            return torch.zeros(len(self.source_predicates), len(self.target_predicates)), torch.tensor(0.0)
-        
-        full_matrix = torch.zeros(len(self.source_predicates), len(self.target_predicates))
-        
-        for (s_pred, t_pred), idx in self.connection_to_idx.items():
-            s_idx = self.source_predicates.index(s_pred)
-            t_idx = self.target_predicates.index(t_pred)
-            full_matrix[s_idx, t_idx] = torch.sigmoid(self.weight[idx])
-        
-        reg_loss = self.get_binary_regularization_loss()    
-        return full_matrix, reg_loss
-        
-    def get_connection_weight(self, source_pred: str, target_pred: str) -> torch.Tensor:
-        """Get the connection weight between source and target predicates"""
-        if self.weight is None:
-            return torch.tensor(0.0)
-            
-        pair = (source_pred, target_pred)
-        if pair not in self.connection_to_idx:
-            return torch.tensor(0.0)
-            
-        idx = self.connection_to_idx[pair]
-        return torch.sigmoid(self.weight[idx])
-        
-    def set_connection_weight(self, source_pred: str, target_pred: str, value: float = 1.0):
-        """Set a specific connection weight"""
-        if self.weight is None:
-            return
-            
-        pair = (source_pred, target_pred)
-        if pair in self.connection_to_idx:
-            idx = self.connection_to_idx[pair]
-            self.weight.data[idx] = torch.logit(torch.tensor(value))
-
-class ActionConnectionMatrix(nn.Module):
-    def __init__(self, source_domain, target_domain):
-        super().__init__()
-        self.source_actions = list(source_domain.actions.keys())
-        self.target_actions = list(target_domain.actions.keys())
-        
-        compatible_pairs = []
-        connections_count = 0
-        
-        for s_action in self.source_actions:
-            s_info = source_domain.actions[s_action]
-            for t_action in self.target_actions:
-                t_info = target_domain.actions[t_action]
-                
-                if len(s_info.parameters) != len(t_info.parameters):
-                    continue
-                    
-                compatible_pairs.append((s_action, t_action))
-                connections_count += 1
-        
-        self.weight = nn.Parameter(torch.rand(connections_count)) if connections_count > 0 else None
-        self.connection_to_idx = {pair: idx for idx, pair in enumerate(compatible_pairs)}
-
-    def get_binary_regularization_loss(self) -> torch.Tensor:
-        """Calculate regularization loss to encourage binary weights"""
-        if self.weight is None:
-            return torch.tensor(0.0)
-        
-        weights = torch.sigmoid(self.weight)
-        # Encourage weights to be either 0 or 1 using binary cross entropy
-        reg_loss = -(weights * torch.log(weights + 1e-10) + 
-                    (1 - weights) * torch.log(1 - weights + 1e-10))
-        return reg_loss.mean()
-
-    def forward(self) -> Tuple[torch.Tensor, torch.Tensor]:
-        """Return the full connection matrix and regularization loss"""
-        if self.weight is None:
-            return torch.zeros(len(self.source_actions), len(self.target_actions)), torch.tensor(0.0)
-            
-        full_matrix = torch.zeros(len(self.source_actions), len(self.target_actions))
-        
-        for (s_action, t_action), idx in self.connection_to_idx.items():
-            s_idx = self.source_actions.index(s_action)
-            t_idx = self.target_actions.index(t_action)
-            full_matrix[s_idx, t_idx] = torch.sigmoid(self.weight[idx])
-            
-        reg_loss = self.get_binary_regularization_loss()
-        return full_matrix, reg_loss
-        
-    def get_connection_weight(self, source_action: str, target_action: str) -> torch.Tensor:
-        """Get the connection weight between source and target actions"""
-        if self.weight is None:
-            return torch.tensor(0.0)
-            
-        pair = (source_action, target_action)
-        if pair not in self.connection_to_idx:
-            return torch.tensor(0.0)
-            
-        idx = self.connection_to_idx[pair]
-        return torch.sigmoid(self.weight[idx])
-        
-    def set_connection_weight(self, source_action: str, target_action: str, value: float = 1.0):
-        """Set a specific connection weight"""
-        if self.weight is None:
-            return
-            
-        pair = (source_action, target_action)
-        if pair in self.connection_to_idx:
-            idx = self.connection_to_idx[pair]
-            self.weight.data[idx] = torch.logit(torch.tensor(value))
+if __name__ == "__main__":
+    # Define source and target types
+    source_type = VectorTypeSpace('float', [128])
+    target_type = VectorTypeSpace('float32', [8,9])
+    
+    # Create the TypeCaster
+    caster = TypeCaster(source_type, target_type, hidden_dim=256)
+    
+    # Create sample data
+    input_tensor = torch.randn(128)
+    
+    output_tensor = caster(input_tensor)
+    
+    #print(output_tensor[0])
+    #print(output_tensor[1])

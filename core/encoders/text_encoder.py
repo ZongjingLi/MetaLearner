@@ -1,11 +1,10 @@
 import torch
 import torch.nn as nn
-import nltk
 from nltk.tokenize import RegexpTokenizer
 from typing import List, Optional, Union
 
-from rinarak.utils.tokens import *
-from rinarak.utils.vocab  import *
+from helchriss.utils.tokens import *
+from helchriss.utils.vocab  import *
 
 class TextEncoder(nn.Module):
     def __init__(
@@ -191,12 +190,14 @@ if __name__ == "__main__":
     )
     
     # Encode single text
-    text = "Hello testing world"
-    embeddings = encoder.encode_text(text)
-    print(f"Shape of embeddings: {embeddings.shape}")
+    text = "Hello testing world first, second malganis"
+    embeddings, tokens = encoder.encode_text(text, return_tokens=1)
+    print(tokens)
+    #print(embeddings[0,:])
+    #print(f"Shape of embeddings: {embeddings.shape}")
     
     # Encode multiple texts
-    texts = ["First sequence", "Second sequence"]
-    embeddings, tokens = encoder.encode_text(texts, return_tokens=True)
-    print(f"Shape of batch embeddings: {embeddings.shape}")
-    print(f"Tokens: {tokens}")
+    #texts = ["First sequence test", "Second sequence"]
+    #embeddings, tokens = encoder.encode_text(texts, return_tokens=True)
+    #print(f"Shape of batch embeddings: {embeddings.shape}")
+    #print(f"Tokens: {tokens}")
