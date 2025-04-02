@@ -86,8 +86,8 @@ dataset = DirectionDataset(num_samples=100)
 loader = DataLoader(dataset, batch_size=1024, collate_fn=collate_graph_batch)
 model = PointEnergyMLP(constraints, dim=2)  # Changed dimension to 2
 schedule = ScheduleLogLinear(N=500, sigma_min=0.005, sigma_max=10)
-trainer = training_loop(loader, model, schedule, epochs=10)
-losses = [ns.loss.item() for ns in trainer]
+#trainer = training_loop(loader, model, schedule, epochs=4)
+#losses = [ns.loss.item() for ns in trainer]
 #plt.plot(losses)
 #torch.save(model.state_dict(),"checkpoints/direction_state.pth")
 
@@ -97,7 +97,6 @@ model.load_state_dict(torch.load(checkpoint_path, map_location="cpu", weights_on
 
 # Example directional constraintsb
 cond = {"edges": [(0,1,"south"), (1,2,"west"), (2,3,"west"), (1,4,"south")]}
-
 #cond = {"edges": [(0,1,"north"), (0,2,"south"), (0,3,"east"), (0,4,"west")]}
 cond = generate_grid_edges(4,4)
 batchsize = 4 * 4
@@ -143,7 +142,7 @@ if process:
 
 # Add the final state
 state_dict = {0: {"state": x0[0].detach()}, 1: {"state": x0[0].detach()}}
-#mat = direction_executor.evaluate("(north $0 $1)", state_dict)["end"]
+mat = direction_executor.evaluate("(north $0 $1)", state_dict)["end"]
 
 
 fig, ax = direction_executor.visualize(state_dict)

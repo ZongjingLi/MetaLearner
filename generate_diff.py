@@ -4,6 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import matplotlib.pyplot as plt
 from torch.utils.data import Dataset, DataLoader
+from scipy.interpolate import CubicSpline
 import math
 
 # Set random seeds for reproducibility
@@ -12,7 +13,7 @@ np.random.seed(42)
 
 # Hyperparameters
 batch_size = 64
-n_steps = 5  # Number of points in the path
+n_steps = 10  # Number of points in the path
 n_timesteps = 3200  # Number of diffusion steps
 device = torch.device("cuda" if torch.cuda.is_available() else "mps")
 print(f"Using device: {device}")
@@ -44,10 +45,13 @@ def get_diffusion_parameters(betas):
     }
 
 # Generate synthetic data: smooth paths between two points
+
+# Generate synthetic data: smooth paths between two points using splines
 class PathDataset(Dataset):
-    def __init__(self, num_samples=10000, n_steps=50):
+    def __init__(self, num_samples=10000, n_steps=10, n_control_points=2):
         self.num_samples = num_samples
         self.n_steps = n_steps
+        self.n_control_points = n_control_points  # Number of control points for the spline
         self.paths = []
         self.start_points = []
         self.end_points = []
@@ -57,24 +61,55 @@ class PathDataset(Dataset):
             start_point = np.random.uniform(-5, 5, size=(2,))
             end_point = np.random.uniform(-5, 5, size=(2,))
             
-            # Generate a smooth path (simple linear interpolation with some noise)
-            t = np.linspace(0, 1, n_steps).reshape(-1, 1)
-            path = start_point * (1 - t) + end_point * t
+            # Generate a smooth path using cubic spline interpolation
+            # First, create some random control points between start and end
+            t_control = np.linspace(0, 1, self.n_control_points)
             
-            # Add some random noise to make the path interesting
-            noise_scale = np.linalg.norm(end_point - start_point) * 0.1
-            noise = np.random.normal(0, noise_scale, size=(n_steps, 2))
+            # First and last control points are the start and end points
+            control_points = np.zeros((self.n_control_points, 2))
+            control_points[0] = start_point
+            control_points[-1] = end_point
             
-            # Ensure the noise doesn't affect start and end points
-            smoothing = np.sin(np.pi * t)
-            noise = noise * smoothing
+            # Generate intermediate control points with some randomness
+            # Calculate the direct vector from start to end
+            direct_vector = end_point - start_point
+            direct_dist = np.linalg.norm(direct_vector)
             
-            path = path + noise
+            # Create a perpendicular vector for adding variation
+            perp_vector = np.array([-direct_vector[1], direct_vector[0]])
+            perp_vector = perp_vector / np.linalg.norm(perp_vector) * direct_dist * 0.5
+            
+            # Set intermediate control points
+            for i in range(1, self.n_control_points - 1):
+                # Base position along direct path
+                base_pos = start_point + direct_vector * t_control[i]
+                
+                # Add random offset perpendicular to the direct path
+                random_offset = np.random.uniform(-1, 1) * perp_vector
+                
+                # Set the control point
+                control_points[i] = base_pos + random_offset
+            
+            # Create the spline
+            x_control = control_points[:, 0]
+            y_control = control_points[:, 1]
+            
+            # Create splines for x and y coordinates
+            cs_x = CubicSpline(t_control, x_control)
+            cs_y = CubicSpline(t_control, y_control)
+            
+            # Evaluate the spline at n_steps points
+            t_eval = np.linspace(0, 1, n_steps)
+            x_spline = cs_x(t_eval)
+            y_spline = cs_y(t_eval)
+            
+            # Combine x and y coordinates
+            path = np.column_stack((x_spline, y_spline))
             
             self.paths.append(path.astype(np.float32))
             self.start_points.append(start_point.astype(np.float32))
             self.end_points.append(end_point.astype(np.float32))
-    
+            
     def __len__(self):
         return self.num_samples
     
@@ -318,10 +353,10 @@ def main():
     model = ConditionedUNet(n_steps=n_steps)
     
     # Initialize optimizer
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
+    optimizer = torch.optim.Adam(model.parameters(), lr=2e-4)
     
     # Train the model
-    model = train(model, dataloader, optimizer, diffusion_params, n_epochs=1000, device=device)
+    model = train(model, dataloader, optimizer, diffusion_params, n_epochs=500, device=device)
     
     # Save the model
     torch.save(model.state_dict(), "outputs/path_diffusion_model.pt")

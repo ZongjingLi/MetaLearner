@@ -9,7 +9,6 @@ import torch.nn.functional as F
 from torch import nn
 from einops import rearrange, repeat
 
-
 def pairwise(iterable):
     # pairwise('ABCDEFG') → AB BC CD DE EF FG
     iterator = iter(iterable)
@@ -17,6 +16,7 @@ def pairwise(iterable):
     for b in iterator:
         yield a, b
         a = b
+
 
 ## Basic functions used by all models
 
@@ -207,7 +207,6 @@ class GeometricEnergyMLP(nn.Module, ModelMixin):
 
 class PointEnergyMLP(nn.Module, ModelMixin):
     def __init__(self, constraints, dim=2, attr_dim = 0, hidden_dims=(16,128,256,128,16)):
-        """ignore the attribute dim, just consider the arity"""
         super().__init__()
         layers = []
         self.energies = nn.ModuleDict({})

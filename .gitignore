@@ -7,3 +7,7 @@ core/prompt/access_llm.py
 *.csv
 *.png
 /data
+/domains
+*.ply
+*.ply
+/outputs

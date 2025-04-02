@@ -1,0 +1,19 @@
+
+<?xml version="1.0" encoding="utf-8"?>
+<mujoco>
+    <asset>
+        <material name="cabinet_metal" rgba="0.7 0.7 0.7 1"/>
+    </asset>
+    
+    <worldbody>
+        <body>
+            <body name="cabinet_main">
+                <geom type="box" size="0.1 0.2 0.1" material="cabinet_metal"/>
+            </body>
+            <body name="door" pos="0.1 -0.2 0">
+                <joint type="hinge" name="door_joint" axis="0 0 1" limited="true" range="-1.57 0"/>
+                <geom type="box" size="0.01 0.2 0.1" material="cabinet_metal"/>
+            </body>
+        </body>
+    </worldbody>
+</mujoco>

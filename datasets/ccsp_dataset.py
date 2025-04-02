@@ -28,7 +28,7 @@ class Swissroll(Dataset):
 
 
 def collate_graph_batch(batch):
-    # data is the decision variable and cond is the list of edges of constraints of arity.
+    # Unpack batch efficiently
     batch_data = {
         "data": [],
         "cond": {"edges": []}

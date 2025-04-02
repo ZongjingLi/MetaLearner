@@ -125,12 +125,12 @@ def process_command(command):
         model = EnsembleModel(config)
         from domains.generic.generic_domain import generic_executor
 
-        model.executor.root_name = "Generic"
-        model.executor.add_domain("Generic", generic_executor)
-        model.executor.add_domain("Contact", contact_executor)
+        model.concept_diagram.root_name = "Generic"
+        model.concept_diagram.add_domain("Generic", generic_executor)
+        model.concept_diagram.add_domain("Contact", contact_executor)
         
         for source, target in morphisms:
-            model.executor.add_morphism(source, target, MetaphorMorphism(domains[source], domains[target]))
+            model.concept_diagram.add_morphism(source, target, MetaphorMorphism(domains[source], domains[target]))
 
         text = "this is a real sentence"
         #print(model.encode_text(text).shape) torch.Size([1, 7, 256])
@@ -173,8 +173,8 @@ def process_command(command):
             model = load_ensemble_model(config, f"{config.ckpt_dir}/{config.load_ckpt}")
             main_logger.info(f"loaded checkpoint {config.load_ckpt}")
         else:
-            model.executor.add_domain("Generic", generic_executor)
-            model.executor.root_name = "Generic"
+            model.concept_diagram.add_domain("Generic", generic_executor)
+            model.concept_diagram.root_name = "Generic"
 
         """load the core knowledge from defined domains"""
         core_knowledge = eval(config.core_knowledge)

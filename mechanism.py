@@ -1,12 +1,18 @@
 import pybullet as p
 import open3d as o3d
-from rinarak.envs.recorder import SceneRecorder
-from rinarak.envs.base_env import BaseEnv
-from rinarak.envs.contact import ContactModel
-from rinarak.utils.data import ListDataset
+<<<<<<< HEAD
+from helchriss.envs.recorder import SceneRecorder
+from helchriss.envs.base_env import BaseEnv
+from helchriss.envs.contact import ContactModel
+from helchriss.utils.data import ListDataset
 #from env.mechanism.edge_mechanism import GripEdge
 from env.mechanism.pick_mechanism import PickBlockEnv
 import random
+=======
+from rinarak.envs.recorder import SceneRecorder
+from rinarak.envs.base_env import BaseEnv
+from env.mechanism.edge_mechanism import GripEdge
+>>>>>>> parent of f6b7bd1 (add the ccg paraer adn the lexicon entries search)
 import math
 import sys
 import torch
@@ -16,11 +22,13 @@ from datasets.ccsp_dataset import collate_graph_batch
 from core.spatial.energy_graph import PointEnergyMLP
 from core.spatial.diffusion import ScheduleLogLinear, training_loop
 
+
+
 constraints = {
-        "valid-grasp-block": 1,
+        "valid-grasp": 1,
     }
 
-model    = PointEnergyMLP(constraints, dim = 3)
+model    = PointEnergyMLP(constraints, dim = 3, attr_dim = 6)
 schedule = ScheduleLogLinear(N=500, sigma_min=0.005, sigma_max=10)
 
 class SamplerLearner:
@@ -31,50 +39,30 @@ class SamplerLearner:
         assert isinstance(self.env, BaseEnv), "given environment is not a BaseEnv class"
         
         self.sampler = sampler # a torch sampler module to train
-        assert isinstance(self.sampler, nn.Module), "sampler is not a nn.Module"
+        assert isinstance(self.sampler, nn.Module()), "sampler is not a nn.Module"
         
         # setup the env iteration for the given sampler learner.
         self.iterations = iterations # the number of iterations for the replay of the data to check if the continous seach possible
-        self.dataset = ListDataset([])
+        self.dataset = []
 
         # setup the training data for the given construction
         self.epochs = epochs
         self.lr = lr
     
-    def add_data(self,train_data): self.dataset.add(train_data)
+    def add_data(self,train_data):
+        self.dataset.append(train_data)
 
     def replay(self):
-        assert isinstance(self.env, PickBlockEnv), "given environment is not a BaseEnv class"
-        for itrs in range(self.iterations):
+        for itrs in self.iterations:
             self.env.reset()
-            self.env.reset_arm()
-            obj_idx = env.block_id
-
-            obj_set = self.env.get_object_attributes()
-            #print(obj_set)
-            attributes = self.env.get_object_attributes()
-            #print(attributes)
-            #print(attributes[obj_idx])
- 
-            # TODO: how to apply an actual mechanism
-            self.env.pick_object(env.block_id)
-
-            edge = {"edge" : [obj_idx, "valid-grasp-block"]}
-            goal_success = self.env.check_goal()
-            if goal_success:
-                print("goal success")
-                #self.add_data([variables, 1])
-            else:
-                print("pick up failed")
-            self.env.remove_last_object()
         return
     
     def fit_dataset(self):
         assert isinstance(self.sampler, nn.Module), "sampler is not a nn.Module"
-        loader = collate_graph_batch(self.dataset)
+        loader = None
         trainer  = training_loop(loader, self.sampler, self.schedule, epochs=self.epochs)
         losses   = [ns.loss.item() for ns in trainer]
-        return self.sampler
+
 
 
 if __name__ == "__main__":
@@ -88,11 +76,46 @@ if __name__ == "__main__":
         target_point = [0.0, 0.0, 0.5]
     )
 
+for scene in range(10):
+    env = GripEdge(gui = 0)#GripEdge(gui = True)
+
+    gripper_orientation = p.getQuaternionFromEuler([0, math.pi, 0])
+
+    n = 0
+    sim_steps = 50
     
+    import random
+    for i in range(random.randint(1, 4)):
+        pos_x = random.randint(45,45)/100.#(random.random()-0.5) * 0.8
+        pos_y = random.randint(-45,45)/100.#(random.random()-0.5) * 0.8
+        env.add_box([pos_x, pos_y, 0.7], size = [0.02,0.02,0.02])
 
-    env = PickBlockEnv(gui = False)
-    sampler = PointEnergyMLP(constraints = constraints, dim = 3)
+    #cabinet_path = "assets/single_door_cabinet.urdf"  # Make sure this matches your saved file
+    #initial_position = [0, -0.8, 0.65]
+    #initial_orientation = p.getQuaternionFromEuler([0, 0, 0])
+    #cabinetId = p.loadURDF(cabinet_path, initial_position, initial_orientation, useFixedBase=1)
+    #env.objects.append(cabinetId)
 
-    sampler_learner = SamplerLearner(sampler = sampler, env = env, iterations=100)
+    recorder.record_scene_with_segmentation(output_dir="data/mechanism_data", frame_idx=scene, save=True)
 
-    sampler_learner.replay()
+    p.disconnect()
+    #recorder.record_scene_with_segmentation(output_dir="data/mechanism_data", frame_idx=scene + 1, save=True)
+    """
+    env.control_gripper(1)
+    recorder.record_scene_with_segmentation(output_dir="data/mechanism_data", frame_idx=scene, save=True)
+    env.move_arm([pos_x, pos_y, 1.0], gripper_orientation)
+    env.move_arm([pos_x, pos_y, 0.65], gripper_orientation)
+    env.control_gripper(0)
+    env.move_arm([pos_x, pos_y, 0.9], gripper_orientation)
+    env.move_arm([pos_x, -pos_y, 0.9], gripper_orientation)
+    env.move_arm([pos_x, -pos_y, 0.65], gripper_orientation)
+    env.control_gripper(1)
+    env.move_arm([pos_x, -pos_y, 0.9], gripper_orientation)
+    
+    #recorder.record_scene_with_segmentation(output_dir="data/mechanism_data", frame_idx=scene, save=True)
+    """
+
+    clouds = [o3d.io.read_point_cloud(f"/Users/sunyiqi/Documents/GitHub/Aluneth/data/mechanism_data/scene_frame_{scene}/point_clouds/merged_point_cloud.ply")]
+    #clouds = [o3d.io.read_point_cloud(f"/Users/sunyiqi/Documents/GitHub/Aluneth/data/mechanism_data/scene_frame_0/point_clouds/view_{i}_points.ply") for i in range(num_views)]
+    clouds = [o3d.io.read_point_cloud(f"/Users/sunyiqi/Documents/GitHub/Aluneth/data/mechanism_data/scene_frame_{scene}/point_clouds/segmented/merged_object_{i}.ply") for i in range(1,5)]
+    #o3d.visualization.draw_geometries(clouds)    # Visualize point cloud    
