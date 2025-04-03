@@ -1,6 +1,6 @@
 # Assuming you already have defined SceneDataset and collate_variable_components
 from datasets.scene_dataset import SceneDataset, collate_variable_components
-from rinarak.dklearn.nn.pnn import PointNetfeat
+
 
 import torch
 import torch.nn as nn

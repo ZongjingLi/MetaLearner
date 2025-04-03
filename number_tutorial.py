@@ -5,99 +5,106 @@
 # @Last Modified time: 2025-02-28 12:42:51
 import torch
 import torch.nn as nn
-from helchriss.knowledge.executor import CentralExecutor
+from typing import List, Union
 from helchriss.domain import load_domain_string
+from helchriss.knowledge.symbolic import Expression
+from helchriss.knowledge.executor import CentralExecutor
+from core.metaphors.diagram_executor import MetaphorExecutor
+from core.grammar.ccg_parser import ChartParser
+from core.grammar.lexicon import CCGSyntacticType, LexiconEntry, SemProgram
+from helchriss.knowledge.symbolic import Expression
 
-dim = 128
-
-numbers_domain_str = """
-(domain Numbers)
-(:type
-    set - vector[float, 128] ;; necessary encoding for a set
-    number -vector[float, 3] ;; a number can be encoded by 8 dims (overwhelm)
-)
-(:predicate
-    one -> number
-    two -> number
-    three -> number
-    R -> set
-    Z -> Set
-    plus ?x-number ?y-number -> number
-)
-
-"""
-
-numbers_domain = load_domain_string(numbers_domain_str)
-
-class NumbersExecutor(CentralExecutor):
-    one_embed = nn.Parameter(torch.randn([3]))
-    two_embed = nn.Parameter(torch.randn([3]))
-    three_embed = nn.Parameter(torch.randn([3]))
-
-    R_embed = nn.Parameter(torch.randn([128]))
-    Z_embed = nn.Parameter(torch.randn([128]))
-
-    def one(self): return self.one_embed
-    
-    def two(self): return self.two_embed
-
-    def three(self): return self.three_embed
-    
-    def R(self): return self.R_embed
-
-    def Z(self): return self.Z_embed
-
-    def plus(self, x, y): return x + y
-
-numbers_executor = NumbersExecutor(numbers_domain, concept_dim = dim)
-
-
-objects_domain_str = """
-(domain Objects)
-(:type
-    ObjSet - vector[float, 128] ;; necessary encoding for a set
-    Obj - vector[float, 128]
-)
-(:predicate
-    scene -> ObjSet
-)
-"""
-
-objects_domain = load_domain_string(objects_domain_str)
-
-class ObjectsExecutor(CentralExecutor):
-    def scene(self):
-        return self._grounding["objects"]
-
-objects_executor = ObjectsExecutor(objects_domain, concept_dim = dim)
-
+from domains.numbers.integers_domain import integers_executor
+from domains.scene.objects_domain import objects_executor
 
 
 domains = [
-    numbers_executor, objects_executor
+    integers_executor, objects_executor
 ]
-
-
-from helchriss.knowledge.symbolic import Expression
-from core.metaphors.diagram_executor import MetaphorExecutor
-
-
-executor = MetaphorExecutor(domains, concept_dim = 128)
 
 """create a demo scene for the executor to execute on."""
 num_objs = 4
 grounding = {"objects": torch.randn([num_objs, 128]), "ref" : torch.randn([num_objs,1])}
 
-expr = "scene:Objects()"
-result = executor.evaluate(expr, grounding)
+
+def create_sample_lexicon():
+    """Create a sample lexicon for testing"""
+    lexicon = {}
+    
+    # Define primitive types
+    OBJ = CCGSyntacticType("objset")
+    INT = CCGSyntacticType("int")
+    
+    # Define complex types
+    OBJ_OBJ = CCGSyntacticType("objset", OBJ, OBJ, "/")  # objset/objset
+    OBJ_OBJ_BACK = CCGSyntacticType("objset", OBJ, OBJ, "\\")  # objset\objset
+    INT_OBJ = CCGSyntacticType("int", OBJ, INT, "/")  # int/objset
+    
+    # Create lexicon entries with PyTorch tensor weights
+    
+    # Nouns
+    lexicon["cube"] = [
+        LexiconEntry("cube", OBJ, SemProgram("filter", ["cube"]), torch.tensor(0.0, requires_grad=True))
+    ]
+    
+    lexicon["sphere"] = [
+        LexiconEntry("sphere", OBJ, SemProgram("filter", ["sphere"]), torch.tensor(0.0, requires_grad=True))
+    ]
+    
+    # Adjectives
+    lexicon["red"] = [
+        LexiconEntry("red", OBJ_OBJ, SemProgram("filter", ["red"], ["x"]), torch.tensor(0.0, requires_grad=True))
+    ]
+    
+    lexicon["blue"] = [
+        LexiconEntry("blue", OBJ_OBJ, SemProgram("filter", ["blue"], ["x"]), torch.tensor(0.0, requires_grad=True))
+    ]
+    
+    lexicon["shiny"] = [
+        LexiconEntry("shiny", OBJ_OBJ, SemProgram("filter", ["shiny"], ["x"]), torch.tensor(0.0, requires_grad=True))
+    ]
+    
+    # Count
+    lexicon["count"] = [
+        LexiconEntry("count", INT_OBJ, SemProgram("count", [], ["x"]), torch.tensor(0.0, requires_grad=True)),
+        LexiconEntry("count", INT_OBJ, SemProgram("id-count", [], ["x"]), torch.tensor(0.0, requires_grad=True))
+    ]
+    
+    # Prepositions
+    lexicon["of"] = [
+        LexiconEntry("of", OBJ_OBJ_BACK, SemProgram("id", [], ["x"]), torch.tensor(0.0, requires_grad=True))
+    ]
+    
+    # Determiners
+    lexicon["the"] = [
+        LexiconEntry("the", OBJ_OBJ, SemProgram("id", [], ["x"]), torch.tensor(0.0, requires_grad=True))
+    ]
+    
+    return lexicon
 
 
-expr = "plus:Numbers(one:Numbers(), two:Numbers())"
-result = executor.evaluate(expr, grounding)
+class Aluneth(nn.Module):
+    def __init__(self, domains : List[Union[CentralExecutor]]):
+        super().__init__()
+        self.parser = ChartParser(create_sample_lexicon())
+        self.executor : CentralExecutor = MetaphorExecutor(domains)
+    
+    def forward(self, sentence, groundings = None):
+        parses = self.parser.parse(sentence)
+        distrs = self.parser.get_parse_probability(parses)
+        
+        results = []
+        for i,parse in enumerate(parses):
+            parse_prob = distrs[i].exp()
+            program = str(parse.sem_program)
 
-print(result)
+            
+            print(program, parse_prob)
+            expr = Expression.parse_program_string(program)
 
-for tp in executor.types: print(tp["name"], tp["type_space"])
+            result = self.executor.evaluate(expr, grounding)
+        return results
 
-for f in executor.functions:print(f)
+alunet = Aluneth(domains)
 
+alunet("count blue cube", grounding)

@@ -11,3 +11,4 @@ core/prompt/access_llm.py
 *.ply
 *.ply
 /outputs
+/assets/_legacydomains

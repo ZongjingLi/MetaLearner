@@ -6,6 +6,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from .lexicon import CCGSyntacticType, SemProgram, LexiconEntry
 
+
+
 class CCGRule:
     """Abstract base class for CCG combinatory rules"""
     @staticmethod
@@ -84,15 +86,15 @@ class BackwardApplication(CCGRule):
 
 
 
-class G2L2Parser(nn.Module):
+class ChartParser(nn.Module):
     """
     Implementation of G2L2 parser with CKY-E2 algorithm
     Modified to support PyTorch gradient computation
     """
-    def __init__(self, lexicon: Dict[str, List[LexiconEntry]], rules: List[CCGRule]):
-        super(G2L2Parser, self).__init__()
+    def __init__(self, lexicon: Dict[str, List[LexiconEntry]], rules: List[CCGRule] = None):
+        super(ChartParser, self).__init__()
         self.lexicon = lexicon
-        self.rules = rules
+        self.rules = rules = [ForwardApplication, BackwardApplication] if rules is None else rules
         
         # Initialize trainable parameters
         self.word_weights = nn.ParameterDict()

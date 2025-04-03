@@ -16,6 +16,7 @@ parser.add_argument("--command",          default = "train",   help = "the comma
 --train_metaphor_{domain} : to train a specific domain information, this domain is supposed to be in the target model.
 --learn_new_domain
 """
+#TODO: remove this, we don't actually need that curriculum stuff.
 parser.add_argument("--curriculum_file",  default = None,	help = "the path of curriulum learning config file")
 
 parser.add_argument("--generic_dim",      default = 256,       help = "the dim of the generic embedding space")
