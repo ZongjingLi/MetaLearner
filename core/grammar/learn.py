@@ -8,7 +8,6 @@ try:
 except:
     from lexicon import SemProgram, CCGSyntacticType, LexiconEntry
 
-
 def enumerate_search(type_dict, function_dict, max_depth=3):
     """
     Enumerate all possible programs up to a given depth, including partial programs.
@@ -66,11 +65,7 @@ def enumerate_search(type_dict, function_dict, max_depth=3):
             if func_info['parameters']:
                 # This function takes parameters
                 
-                # 2.1. Add empty function application as a partial program
-                partial_program = SemProgram(func_key, [])
-                results.append(partial_program)
-                
-                # 2.2. Try to fill in all parameters
+                # 2.1. Try to fill in all parameters
                 param_options = []
                 for param_type in func_info['parameters']:
                     param_programs = get_programs_for_type(param_type, current_depth + 1)
@@ -83,7 +78,7 @@ def enumerate_search(type_dict, function_dict, max_depth=3):
                         program = SemProgram(func_key, list(param_combo))
                         results.append(program)
                 
-                # 2.3. Add partial applications with some parameters filled
+                # 2.2. Add partial applications with some parameters filled
                 if len(func_info['parameters']) > 1:
                     for i in range(len(func_info['parameters'])):
                         param_type = func_info['parameters'][i]
@@ -98,9 +93,11 @@ def enumerate_search(type_dict, function_dict, max_depth=3):
                                 if j == i:
                                     partial_args.append(param_prog)
                                 else:
-                                    lambda_var = f"x{j}"
-                                    lambda_vars.append(lambda_var)
+                                    # Add the variable name to lambda_vars
+                                    var = f"x{j}"
+                                    lambda_vars.append(var)
                             
+                            # Create the partial program with lambda variables for unfilled parameters
                             partial_program = SemProgram(func_key, partial_args, lambda_vars)
                             results.append(partial_program)
         
@@ -166,7 +163,7 @@ def enumerate_search(type_dict, function_dict, max_depth=3):
         result_type = func_info['type']
         param_types = func_info['parameters']
         
-        # 2.1. Create lambda abstractions for this function
+        # 2.1. Create lambda abstractions for this function with lambda variables
         lambda_vars = [f"x{i}" for i in range(len(param_types))]
         lambda_program = SemProgram(func_key, [], lambda_vars)
         
@@ -221,29 +218,3 @@ def enumerate_search(type_dict, function_dict, max_depth=3):
                             all_programs.append((partial_type, partial_prog))
     
     return all_programs
-
-# Example of using the function
-if __name__ == "__main__":
-    type_dict = {
-        'set:Integers': 'vector[float,[32]]', 
-        'int:Integers': 'vector[float,[1]]', 
-        'ObjSet:Objects': 'vector[float,[128]]', 
-        'Obj:Objects': 'vector[float,[128]]'
-    }
-    
-    function_dict = {
-        'one:Integers': {'name': 'one', 'parameters': [], 'type': 'int:Integers'}, 
-        'two:Integers': {'name': 'two', 'parameters': [], 'type': 'int:Integers'}, 
-        'three:Integers': {'name': 'three', 'parameters': [], 'type': 'int:Integers'}, 
-        'N:Integers': {'name': 'N', 'parameters': [], 'type': 'set:Integers'}, 
-        'Z:Integers': {'name': 'Z', 'parameters': [], 'type': 'set:Integers'}, 
-        'plus:Integers': {'name': 'plus', 'parameters': ['int:Integers', 'int:Integers'], 'type': 'int:Integers'}, 
-        'scene:Objects': {'name': 'scene', 'parameters': [], 'type': 'ObjSet:Objects'}, 
-        'unique:Objects': {'name': 'unique', 'parameters': ['ObjSet:Objects'], 'type': 'Obj:Objects'}
-    }
-    
-    programs = enumerate_search(type_dict, function_dict, max_depth=3)
-    
-    # Print all generated programs
-    for syn_type, program in programs:
-        print(f"{syn_type} : {program}")

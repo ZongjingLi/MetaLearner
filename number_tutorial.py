@@ -14,6 +14,7 @@ from core.grammar.ccg_parser import ChartParser
 from core.grammar.lexicon import CCGSyntacticType, LexiconEntry, SemProgram
 from core.grammar.learn import enumerate_search
 from helchriss.knowledge.symbolic import Expression
+from helchriss.dsl.dsl_values import Value
 
 from domains.numbers.integers_domain import integers_executor
 from domains.scene.objects_domain import objects_executor
@@ -138,11 +139,10 @@ class Aluneth(nn.Module):
             for syn_type, program in self.entries:
 
                 lexicon_entries[word].append(LexiconEntry(
-                    word, syn_type, program, weight = torch.tensor(-10.0, requires_grad=True)
+                    word, syn_type, program, weight = torch.tensor(-0.0, requires_grad=True)
                 ))
 
         self.lexicon_entries = lexicon_entries
-        #for entry in self.entries:print(entry[0], entry[1])
         self.parser = ChartParser(lexicon_entries)
 
     def forward(self, sentence, grounding = None):
@@ -154,18 +154,31 @@ class Aluneth(nn.Module):
         programs = []
         for i,parse in enumerate(parses):
             parse_prob = log_distrs[i]
-            program = str(parse.sem_program)
+            program = parse.sem_program
+            output_type = self.functions[program.func_name]["type"]
 
-            #if len(parse.sem_program.lambda_vars) == 0:            
+            if len(program.lambda_vars) == 0:
+                print(program, program)
+                expr = Expression.parse_program_string(str(program))
+                result = self.executor.evaluate(expr, grounding)
 
-            try:
-                    expr = Expression.parse_program_string(program)
-                    result = self.executor.evaluate(expr, grounding)
-                    results.append(result)
-                    probs.append(parse_prob)
-                    programs.append(program)
-            except:pass
+                results.append(Value(output_type.split(":")[0],result))
+                probs.append(parse_prob)
+
+            else:
+                results.append(None)
+                probs.append(parse_prob)
+
         return results,  probs, programs
+
+    def parse_display(self, sentence):
+        parses = self.parser.parse(sentence)
+        distrs = self.parser.get_parse_probability(parses)
+        parse_with_prob = list(zip(parses, distrs))
+        sorted_parses = sorted(parse_with_prob, key=lambda x: x[1], reverse=True)
+        for i, parse in enumerate(sorted_parses[:4]):
+            print(f"{parse[0].sem_program}, {parse[1].exp():.2f}")
+        print("")
 
 
 """create a demo scene for the executor to execute on."""
@@ -177,47 +190,45 @@ vocab = ["one", "plus", "two", "three"]
 alunet = Aluneth(domains, vocab)
 
 
-optim = torch.optim.Adam(alunet.parameters(), lr = 1e-1)
 print("start training of the parsing")
-
-
+from tqdm import tqdm
 
 def train(model, epochs, test_sentences, test_answers):
-    for itrs in range(epochs):
+    optim = torch.optim.Adam(model.parameters(), lr = 1e-1)
+    for itrs in tqdm(range(epochs)):
         loss = 0.0
         for i,sent in enumerate(test_sentences):
             results, probs, programs = model(sent, grounding)
             for j,result in enumerate(results):
-                try:
-                    if torch.abs(result - test_answers[i]) < 0.1:
-                        loss -= probs[j]
-                        #print(programs[j], probs[j])
-                except:pass
+                answer = test_answers[i]
+                if result is not None: # filter make sense progams
+                    if answer.vtype == result.vtype:
+                        loss += torch.exp(probs[j]) * torch.abs(result.value - answer.value)
+                    else: loss += torch.exp(probs[j])
+                else: loss += torch.exp(probs[j])
         optim.zero_grad()
         loss.backward()
         optim.step()
-    print(loss)
+
     return model
 
 test_sentences = ["one", "two","three"]
-test_answers = [ 1.0, 2.0, 3.0]
+test_answers = [Value("int",1.0), Value("int",2.0), Value("int",3.0)]
 
-alunet = train(alunet, 1000, test_sentences, test_answers)
-
-
-for entry in alunet.lexicon_entries["one"]:
-    print(entry)
-
-test_sentences = ["two plus two", "two", "one", "one", "two plus one"]
-test_answers = [4.0, 2.0, 1.0, 1.0, 3.0]
-
-alunet = train(alunet, 1000, test_sentences, test_answers)
+alunet = train(alunet, 100, test_sentences, test_answers)
+alunet.parse_display("one")
+alunet.parse_display("two")
+alunet.parse_display("three")
 
 
-parses = alunet.parser.parse("two plus two")
-distrs = alunet.parser.get_parse_probability(parses)
+test_sentences = ["two", "one", "two plus one", "two plus two"]
+test_answers = [Value("int",2.0),Value("int",1.0),Value("int",3.0),Value("int",4.0)]
 
-for i, parse in enumerate(parses[:]):print(parse.sem_program, float(distrs[i].exp()))
+alunet = train(alunet, 100, test_sentences, test_answers)
 
-for entry in alunet.lexicon_entries["plus"]:
-    print(entry)
+alunet.parse_display("one plus two")
+alunet.parse_display("one")
+alunet.parse_display("two")
+
+#for entry in alunet.lexicon_entries["plus"]:
+#    print(entry)
