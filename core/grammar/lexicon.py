@@ -87,7 +87,7 @@ class LexiconEntry:
             self._weight = weight
     
     @property
-    def weight(self): return torch.log( torch.sigmoid( self._weight))
+    def weight(self): return self._weight
 
     def __str__(self):
         weight_value = self.weight.item() if isinstance(self.weight, torch.Tensor) else math.exp(self.weight)

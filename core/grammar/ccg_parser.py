@@ -6,8 +6,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 from .lexicon import CCGSyntacticType, SemProgram, LexiconEntry
 
-
-
 class CCGRule:
     """Abstract base class for CCG combinatory rules"""
     @staticmethod
@@ -94,7 +92,7 @@ class ChartParser(nn.Module):
     def __init__(self, lexicon: Dict[str, List[LexiconEntry]], rules: List[CCGRule] = None):
         super(ChartParser, self).__init__()
         self.lexicon = lexicon
-        self.rules = rules = [ForwardApplication, BackwardApplication] if rules is None else rules
+        self.rules =  [ForwardApplication, BackwardApplication] if rules is None else rules
         
         # Initialize trainable parameters
         self.word_weights = nn.ParameterDict()
@@ -142,7 +140,7 @@ class ChartParser(nn.Module):
                                         chart[(start, end)].append(result)
                 
                 # Apply expected execution to compress similar derivations
-                self._expected_execution(chart[(start, end)])
+                #self._expected_execution(chart[(start, end)])
         
         return chart[(0, n)]
     
@@ -207,6 +205,7 @@ class ChartParser(nn.Module):
         
         # For multiple parses, combine probabilities
         log_weights = torch.stack([entry.weight for entry in parse_result])
+        #print(log_weights.max(), log_weights.min())
         log_probs = F.log_softmax(log_weights, dim=0)
         
         # Return the log probability of the most likely parse
