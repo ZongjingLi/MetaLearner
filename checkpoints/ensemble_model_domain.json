@@ -1,1 +1,0 @@
-{"domain_name": "Generic", "concept_dim": 100, "predicates": ["get_state"], "predicate_output_types": {"get_state": "state"}, "predicate_params_types": {"get_state": ["state"]}, "implementations": []}

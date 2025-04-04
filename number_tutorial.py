@@ -5,7 +5,7 @@
 # @Last Modified time: 2025-02-28 12:42:51
 import torch
 import torch.nn as nn
-from typing import List, Union
+from typing import List, Union, Any
 from helchriss.domain import load_domain_string
 from helchriss.knowledge.symbolic import Expression
 from helchriss.knowledge.executor import CentralExecutor
@@ -18,66 +18,24 @@ from helchriss.dsl.dsl_values import Value
 
 from domains.numbers.integers_domain import integers_executor
 from domains.scene.objects_domain import objects_executor
+from domains.logic.fol_domain import fol_domain_str
 
 domains = [
     integers_executor, #objects_executor
 ]
 
+from tqdm import tqdm
 
-def create_sample_lexicon():
-    """Create a sample lexicon for testing"""
-    lexicon = {}
-    
-    # Define primitive types
-    OBJ = CCGSyntacticType("objset")
-    INT = CCGSyntacticType("int")
-    
-    # Define complex types
-    OBJ_OBJ = CCGSyntacticType("objset", OBJ, OBJ, "/")  # objset/objset
-    OBJ_OBJ_BACK = CCGSyntacticType("objset", OBJ, OBJ, "\\")  # objset\objset
-    INT_OBJ = CCGSyntacticType("int", OBJ, INT, "/")  # int/objset
-    
-    # Create lexicon entries with PyTorch tensor weights
-    
-    # Nouns
-    lexicon["cube"] = [
-        LexiconEntry("cube", OBJ, SemProgram("filter", ["cube"]), torch.tensor(0.0, requires_grad=True))
-    ]
-    
-    lexicon["sphere"] = [
-        LexiconEntry("sphere", OBJ, SemProgram("filter", ["sphere"]), torch.tensor(0.0, requires_grad=True))
-    ]
-    
-    # Adjectives
-    lexicon["red"] = [
-        LexiconEntry("red", OBJ_OBJ, SemProgram("filter", ["red"], ["x"]), torch.tensor(0.0, requires_grad=True))
-    ]
-    
-    lexicon["blue"] = [
-        LexiconEntry("blue", OBJ_OBJ, SemProgram("filter", ["blue"], ["x"]), torch.tensor(0.0, requires_grad=True))
-    ]
-    
-    lexicon["shiny"] = [
-        LexiconEntry("shiny", OBJ_OBJ, SemProgram("filter", ["shiny"], ["x"]), torch.tensor(0.0, requires_grad=True))
-    ]
-    
-    # Count
-    lexicon["count"] = [
-        LexiconEntry("count", INT_OBJ, SemProgram("count", [], ["x"]), torch.tensor(0.0, requires_grad=True)),
-        LexiconEntry("count", INT_OBJ, SemProgram("id-count", [], ["x"]), torch.tensor(0.0, requires_grad=True))
-    ]
-    
-    # Prepositions
-    lexicon["of"] = [
-        LexiconEntry("of", OBJ_OBJ_BACK, SemProgram("id", [], ["x"]), torch.tensor(0.0, requires_grad=True))
-    ]
-    
-    # Determiners
-    lexicon["the"] = [
-        LexiconEntry("the", OBJ_OBJ, SemProgram("id", [], ["x"]), torch.tensor(0.0, requires_grad=True))
-    ]
-    
-    return lexicon
+from torch.utils.data import DataLoader
+from helchriss.utils.data import ListDataset
+from helchriss.utils.data import GroundBaseDataset
+
+class SceneGroundingDataset(ListDataset):
+    def __init__(self, queries : List[str], answers : List[Union[Value, Any]], groundings : None):
+        query_size = len(queries)
+        if groundings is None: groundings = [{} for _ in range(query_size)]
+        data = [{"query":queries[i], "answer":answers[i], "grounding": groundings[i]} for i in range(query_size)]
+        super().__init__(data)
 
 
 class Aluneth(nn.Module):
@@ -158,7 +116,6 @@ class Aluneth(nn.Module):
             output_type = self.functions[program.func_name]["type"]
 
             if len(program.lambda_vars) == 0:
-                print(program, program)
                 expr = Expression.parse_program_string(str(program))
                 result = self.executor.evaluate(expr, grounding)
 
@@ -171,6 +128,31 @@ class Aluneth(nn.Module):
 
         return results,  probs, programs
 
+
+    def train(self, dataset : SceneGroundingDataset,  epochs : int = 100, lr = 1e-2):
+        optim = torch.optim.Adam(self.parameters(), lr = lr)
+
+        for epoch in tqdm(range(epochs)):
+            loss = 0.0     
+            for idx, sample in dataset:
+                query = sample["query"]
+                answer = sample["answer"]
+                grounding = sample["grounding"]
+                results, probs, _ = self(query, grounding)
+                for i,result in enumerate(results):
+                    measure_conf = torch.exp(probs[i])
+                    if result is not None: # filter make sense progams
+                        if answer.vtype == result.vtype:
+                            measure_loss =  torch.abs(result.value - answer.value)
+                            loss += measure_conf * measure_loss
+                        else: loss += measure_conf # suppress type-not-match outputs
+                    else: loss += measure_conf # suppress the non-sense outputs
+            optim.zero_grad()
+            loss.backward()
+            optim.step()
+
+        return self
+
     def parse_display(self, sentence):
         parses = self.parser.parse(sentence)
         distrs = self.parser.get_parse_probability(parses)
@@ -180,55 +162,28 @@ class Aluneth(nn.Module):
             print(f"{parse[0].sem_program}, {parse[1].exp():.2f}")
         print("")
 
-
-"""create a demo scene for the executor to execute on."""
-num_objs = 4
-grounding = {"objects": torch.randn([num_objs, 128]), "scores" : torch.randn([num_objs,1])}
-
-vocab = ["one", "plus", "two", "three"]
-
-alunet = Aluneth(domains, vocab)
+from config import config
+from helchriss.utils.os import load_corpus
+from helchriss.utils.vocab import build_vocab
+corpus = load_corpus(config.corpus)
+vocab = build_vocab(corpus)
 
 
-print("start training of the parsing")
-from tqdm import tqdm
+test_sentences = ["two plus one", "two plus three", "one plus one"]
+test_answers = [Value("int",3.0),Value("int",5.0), Value("int", 2.0)]
+sum_dataset = SceneGroundingDataset(test_sentences, test_answers, groundings = None)
 
-def train(model, epochs, test_sentences, test_answers):
-    optim = torch.optim.Adam(model.parameters(), lr = 1e-1)
-    for itrs in tqdm(range(epochs)):
-        loss = 0.0
-        for i,sent in enumerate(test_sentences):
-            results, probs, programs = model(sent, grounding)
-            for j,result in enumerate(results):
-                answer = test_answers[i]
-                if result is not None: # filter make sense progams
-                    if answer.vtype == result.vtype:
-                        loss += torch.exp(probs[j]) * torch.abs(result.value - answer.value)
-                    else: loss += torch.exp(probs[j])
-                else: loss += torch.exp(probs[j])
-        optim.zero_grad()
-        loss.backward()
-        optim.step()
+#vocab = ["one", "plus", "two", "three"]
 
-    return model
+vocab = build_vocab(test_sentences)
+model = Aluneth(domains, vocab)
 
-test_sentences = ["one", "two","three"]
-test_answers = [Value("int",1.0), Value("int",2.0), Value("int",3.0)]
+print(vocab)
 
-alunet = train(alunet, 100, test_sentences, test_answers)
-alunet.parse_display("one")
-alunet.parse_display("two")
-alunet.parse_display("three")
+model.train(sum_dataset, epochs = 500, lr = 1e-1)
 
+model.parse_display("one")
+model.parse_display("two")
+model.parse_display("three")
 
-test_sentences = ["two", "one", "two plus one", "two plus two"]
-test_answers = [Value("int",2.0),Value("int",1.0),Value("int",3.0),Value("int",4.0)]
-
-alunet = train(alunet, 100, test_sentences, test_answers)
-
-alunet.parse_display("one plus two")
-alunet.parse_display("one")
-alunet.parse_display("two")
-
-#for entry in alunet.lexicon_entries["plus"]:
-#    print(entry)
+model.parse_display("<END>")

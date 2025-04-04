@@ -30,7 +30,7 @@ from .metaphors.diagram_executor import MetaphorExecutor
 from .curriculum import MetaCurriculum
 from .prompt.access_llm import run_gpt
 from helchriss.logger import set_logger_output_file, get_logger
-from .utils import load_corpus
+from helchriss.utils import load_corpus
 
 class EnsembleModel(nn.Module):
     def __init__(self, config):
@@ -38,10 +38,9 @@ class EnsembleModel(nn.Module):
         self.device = "cuda:0" if torch.cuda.is_available() else "mps:0"
         self.config = config
         concept_dim = 128
-
         generic_dim = int(config.generic_dim) # the generic embedding space of all symbolic concepts
         
-        sequences = load_corpus()
+        sequences = load_corpus(config.corpus)
 
         """general domain encoder (image/text)"""
         self.encoders = nn.ModuleDict({

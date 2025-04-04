@@ -17,7 +17,6 @@ def pairwise(iterable):
         yield a, b
         a = b
 
-
 ## Basic functions used by all models
 
 class ModelMixin:

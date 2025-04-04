@@ -1,6 +1,0 @@
-digraph {
-	A
-	B
-	A -> B
-	B -> C [color="#FF3333" penwidth=3]
-}
