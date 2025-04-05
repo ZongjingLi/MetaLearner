@@ -1,117 +1,157 @@
-'''
- # @ Author: Zongjing Li
- # @ Create Time: 2025-01-19 10:04:08
- # @ Modified by: Zongjing Li
- # @ Modified time: 2025-01-19 10:05:02
- # @ Description: This file is distributed under the MIT license.
-'''
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-from torch.utils.data import Dataset, DataLoader
+from typing import List, Union, Any
+from helchriss.domain import load_domain_string
+from helchriss.knowledge.symbolic import Expression
+from helchriss.knowledge.executor import CentralExecutor
+from core.metaphors.diagram_executor import MetaphorExecutor
+from core.grammar.ccg_parser import ChartParser
+from core.grammar.lexicon import CCGSyntacticType, LexiconEntry, SemProgram
+from core.grammar.learn import enumerate_search
+from helchriss.knowledge.symbolic import Expression
+from helchriss.dsl.dsl_values import Value
 
-import numpy as np
-import os
-import math
-import json
-from typing import List, Optional
+from tqdm import tqdm
 
-"""a set of encoder that encode different modalities to the generic domain"""
-from .encoders.image_encoder import ImageEncoder
-from .encoders.text_encoder  import TextEncoder
-from .encoders.pointcloud_encoder import PointCloudEncoder, PointCloudRelationEncoder
+from torch.utils.data import DataLoader
+from helchriss.utils.data import ListDataset
+from helchriss.utils.data import GroundBaseDataset
 
-"""the backend neuro-symbolic concept learner for execution of predicates and actions"""
-from .metaphors.diagram_executor import MetaphorExecutor
+class SceneGroundingDataset(ListDataset):
+    def __init__(self, queries : List[str], answers : List[Union[Value, Any]], groundings : None):
+        query_size = len(queries)
+        if groundings is None: groundings = [{} for _ in range(query_size)]
+        data = [{"query":queries[i], "answer":answers[i], "grounding": groundings[i]} for i in range(query_size)]
+        super().__init__(data)
 
-"""the CCG based grammar learner"""
 
-"""structure for meta-learning of new domains"""
-from .curriculum import MetaCurriculum
-from .prompt.access_llm import run_gpt
-from helchriss.logger import set_logger_output_file, get_logger
-from helchriss.utils import load_corpus
-
-class EnsembleModel(nn.Module):
-    def __init__(self, config):
+class Aluneth(nn.Module):
+    def __init__(self, domains : List[Union[CentralExecutor]], vocab = None):
         super().__init__()
-        self.device = "cuda:0" if torch.cuda.is_available() else "mps:0"
-        self.config = config
-        concept_dim = 128
-        generic_dim = int(config.generic_dim) # the generic embedding space of all symbolic concepts
+        self._domain :List[Union[CentralExecutor]]  = domains
+        self.executor : CentralExecutor = MetaphorExecutor(domains)
         
-        sequences = load_corpus(config.corpus)
+        self.vocab = vocab
+        self.parser = None
+        self.gather_format = self.executor.gather_format
 
-        """general domain encoder (image/text)"""
-        self.encoders = nn.ModuleDict({
-            "text": TextEncoder(
-                generic_dim, vocab_size = int(config.vocab_size),
-                sequences = sequences, punct_to_remove=['.', '!', ',']),
-            "image" : ImageEncoder(generic_dim),
-            "pointcloud" : PointCloudEncoder(generic_dim),
-            "pointcloud_relation" : PointCloudRelationEncoder(generic_dim)
-        })
-        self.executor = MetaphorExecutor([],concept_dim = concept_dim)
-
-
-
-        self.logger = get_logger("Citadel")
-        set_logger_output_file("logs/citadel_logs.txt")
-        
-
-
-
-    def to_dict(self):
-        """Serialize the model architecture (excluding weights) for reconstruction."""
-        return {
-            "generic_dim": self.config.generic_dim,
-            "vocab_size": self.config.vocab_size,
-            "num_channels": self.config.num_channels,
-            "encoder_types": list(self.encoders.keys()),  # Store encoder names
-            "concept_diagram": self.executor.to_dict(),  # Store conscept diagram structure
-        }    
-
-    def forward(self, inputs):
-        return 
+        self.entries_setup()
     
-    def encode_image_scene(self, image, masks):
-        """
-        Encode image with multiple object masks.
-        
-        Args:
-            image: Image tensor of shape (B, C, H, W)
-            masks: List of mask tensors, each of shape (B, 1, H, W)
-            
-        Returns:
-            Tensor of shape (B, num_masks, generic_dim) containing embeddings
-            for each masked region
-        """
-        batch_size = image.shape[0]
-        embeddings = []
-        
-        # Process each mask separately
-        for mask in masks:
-            # Get embedding for current mask
-            embedding = self.encoders['image'](image, mask)
-            # Project to shared space
-            embedding = self.image_projection(embedding)
-            # Normalize embedding
-            embedding = self.layer_norm(embedding)
-            embeddings.append(embedding)
-        
-        # Stack all embeddings (B, num_masks, D)
-        scene_embedding = torch.stack(embeddings, dim=1)
-        return scene_embedding
+    def freeze_word(self,word):
+        for entry in self.parser.word_weights:
+            if word in entry:
+                self.parser.word_weights[entry]._requires_grad = False
 
-    def encode_text(self, text):
-        """
-        Encode text input.
+    @property
+    def domains(self):
+        gather_domains = []
+        for domain in self._domain:
+            if isinstance(domain, CentralExecutor):
+                gather_domains.append(domain.domain)
+            else: gather_domains.append(domain)
+        return gather_domains
+
+    def collect_funcs(self,func_bind, domain):
+        bind = {
+            "name" : func_bind["name"],
+            "parameters" : [self.gather_format(param.split("-")[-1], domain)  for param in func_bind["parameters"]],
+            "type" : self.gather_format(func_bind["type"], domain)
+            }
+        return bind
+    
+    @property
+    def types(self):
+        domain_types = {}
+        for domain in self.domains:
+            for tp in domain.types:
+                domain_types[self.gather_format(tp, domain.domain_name)] =  domain.types[tp].replace("'","")
+        return domain_types
+
+    @property
+    def functions(self):
+        domain_functions = {}
+        for domain in self.domains:
+            domain_name = domain.domain_name
+            for func in domain.functions:
+                domain_functions[self.gather_format(func, domain_name)] =  self.collect_funcs(domain.functions[func], domain_name)
+        return domain_functions
+
+    def entries_setup(self, depth = 1):
+        self.entries = enumerate_search(self.types, self.functions, max_depth = depth)
+        lexicon_entries = {} 
+        for word in self.vocab:
+            lexicon_entries[word] = []
+            for syn_type, program in self.entries:
+
+                lexicon_entries[word].append(LexiconEntry(
+                    word, syn_type, program, weight = torch.tensor(-0.0, requires_grad=True)
+                ))
+
+        self.lexicon_entries = lexicon_entries
+        self.parser = ChartParser(lexicon_entries)
+
+    def forward(self, sentence, grounding = None):
+        parses = self.parser.parse(sentence)
+        log_distrs = self.parser.get_parse_probability(parses)
         
-        Args:
-            text: String or list of strings to encode
-            
-        Returns:
-            Tensor of shape (B, generic_dim) containing text embeddings
-        """
-        embeddings = self.encoders['text'].encode_text(text)
-        return embeddings
+        results = []
+        probs = []
+        programs = []
+        for i,parse in enumerate(parses):
+            parse_prob = log_distrs[i]
+            program = parse.sem_program
+            output_type = self.functions[program.func_name]["type"]
+
+            if len(program.lambda_vars) == 0:
+                expr = Expression.parse_program_string(str(program))
+                result = self.executor.evaluate(expr, grounding)
+
+                results.append(Value(output_type.split(":")[0],result))
+                probs.append(parse_prob)
+
+            else:
+                results.append(None)
+                probs.append(parse_prob)
+
+        return results,  probs, programs
+
+
+
+    def train(self, dataset : SceneGroundingDataset,  epochs : int = 100, lr = 1e-2):
+        import tqdm.gui as tqdmgui
+        optim = torch.optim.Adam(self.parameters(), lr = lr)
+        epoch_bar = tqdmgui.tqdm(range(epochs), desc="Training epochs", unit="epoch")
+
+        for epoch in epoch_bar:
+            loss = 0.0     
+            for idx, sample in dataset:
+                query = sample["query"]
+                answer = sample["answer"]
+                grounding = sample["grounding"]
+                results, probs, _ = self(query, grounding)
+                if not results: print(f"no parsing found for query:{query}")
+                for i,result in enumerate(results):
+                    measure_conf = torch.exp(probs[i])
+                    if result is not None: # filter make sense progams
+                        if answer.vtype == result.vtype:
+                            measure_loss =  torch.abs(result.value - answer.value)
+                            loss += measure_conf * measure_loss
+                        else: loss += measure_conf # suppress type-not-match outputs
+                    else: loss += measure_conf # suppress the non-sense outputs
+            optim.zero_grad()
+            loss.backward()
+            optim.step()
+
+            avg_loss = loss / len(dataset) if len(dataset) > 0 else 0
+            #epoch_bar.set_postfix({"avg_loss": f"{avg_loss.item():.4f}"})
+
+        return self
+
+    def parse_display(self, sentence):
+        parses = self.parser.parse(sentence)
+        distrs = self.parser.get_parse_probability(parses)
+        parse_with_prob = list(zip(parses, distrs))
+        sorted_parses = sorted(parse_with_prob, key=lambda x: x[1], reverse=True)
+        for i, parse in enumerate(sorted_parses[:4]):
+            print(f"{parse[0].sem_program}, {parse[1].exp():.2f}")
+        print("")

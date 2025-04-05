@@ -105,11 +105,11 @@ class ChartParser(nn.Module):
                 entry._weight = param
 
     def parse(self, sentence: str):
-        """Parse a sentence using the CKY-E2 algorithm"""
+        """;arse a sentence using the CKY-E2 algorithm"""
         words = sentence.split()
         n = len(words)
         
-        # Initialize the parse chart
+        # initialize the base case for the parsing of the word and lexicon
         chart = {}
         for i in range(n):
             word = words[i]
@@ -119,7 +119,7 @@ class ChartParser(nn.Module):
                 chart[(i, i+1)] = []
                 print(f"Warning: Word '{word}' not in lexicon")
     
-        # Build the parse chart using CKY
+        # dp the possible parsing from subintervals 
         for length in range(2, n+1):
             for start in range(n - length + 1):
                 end = start + length
@@ -138,10 +138,8 @@ class ChartParser(nn.Module):
                                     result = rule.apply(left_entry, right_entry)
                                     if result:
                                         chart[(start, end)].append(result)
-                
-                # Apply expected execution to compress similar derivations
+
                 #self._expected_execution(chart[(start, end)])
-        
         return chart[(0, n)]
     
     def _expected_execution(self, entries: List[LexiconEntry]):
