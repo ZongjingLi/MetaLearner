@@ -41,6 +41,24 @@ class Aluneth(nn.Module):
         for entry in self.parser.word_weights:
             if word in entry:
                 self.parser.word_weights[entry]._requires_grad = False
+    
+    def load_ckpt(self, ckpt_path):
+        checkpoint = torch.load(ckpt_path)
+        metadata = checkpoint['metadata']
+
+        domains = metadata["domains"]
+
+        self.load_state_dict(checkpoint['model_state_dict'])
+        return 0
+    
+    def save_ckpt(self, ckpt_path):
+        torch.save({
+            'model_state_dict': self.state_dict(),
+            'metadata': {
+                'domains': [],
+            }
+        }, ckpt_path)
+        return 0
 
     @property
     def domains(self):
@@ -78,6 +96,8 @@ class Aluneth(nn.Module):
 
     def entries_setup(self, depth = 1):
         self.entries = enumerate_search(self.types, self.functions, max_depth = depth)
+        #for syn_type, program in self.entries:
+        #    print(syn_type, program)
         lexicon_entries = {} 
         for word in self.vocab:
             lexicon_entries[word] = []
@@ -90,8 +110,8 @@ class Aluneth(nn.Module):
         self.lexicon_entries = lexicon_entries
         self.parser = ChartParser(lexicon_entries)
 
-    def forward(self, sentence, grounding = None):
-        parses = self.parser.parse(sentence)
+    def forward(self, sentence, grounding = None, topK = None):
+        parses = self.parser.parse(sentence, topK = topK)
         log_distrs = self.parser.get_parse_probability(parses)
         
         results = []
@@ -108,33 +128,40 @@ class Aluneth(nn.Module):
 
                 results.append(Value(output_type.split(":")[0],result))
                 probs.append(parse_prob)
-
+                programs.append(str(program))
             else:
                 results.append(None)
                 probs.append(parse_prob)
 
-        return results,  probs, programs
+        return results, probs, programs
 
-
-
-    def train(self, dataset : SceneGroundingDataset,  epochs : int = 100, lr = 1e-2):
+    def train(self, dataset : SceneGroundingDataset,  epochs : int = 100, lr = 1e-2, topK = None):
         import tqdm.gui as tqdmgui
         optim = torch.optim.Adam(self.parameters(), lr = lr)
-        epoch_bar = tqdmgui.tqdm(range(epochs), desc="Training epochs", unit="epoch")
+        # epoch_bar = tqdmgui.tqdm(range(epochs), desc="Training epochs", unit="epoch")
+
+        epoch_bar = tqdm(range(epochs), desc="Training epochs", unit="epoch")
 
         for epoch in epoch_bar:
             loss = 0.0     
             for idx, sample in dataset:
+
                 query = sample["query"]
                 answer = sample["answer"]
                 grounding = sample["grounding"]
-                results, probs, _ = self(query, grounding)
+
+                results, probs, programs = self(query, grounding, topK)
                 if not results: print(f"no parsing found for query:{query}")
                 for i,result in enumerate(results):
                     measure_conf = torch.exp(probs[i])
                     if result is not None: # filter make sense progams
+                        assert isinstance(result, Value), f"{programs[i]} result is :{result} and not a Value type"
+
                         if answer.vtype == result.vtype:
-                            measure_loss =  torch.abs(result.value - answer.value)
+                            if answer.vtype == "boolean":
+                                measure_loss =  torch.nn.functional.binary_cross_entropy_with_logits(result.value - answer.value)
+                            if answer.vtype == "int" or answer.type == "float":
+                                measure_loss = torch.abs(result.value - answer.value)
                             loss += measure_conf * measure_loss
                         else: loss += measure_conf # suppress type-not-match outputs
                     else: loss += measure_conf # suppress the non-sense outputs
@@ -155,3 +182,13 @@ class Aluneth(nn.Module):
         for i, parse in enumerate(sorted_parses[:4]):
             print(f"{parse[0].sem_program}, {parse[1].exp():.2f}")
         print("")
+
+    def detect_metaphors(self, sentence : Union[List[str], str]):
+        """for the input corpus, use the current model to try to find the appropriate type casting
+        this method tries to parse the sentences using the current learned entries. If cannot merge, then add the type casting
+        Args:
+            sentences: could be a single sentence or a list of sentence
+        """
+        assert isinstance(self.executor, MetaphorExecutor), "current executor does not support the type mapping"
+        #self.executor.add_caster()
+        return 

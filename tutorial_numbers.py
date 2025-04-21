@@ -20,13 +20,11 @@ from helchriss.utils.vocab import build_vocab
 corpus = load_corpus(config.corpus)
 vocab = build_vocab(corpus)
 
-
-test_sentences = ["two plus one", "two plus three", "one plus one"]
-test_answers = [Value("int",3.0),Value("int",5.0), Value("int", 2.0)]
+test_sentences = ["two plus one", "two plus three", "one plus one", "red plus two"]
+test_answers = [Value("int",3.0),Value("int",5.0), Value("int", 2.0), Value("int", 3.0)]
 
 sum_dataset = SceneGroundingDataset(test_sentences, test_answers, groundings = None)
 
-#vocab = ["one", "plus", "two", "three"]
 
 vocab = build_vocab(test_sentences)
 model = Aluneth(domains, vocab)
@@ -35,10 +33,32 @@ from helchriss.utils import stprint
 stprint(vocab)
 stprint(test_answers)
 
-model.train(sum_dataset, epochs = 500, lr = 1e-1)
+model.train(sum_dataset, epochs = 300, lr = 1e-1, topK = None)
+
+#model.train(sum_dataset, epochs = 300, lr = 1e-1, topK = 1)
 
 model.parse_display("one")
 model.parse_display("two")
-model.parse_display("three")
+model.parse_display("plus")
+model.parse_display("red")
+
 
 model.parse_display("<END>")
+
+for ent in model.parser.get_likely_entries("one", 3):print(ent)
+
+for ent in model.parser.get_likely_entries("plus", 3):print(ent)
+
+print("\nLiteral Sancheck\n")
+direct_parse = model.parser.parse("one plus two", topK = 1, forced = True)
+direct_parse = model.parser.parse("one plus two", topK = 1, forced = False)
+direct_probs = model.parser.get_parse_probability(direct_parse)
+
+
+from helchriss.knowledge.symbolic import Expression
+
+for (parse, logp) in zip(direct_parse, direct_probs):
+    print(parse.sem_program, logp.exp())
+    expr = Expression.parse_program_string(str(parse.sem_program))
+    print(expr)
+    # check casting 

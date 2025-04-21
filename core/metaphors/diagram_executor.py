@@ -21,6 +21,7 @@ from .unification import SparseWeightedGraph
 from dataclasses import dataclass
 import contextlib
 
+
 class UnificationFailure(Exception):
     """
     Exception raised when unification between feature structures fails.
@@ -342,5 +343,14 @@ class MetaphorExecutor(nn.Module):
             return expr.name
         elif isinstance(expr, LogicalAndExpression):
             return expr.operands
+        elif isinstance(expr, ListExpression):
+            """f(x)->y, List[f]: List(x) -> List(y))
+            List[List[f]]: List[List(x)] -? List[List(y)]
+            """
+            value_list = []
+            func_name = expr.func.name.split(":")
+            types = self.get_function(expr.func.name)["parameters"]
+            
+            return value_list
         else:
             raise NotImplementedError(f'Unknown expression type: {type(expr)}')

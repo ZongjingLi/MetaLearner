@@ -27,6 +27,13 @@ class ForwardApplication(CCGRule):
                 left_type.arg_type == right_type)
     
     @staticmethod
+    def can_forced_apply(left_type, right_type):
+        return (not left_type.is_primitive and
+                left_type.direction == "/" and
+                1 # this means the type does not need to match
+                )
+    
+    @staticmethod
     def apply(left_entry, right_entry):
         # Create a new lexicon entry with the result type and computed program
         result_type = left_entry.syn_type.result_type
@@ -50,7 +57,7 @@ class ForwardApplication(CCGRule):
         # Create a new lexicon entry with combined weight
         # Use PyTorch addition to maintain gradient graph
         combined_weight = left_entry.weight + right_entry.weight
-        return LexiconEntry("", result_type, new_program, combined_weight)
+        return LexiconEntry(f"{left_entry.word} {right_entry.word}", result_type, new_program, combined_weight)
 
 class BackwardApplication(CCGRule):
     """Backward application rule: Y X\Y => X"""
@@ -59,7 +66,12 @@ class BackwardApplication(CCGRule):
         return (not right_type.is_primitive and 
                 right_type.direction == '\\' and 
                 right_type.arg_type == left_type)
-    
+
+    @staticmethod
+    def can_forced_apply(left_type, right_type):
+        return (not right_type.is_primitive and 
+                right_type.direction == '\\')
+
     @staticmethod
     def apply(left_entry, right_entry):
         # Similar to forward application but with different direction
@@ -99,22 +111,29 @@ class ChartParser(nn.Module):
         for word, entries in lexicon.items():
             for i, entry in enumerate(entries):
                 param_name = f"{word}_{i}"
-                # Create parameter and replace the entry's weight
+
                 param = nn.Parameter(entry.weight.clone())
                 self.word_weights[param_name] = param
                 entry._weight = param
 
-    def parse(self, sentence: str):
-        """;arse a sentence using the CKY-E2 algorithm"""
+    def get_likely_entries(self, word : str, K : int = 3) -> List[LexiconEntry]:
+        """given a word we find the top K"""
+        entries : List[LexiconEntry] = sorted(self.lexicon[word], key=lambda e: e.weight, reverse=True)[:K]
+        return entries
+
+    def parse(self, sentence: str, topK = None, forced = False):
+        """check if the sentence can be merged correctly
+        forced : if forced then any syntatic type are allowed to combine with each other, ignore the syntatic type differences
+        """
         words = sentence.split()
         n = len(words)
         
         # initialize the base case for the parsing of the word and lexicon
-        chart = {}
+        chart = {} # stores a list of entries for each interval
         for i in range(n):
             word = words[i]
             if word in self.lexicon:
-                chart[(i, i+1)] = self.lexicon[word]
+                chart[(i, i+1)] = self.lexicon[word] if topK is None else self.get_likely_entries(word, topK)
             else:
                 chart[(i, i+1)] = []
                 print(f"Warning: Word '{word}' not in lexicon")
@@ -125,16 +144,20 @@ class ChartParser(nn.Module):
                 end = start + length
                 chart[(start, end)] = []
                 
-                # Try all split points
+                # enumerate all the possible split points on the interval
                 for split in range(start+1, end):
                     left_entries = chart[(start, split)]
                     right_entries = chart[(split, end)]
                     
-                    # Try to combine using each rule
+                    # combine all the possible entried in each of the possible pairs
                     for left_entry in left_entries:
                         for right_entry in right_entries:
                             for rule in self.rules:
-                                if rule.can_apply(left_entry.syn_type, right_entry.syn_type):
+                                if forced:
+                                    applicable = rule.can_forced_apply(left_entry.syn_type, right_entry.syn_type)
+                                else:
+                                    applicable = rule.can_apply(left_entry.syn_type, right_entry.syn_type)
+                                if applicable:
                                     result = rule.apply(left_entry, right_entry)
                                     if result:
                                         chart[(start, end)].append(result)

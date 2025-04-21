@@ -5,10 +5,9 @@ import matplotlib.pyplot as plt
 import networkx as nx
 
 class SparseWeightedGraph(nn.Module):
+
     def __init__(self, node_labels: List[str], edge_list: List[Tuple[Union[str, int], Union[str, int]]]):
-        """
-        Initialize a sparse weighted graph with learnable edge weights.
-        
+        """ a sparse weighted graph with learnable edge weights.
         Args:
             node_labels: List of strings representing node labels
             edge_list: List of tuples (i, j) representing edges from node i to node j
@@ -19,39 +18,32 @@ class SparseWeightedGraph(nn.Module):
         self.num_nodes: int = len(node_labels)
         self.node_to_idx: Dict[str, int] = {label: idx for idx, label in enumerate(node_labels)}
         
-        # Convert string labels to indices
+        # convert string labels to indices
         self.edge_indices: List[Tuple[int, int]] = []
         for i, j in edge_list:
-            if isinstance(i, str):
-                i = self.node_to_idx[i]
-            if isinstance(j, str):
-                j = self.node_to_idx[j]
+            if isinstance(i, str): i = self.node_to_idx[i]
+            if isinstance(j, str): j = self.node_to_idx[j]
             self.edge_indices.append((i, j))
         
-        # Create learnable weights for each edge
+        """ create learnable weights for each edge """
         self.edge_weights: nn.Parameter = nn.Parameter(torch.randn(len(self.edge_indices)))
         
-        # Create sparse adjacency matrix indices
+        """ create sparse adjacency matrix indices """
         self.sparse_indices: torch.LongTensor = torch.LongTensor([
             [i for i, j in self.edge_indices], 
             [j for i, j in self.edge_indices]
         ])
-
     def add_node(self, node_label: str) -> bool:
-        """
-        Add a new node to the graph.
-        
+        """ Add a new node to the graph.
         Args:
             node_label: Label for the new node
-            
         Returns:
             True if the node was added, False if it already exists
         """
-        # Check if node already exists
-        if node_label in self.node_to_idx:
-            return False
         
-        # Add the new node
+        if node_label in self.node_to_idx: return False # the node should not already exists
+        
+        """create the new node in the node labels and append the index"""
         self.node_labels.append(node_label)
         self.node_to_idx[node_label] = self.num_nodes
         self.num_nodes += 1
@@ -60,15 +52,12 @@ class SparseWeightedGraph(nn.Module):
 
     def add_edge(self, node1: Union[str, int], node2: Union[str, int], 
                 initial_weight: Optional[float] = None) -> bool:
-        """
-        Add a new edge between two nodes.
-        
+        """ Add a new edge between two nodes
         Args:
             node1: Source node (label or index)
             node2: Target node (label or index)
             initial_weight: Initial weight value (before sigmoid). 
-                           If None, uses a small random value.
-                            
+                           If None, uses a small random value.        
         Returns:
             True if the edge was added, False if it already exists or nodes don't exist
         """
@@ -132,10 +121,8 @@ class SparseWeightedGraph(nn.Module):
     
     def get_edge_weight(self, node1: Union[str, int], node2: Union[str, int]) -> Optional[float]:
         """Get the current weight between two nodes"""
-        if isinstance(node1, str):
-            node1 = self.node_to_idx[node1]
-        if isinstance(node2, str):
-            node2 = self.node_to_idx[node2]
+        if isinstance(node1, str): node1 = self.node_to_idx[node1]
+        if isinstance(node2, str): node2 = self.node_to_idx[node2]
             
         for idx, (i, j) in enumerate(self.edge_indices):
             if i == node1 and j == node2:
@@ -143,12 +130,9 @@ class SparseWeightedGraph(nn.Module):
         return None  # Edge doesn't exist
 
     def reachable_nodes_with_probability(self, query: Union[str, int]) -> Dict[str, float]:
-        """
-        Finds all nodes reachable from the query node along with their reachability probabilities.
-
+        """ Finds all nodes reachable from the query node along with their reachability probabilities.
         Args:
             query: The query node label or index.
-
         Returns:
             Dictionary mapping node labels to reachability probabilities
         """
@@ -405,3 +389,23 @@ class SparseWeightedGraph(nn.Module):
         fig: plt.Figure = self.visualize_graph(query, results)
         
         return fig, results
+    
+
+from .types import TypeCaster
+
+class ReductiveUnifier(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.casters = {}
+
+    def register_func(self, name, args_type, out_type):
+        return
+
+    def register_func_caster(self, func1_name, func2_name):
+        return
+
+    def reducting_evaluation(self, args):
+        return
+    
+    def evaluate(self, executer):
+        return
