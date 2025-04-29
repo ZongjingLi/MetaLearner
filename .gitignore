@@ -9,5 +9,6 @@ core/prompt/access_llm.py
 /domains
 *.ply
 *.ply
-/outputs
 /assets/_legacydomains
+/outputs/blockworld
+/outputs/checkpoints
