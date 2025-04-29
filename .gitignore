@@ -5,7 +5,6 @@ core/prompt/access_llm.py
 *.json
 *.gif
 *.csv
-*.png
 /data
 /domains
 *.ply
