@@ -1,6 +1,9 @@
 # MetaLearner
 Efficient continual learning of new concept and flexible representation using natural supervision.
 
+## Framework
+![image]('assets/example.png')
+
 ## Dataset Generation
 this section is about the dataset generation.
 

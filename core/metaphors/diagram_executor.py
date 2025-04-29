@@ -297,7 +297,7 @@ class ReductiveExecutor(FunctionExecutor):
         if domain is None: func_name, domain = func_name.split(":")
         return self.base_executor.function_input_type(func_name, domain)
     
-    def display(self):
+    def display(self, fname = None):
         G = self.eval_graph
         import matplotlib.pyplot as plt
         from networkx.drawing.nx_pydot import graphviz_layout
@@ -351,6 +351,8 @@ class ReductiveExecutor(FunctionExecutor):
         for spine in ax.spines.values():
             spine.set_visible(False)
         ax.tick_params(left=False, right=False, labelleft=False, labelbottom=False, bottom=False)
+        if fname is not None:
+            plt.savefig(f"{fname}.png")
         plt.show()
         return
 

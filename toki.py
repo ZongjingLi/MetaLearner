@@ -35,5 +35,5 @@ res = executor.evaluate("smaller:Integers(inf:Order(), sup:Order())", {})
 executor.display()
 
 res = executor.evaluate("lesser:Order(one:Integers(),two:Integers())", {})
-executor.display()
+executor.display("assets/example")
 print(res)
