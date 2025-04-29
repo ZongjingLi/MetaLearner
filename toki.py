@@ -26,14 +26,14 @@ executor.add_metaphors(infers)
 
 
 res = executor.evaluate("plus:Integers(one:Integers(), two:Integers())", {})
-executor.display()
+#executor.display()
 
 res = executor.evaluate("lesser:Order(inf:Order(), sup:Order())", {})
-executor.display()
+#executor.display()
 
 res = executor.evaluate("smaller:Integers(inf:Order(), sup:Order())", {})
-executor.display()
+#executor.display()
 
 res = executor.evaluate("lesser:Order(one:Integers(),two:Integers())", {})
-executor.display("assets/example")
+executor.display("outputs/example")
 print(res)
