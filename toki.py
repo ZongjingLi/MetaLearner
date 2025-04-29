@@ -1,23 +1,39 @@
-from core.metaphors.types import *
-from core.metaphors.diagram_executor import *
+""" a working typing system"""
 
-tp1 = TypeSpaceBase.parse_type("boolean")
-tp2 = TypeSpaceBase.parse_type("vector[float,[32]]")
-#tp3 = TypeSpaceBase.parse_type("List[boolean]")
 
-caster = TypeCaster(tp1, tp2)
-
-v1 = torch.randn([6,1])
-
-v2, p = caster(v1)
-
-print(v2.shape)
-print(p)
-
-from core.model import Aluneth, SceneGroundingDataset
+""" a union of executor bundles"""
 from domains.numbers.integers_domain import integers_executor
+from domains.structure.order_domain import order_executor
+from domains.visual.color_domain import color_executor
 domains = [
-    integers_executor, #objects_executor
+    integers_executor, order_executor, color_executor #objects_executor
 ]
-executor = MetaphorExecutor(domains)
 
+
+from core.metaphors.diagram_executor import ExecutorGroup, ReductiveUnifier, ReductiveExecutor
+base_executor = ExecutorGroup(domains, concept_dim = 128)
+executor = ReductiveExecutor(base_executor)
+
+
+meta_expr = executor.parse_expression("lesser:Order(one:Integers(),two:Integers())")
+from helchriss.utils import stprint
+infers = executor.infer_reductions(meta_expr)
+
+executor.add_metaphors(infers)
+
+#executor.add_reduction("smaller:Integers", "lesser:Order")
+
+
+
+res = executor.evaluate("plus:Integers(one:Integers(), two:Integers())", {})
+executor.display()
+
+res = executor.evaluate("lesser:Order(inf:Order(), sup:Order())", {})
+executor.display()
+
+res = executor.evaluate("smaller:Integers(inf:Order(), sup:Order())", {})
+executor.display()
+
+res = executor.evaluate("lesser:Order(one:Integers(),two:Integers())", {})
+executor.display()
+print(res)

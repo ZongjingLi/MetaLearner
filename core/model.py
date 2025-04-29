@@ -25,7 +25,7 @@ class SceneGroundingDataset(ListDataset):
         super().__init__(data)
 
 
-class Aluneth(nn.Module):
+class MetaLearner(nn.Module):
     def __init__(self, domains : List[Union[CentralExecutor]], vocab = None):
         super().__init__()
         self._domain :List[Union[CentralExecutor]]  = domains

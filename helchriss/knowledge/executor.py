@@ -17,22 +17,38 @@ from helchriss.logger import get_logger
 from helchriss.dsl.dsl_types import FuncType
 from helchriss.dsl.dsl_values import Value, ProbValue
 
+from helchriss.dsl.dsl_types import TypeBase, ListType, TupleType
 logger = get_logger(__file__)
 
 class FunctionExecutor(nn.Module):
-    def __init__(self, domain : 'Domain', concept_dim = 128):
+    def __init__(self, domain : 'Domain' = None, concept_dim = 128):
         super().__init__()
+        if domain is None:
+            logger.warning("The input domain is empty, creating an empty domain")
+            self.parser = Expression # Expression class allows prasing, but other parsers should be allowed
+            self._grounding = None
+            return
+        
+        self._domain : 'Domain' = domain
         self._domain = domain
         self.concept_dim = concept_dim
 
         self.parser = Expression # Expression class allows prasing, but other parsers should be allowed
         self._function_registry = dict() # allowed neural registry
 
+        self.function_output_type = {}
+        self.function_input_types = {}
+
         for function_name, function in domain.functions.items():
 
             if hasattr(self, function_name):
                 self.register_function(function_name, self.unwrap_values(getattr(self, function_name)))
                 logger.info('Function {} automatically registered.'.format(function_name))
+
+
+            self.function_output_type[function_name] = function["type"]
+            self.function_input_types[function_name] = [arg.split("-")[-1] for arg in function["parameters"]]
+
 
         self._grounding = None
     
@@ -165,10 +181,8 @@ class FunctionExecutor(nn.Module):
             if func_or_ftype.__name__ not in self.domain.functions:
                 raise NameError(f'Function {func_or_ftype.__name__} is not registered in the domain.')
 
-            #print(self.domain.functions[func_or_ftype.__name__])
-            #ftype = self.domain.functions[func_or_ftype.__name__].ftype
             func_dict = self.domain.functions[func_or_ftype.__name__]
-            #print(func_dict)
+
             ftype = FuncType(func_dict["parameters"], func_dict["type"])
 
         def wrapper(func):

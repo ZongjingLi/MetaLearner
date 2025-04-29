@@ -5,21 +5,24 @@
  # @Modified time: 2025-03-23 00:19:35
  # @Description:
 '''
-from typing import List, Union, Mapping, Dict, Any
+from typing import List, Union, Mapping, Dict, Any, Tuple
 import torch
 import torch.nn as nn
-from helchriss.knowledge.executor import CentralExecutor
+from helchriss.knowledge.executor import CentralExecutor, FunctionExecutor
 from helchriss.knowledge.symbolic import Expression,FunctionApplicationExpression, ConstantExpression, VariableExpression
 from helchriss.knowledge.symbolic import LogicalAndExpression, LogicalNotExpression,LogicalOrExpression
 from helchriss.knowledge.symbolic import TensorState, concat_states
 from helchriss.dsl.dsl_values import Value
 from helchriss.domain import Domain
+from .unification import ReductiveUnifier, LocalFrame
+
 
 # this is the for type space, basically a wrapper class
 from .types import *
-from .unification import SparseWeightedGraph
+#from .unification import SparseWeightedGraph
 from dataclasses import dataclass
 import contextlib
+import networkx as nx
 
 
 class UnificationFailure(Exception):
@@ -93,264 +96,429 @@ class UnificationFailure(Exception):
         return (left_val is not None and right_val is not None and 
                 type(left_val) != type(right_val))
 
-class MetaphorExecutor(nn.Module):
+class ExecutorGroup(FunctionExecutor):
+    """keeps tracks a list of CentralExecutors and can call a function by name and domain name"""
     def __init__(self, domains : List[Union[CentralExecutor, Domain]], concept_dim = 128):
-        super().__init__()
+        super().__init__(None)
         self._gather_format = "{}:{}"
-        self.domains = []
-        self._types = []
-        self._functions = []
-        self.executors = nn.ModuleList([])
-        
-        self.casters = nn.ModuleList([]) # dynamic casting of different types
-        self.chainer = SparseWeightedGraph([], []) # perform the chaining of functions
 
-        self._grounding = None # just to save the current grounding
-        self.concept_dim = concept_dim
+        self._type_registry = {}
+        self.executors_group = nn.ModuleList([])
 
-        self.update_domains(domains)
+        self.input_types = {}
+        self.output_type = {}
+        self.reserved = {"boolean"}
+
+        for domain_executor in domains:
+            if isinstance(domain_executor, FunctionExecutor):
+                executor = domain_executor
+            elif isinstance(domain_executor, Domain):
+                executor = FunctionExecutor(Domain)
+            else: raise Exception("input is not a Domain or FunctionExecutor")
+            self.executors_group.append(executor)
+            for func in executor.function_output_type:
+                domain_name = executor.domain.domain_name
     
-    def gather_format(self, name, domain): return self._gather_format.format(name, domain)
+                func_name = self.format(func, domain_name)
+                func_intypes = executor.function_input_types[func]
 
-    def update_domains(self, domains : List[Union[CentralExecutor, Domain]]):
-        for i,item in enumerate(domains):
-            if isinstance(item, Domain):
-                self.domains.append(item)
-                self.executors.append(CentralExecutor(item, concept_dim = self.concept_dim))
-            elif isinstance(item, CentralExecutor):
-                self.domains.append(item.domain)
-                self.executors.append(item)
-            else: assert 0, f"invalid input in the input domains item:{i} value:{item}"  
-        
-        for domain in self.domains:
-            domain_name = domain.domain_name
+                args_types = []
+                for func_intype in func_intypes:
+                    if func_intype not in self.reserved:
+                        intype_name = self.format(func_intype, domain_name)
+                        in_type = executor.types[func_intype].replace("'","")
+                        args_types.append(TypeBase(in_type, intype_name))
+                    else: args_types.append(TypeBase("vector[float,[1]]", func_intype))
+                self.input_types[func_name] = args_types
 
-            for type in domain.types:
-                tp_signature = {
-                    "name" : self.gather_format(type, domain_name),
-                    "type_space" : TypeSpaceBase.parse_type(domain.types[type].replace("'",""))
-                }
-                self._types.append(tp_signature)
-            for fun in domain.functions:
-                function_name = self.gather_format(fun, domain_name)
-                domain_func = domain.functions[fun]
-                function_signature = {
-                    "name" : function_name,
-                    "parameters" : [self.gather_format(arg.split("-")[-1], domain_name) for arg in domain_func["parameters"]],
-                    "type" :  self.gather_format(domain_func["type"], domain_name),
-                }
-                self._functions.append(function_signature)
-                self.chainer.add_node(function_name)
-                #self.chainer.add_edge(function_name, function_name, 1.)
+                
+                func_otype = executor.function_output_type[func]
+                if func_otype not in self.reserved:
+                    otype_name = self.format(func_otype, domain_name)
+                    otype = executor.types[func_otype].replace("'","")
+                    self.output_type[func_name] = TypeBase(otype,otype_name)
+                else: self.output_type[func_name] = TypeBase("vector[float,[1]]", func_otype)
 
-    @property    
-    def types(self): return self._types
 
-    def get_type(self, name : str, domain_name : str = None) -> List[Dict]:
-        """note that is the domain_name is None then it means you use the gathered name"""
-        if domain_name:  query_name = self.gather_format(name, domain_name)
-        else: query_name = name
-        types = [tp for tp in self.types if tp["name"] == query_name]
-
-        if len(types) > 1 : assert False, f"amibigous reference of function {query_name}"
-        if len(types) == 0: raise Exception(f"no function found for {query_name}")
-        return types[0]
-
-    @property
-    def functions(self): return self._functions
-
-    def get_function(self, name : str, domain_name : str = None) -> List[Dict]:
-        """note that is the domain_name is None then it means you use the gathered name"""
-        if domain_name:  query_name = self.gather_format(name, domain_name)
-        else: query_name = name
-        functions =  [func for func in self.functions if func["name"] == query_name]
-        if len(functions) > 1 : assert False, f"amibigous reference of function {query_name}"
-        if len(functions) == 0: raise Exception(f"no function found for {query_name}")
-        return functions[0]
-    
-    def add_domain(self, executor : Union[CentralExecutor, Domain]):self.update_domains([executor])
-
-    def get_domain(self, name) -> CentralExecutor:
-        for executor in self.executors:
-            assert isinstance(executor, CentralExecutor), f"{executor} is not a central executor"
-            executor.domain.domain_name
-        assert False, f"there is no such domain called {name}"
-
-    def get_executor(self, name : str):
-        for executor in self.executors:
-            assert isinstance(executor, CentralExecutor), "not a valid executor"
-            if executor.domain.domain_name == name:
-                return executor
-
-    def add_caster(self, source_type, target_type, source_domain = None, target_domain = None):
-        if source_domain is not None: source_type = self.gather_format(source_type, source_domain)
-        if target_domain is not None: target_type = self.gather_format(target_type, target_domain)
-
-        source_type_space = self.get_type(source_type)["type_space"]
-        target_type_space = self.get_type(target_type)["type_space"]
-
-        self.casters.append(TypeCaster(source_type_space, target_type_space))
-
-    def cast_type(self, value, source_type, target_type, source_domain=None, target_domain=None):
-        """
-        Cast a value from source_type to target_type using the appropriate TypeCaster.
-        Args:
-            value: The value to be cast
-            source_type: The source type name
-            target_type: The target type name
-            source_domain: Optional domain name for the source type
-            target_domain: Optional domain name for the target type
-        
-        Returns:
-            tuple: (cast_value, confidence) where:
-                - cast_value is the value cast to the target type
-                - confidence is a float between 0 and 1 indicating the confidence in the cast
-            
-        Raises:
-            ValueError: If no suitable caster is found or if the types are ambiguous
-        """
-        # Convert type names to fully qualified names if domain is provided
-        if source_domain is not None:
-            source_type = self.gather_format(source_type, source_domain)
-        if target_domain is not None:
-            target_type = self.gather_format(target_type, target_domain)
-    
-        source_type_space = self.get_type(source_type)["type_space"]
-    
-        target_type_space = self.get_type(target_type)["type_space"]
-    
-        for caster in self.casters: # locate the caster of the type and make the inference
-            if (caster.source_type == source_type_space and 
-                caster.target_type == target_type_space):
-                cast_value, confidence = caster(value)
-
-                return cast_value, confidence
-
-        raise ValueError(f"No caster found for conversion from {source_type} to {target_type}")
+            self.update_type_registry(domain_executor)
+            #self.update_function_registry(domain_executor)
     
     @property
-    def grounding(self): return self._grounding # the grounding stored in the current execution
+    def types(self): return self._type_registry
 
-    @contextlib.contextmanager
-    def with_grounding(self, grounding : Any):
-        """create the evaluation context"""
-        old_grounding = self._grounding
-        self._grounding = grounding
-        try:
-            yield
-        finally:
-            self._grounding = old_grounding
-        
-    def unify(self, types : List[str], args : List[Value]):
-        unify_probs = 1.0 # joint prob of args can be unified
-        unify_args : List[Value] = [] # a list of args with transformed values
-
-        for i, arg in enumerate(args):
-            assert isinstance(arg, Value), f"arg {i}: {arg} is not a Value class"
-            target_type = types[i]
-            source_type = arg.vtype
-            source_value = arg.value
-
-            if source_type != target_type:
-                try:
-                    target_type_value, cast_prob = self.cast_type(source_value, source_type, target_type)
-                except ValueError as e:
-                    raise UnificationFailure(left_structure = source_type, right_structure = target_type)
-            else:
-                target_type_value, cast_prob = source_value, 1.0
-            
-            unify_args.append(target_type_value)
-            unify_probs = unify_probs * cast_prob
-
-        return unify_args, unify_probs
-
-    def chain_evaluate(self, function : str, args : List[Value], domain : str = None):
-		# 1. gather all reachable nodes of the query function (abstractions)
-		# 2. calculate the weight of each node is the far-reaching node
-		#    the P(v) a node v is the far-reached is P(q->v) x (1-max_wP(v->w))
-		#    it interprets as there is a path from q to v and no path from v to
-		#    any other node w.
-		# 3. for each reachable node, calculate the unfication of args to that
-		#    function registry (type unfiy) obtain the cast args and corresponding
-		#    probability of unification.
-		# 4. obtain the expected output of the unification by evaluate each reachable
-		#    function on the cast args, the weight of measure is the normalzied weight
-		#    of the P(far-reach)*P(unify)
+    def function_output_type(self, func_name, domain = None):
+        if domain is None: func_name, domain = func_name.split(":")
+        for executor in self.executors_group:
+            if executor.domain.domain_name == domain:
+                return self.output_type[self.format(func_name, domain)]
+        assert 0, f"didn't find type {func_name} in the domain {domain}"
     
-        #1. get a set of function nodes involved
-        query_function     =  self.gather_format(function, domain)
-        reach_weights      =  self.chainer.find_most_far_reaching_nodes(query_function)
-        reachable_nodes    =  reach_weights["reachable_nodes"]
-        far_reaching_probs =  reach_weights["far_reaching_scores"]
+    def function_input_type(self, func_name, domain = None):
+        if domain is None: func_name, domain = func_name.split(":")
+
+        for executor in self.executors_group:
+
+            if executor.domain.domain_name == domain:
+                return self.input_types[self.format(func_name, domain)]
+        assert 0, f"didn't find type {func_name}"
+
+    def format(self, name : str, domain : str) -> str: return self._gather_format.format(name, domain)
+
+    def update_type_registry(self, executor : FunctionExecutor):
+        domain_name = executor.domain.domain_name
+        for type, vtype in executor.types.items():
+            self._type_registry[self.format(type, domain_name)] = vtype.replace("'","")
+
+    def infer_type(self, type_name):
+        """use to infer if a type does not need the domain as the postfix"""
+        return
+    
+    def infer_domain(self, func_name):
+        """infer the domain"""
+        for executor in self.executors_group:
+            if func_name in executor._function_registry: return executor.domain.domain_name
+        return False
+
+    def execute(self, func : str, args : List[Value], domain = None) -> Value:
+        if ":" in func: # handle the case for the reference of domain is ambiguous
+            func_name, domain_name = func.split(":")
+        else:
+            domain = self.infer_domain(func)
+            if domain: domian_name = domain
+            func_name = func
+        args = [arg.value for arg in args]
+        for executor in self.executors_group:
+            if executor.domain.domain_name == domain_name: # find the correct executor
+                func = executor._function_registry[func_name]
+                return func(*args)
+
+        assert False, "cannot found the function implementation"
+
+from abc import abstractmethod
+from .types import TypeBase
+import re
+
+def parse_type_declaration(type_str):
+    """
+    Parse a type declaration string and extract the prefix and shape.
+    
+    Args:
+        type_str (str): A string like "vector[float,[1]]" or "bool[float,[1,32,6]]"
+    
+    Returns:
+        tuple: (prefix, shape) where prefix is the type name and shape is the dimension list
+    """
+    # Match the prefix and the shape part
+    match = re.match(r'([a-zA-Z_]+)(?:\[.*?\])*?\[([^,\]]*,)*?(\[[0-9,]+\])\]', type_str)
+    
+    if not match:
+        # If no shape part found, just extract the prefix part
+        prefix_match = re.match(r'([a-zA-Z_]+)', type_str)
+        return prefix_match.group(1) if prefix_match else type_str, None
+        
+    prefix = match.group(1)
+    shape_str = match.group(3)
+    
+    # Convert shape string to actual list
+    try:
+        shape = eval(shape_str)
+    except:
+        shape = shape_str
+        
+    return prefix, shape
+
+class BaseCaster(nn.Module):    
+    def forward(self, args : List[Value]):
+        tensor_args =[(arg.value).reshape([1,-1]) for arg in args]
+        return self.cast(tensor_args)
+
+    @abstractmethod
+    def cast(self, input):
+        raise NotImplementedError()
 
 
-        #2.for each node, gather the type unification information
-        reachable_measures = [] # the measurement tensors derived by each chaining node
-        reachable_weights = [] # the probability of the node is the most far reaching node and can be unified.
-        for reach_func in reachable_nodes:
-            func_name, domain_name = reach_func.split(":")
-            param_types = self.get_function(reach_func)["parameters"]
-            output_type = self.get_function(reach_func)["type"]
+class LinearCaster(BaseCaster):
+    def __init__(self, in_dims, out_dims):
+        super().__init__()
+        self.linear_units = nn.ModuleList([])
+        self.cast_units = nn.ModuleList([])
+        for i in range(len(in_dims)):
+            self.linear_units.append(nn.Linear(in_dims[i], out_dims[i]))
+            self.cast_units.append(nn.Linear(in_dims[i], 1))
+    
+    def cast(self, args):
+        return [(
+            self.linear_units[i](arg).flatten(),
+            torch.log(torch.sigmoid(self.cast_units[i](arg).flatten()))) for i,arg in enumerate(args)]
 
-            # unify the arguments and enumerate all possible chains
-            unified_args, unify_prob = self.unify(param_types, args)
 
-            domain_executor = self.get_executor(domain_name)
-            with domain_executor.with_grounding(self.grounding):
-                func  = domain_executor._function_registry[func_name]            
-                res = func(*unified_args)
+def infer_caster(input_type : List[TypeBase], output_type : TypeBase):
+    in_prefix, in_shapes = list(), list()
+    for arg in input_type:
+        prefix, shape = parse_type_declaration(arg.typename)
+        in_prefix.append(prefix)
+        in_shapes.append(shape)
+    
+    out_prefix, out_shapes = list(), list()
+    for arg in output_type:
+        prefix, shape = parse_type_declaration(arg.typename)
+        out_prefix.append(prefix)
+        out_shapes.append(shape)
 
-                assert isinstance(res, Value), "node wrong"
-                reachable_measures.append(res.value)
-                reachable_weights.append(unify_prob * far_reaching_probs[reach_func])
+    input_pure_vector = sum([prefix != "vector" for prefix in in_prefix]) == 0
+    output_pure_vector = sum([prefix != "vector" for prefix in out_prefix]) == 0
+    if input_pure_vector and output_pure_vector:
+        input_dims = [sum(list(shape)) for shape in in_shapes]
+        output_dims = [sum(list(shape)) for shape in out_shapes]
+        """TODO: ignore the individual arg separation"""
+        return LinearCaster(input_dims, output_dims)
 
-        """find the expected output of the chaining evaluation"""
-        reachable_weights = torch.tensor(reachable_weights)
-        normalized_weights = reachable_weights / torch.sum(reachable_weights)
-        expected_measure = torch.zeros_like(reachable_measures[0])
+    return -1
 
-        for measure, weight in zip(reachable_measures, normalized_weights):
-            expected_measure += measure * weight
-        return expected_measure
 
-    def parse_expression(self, program_str): return Expression.parse_program_string(program_str)
+def clamp_list(values, min_val=0.3, max_val=1.0):
+    return [max(min(v, max_val), min_val) for v in values]
 
-    def evaluate(self, expression : Union[str, Expression], grounding):
-        """this is just an override method"""
+class ReductiveExecutor(FunctionExecutor):
+    """this is some kind of wrap out of an executor, equipped with a reductive graph"""
+    def __init__(self, executor):
+        super().__init__(None)
+        self.base_executor : FunctionExecutor = executor
+        self.reduce_unifier : ReductiveUnifier = ReductiveUnifier() # use this structur to store the caster and hierarchies
+
+        """maintain the evaluation graph just to visualize and sanity check"""
+        self.eval_graph : nx.DiGraph = nx.DiGraph()
+        self.node_count = {}
+        self.node_outputs = []
+        self.node_inputs = []
+        self.record = 1
+
+    def init_graph(self):
+        self.eval_graph = nx.DiGraph()
+        self.node_count = {}
+        self.node_outputs = []
+        self.node_inputs = []
+        self.record = 1
+    
+    def infer_reductions(self, expr : Expression, verbose = 0) -> List[Tuple[str, List[TypeBase], List[TypeBase]]]:
+        """given an ecxpression, use the unifer to infer if there exist casting of types or change in the local frames"""
+        metaphor_exprs = []
+        def dfs(expr : Expression):
+            if isinstance(expr, FunctionApplicationExpression):
+                func_name = expr.func.name
+                output_type = self.base_executor.function_output_type(func_name)
+
+                source_arg_types = [dfs(arg)[0] for arg in expr.args] # A List of Types
+                target_arg_types = self.function_input_type(func_name)
+
+                for i,tp in enumerate(target_arg_types):
+                    if source_arg_types[i].alias != target_arg_types[i].alias:
+                        metaphor_exprs.append([func_name, target_arg_types, source_arg_types])
+                        break
+                return [output_type, target_arg_types]
+
+            elif isinstance(expr, ConstantExpression):
+                """TODO: add the return type for constants"""
+                assert isinstance(expr.const, Value)
+                return expr.const
+            return [None,None]
+        dfs(expr)
+        if verbose:
+            from helchriss.utils import stprint
+            stprint(metaphor_exprs)
+        return metaphor_exprs
+    
+    def add_metaphors(self, metaphors : List[Tuple[str, List[TypeBase], List[TypeBase]]]):
+        for metaphor in metaphors:
+            target_func = metaphor[0]
+            target_types = metaphor[1]
+            source_types = metaphor[2]
+            source_hypothesis = self.gather_functions(source_types)
+            for source_func in source_hypothesis:
+                input_type = self.function_input_type(*source_func.split(":"))
+                output_type = self.function_input_type(*target_func.split(":"))
+                shared_caster = infer_caster(input_type, output_type)
+                self.add_reduction(source_func, target_func, shared_caster)
+        return 1
+    
+    def gather_functions(self, input_type : List[TypeBase], output_type : TypeBase = None) -> List[str]:
+        output_funcs = []
+        for func in self.base_executor.input_types:
+            tgt_input_type = self.function_input_type(func)
+            type_check = len(tgt_input_type) == len(input_type) and sum([tgt_input_type[i].alias != input_type[i].alias for i in range(len(input_type))]) == 0
+            if type_check:
+                if output_type is not None:
+                    if output_type == self.function_output_type(func) == output_type:
+                        output_funcs.append(func)
+                else:
+                    output_funcs.append(func)
+        return output_funcs
+    
+    def add_reduction(self, source_func : str, target_func : str, caster = None):
+        input_type = self.function_input_type(*source_func.split(":"))
+        output_type = self.function_input_type(*target_func.split(":"))
+        cast_frame : LocalFrame = LocalFrame(target_func, input_type, output_type)
+
+        if caster is None: caster = infer_caster(input_type, output_type)
+        cast_frame.add_meta_caster(source_func, caster)
+
+        self.reduce_unifier.add_function_frame(target_func, cast_frame)
+        return 1
+    @property
+    def types(self): return self.base_executor.types
+
+    @property
+    def functions(self): return self.base_executor.functions
+
+    def function_output_type(self, func_name, domain = None):
+        if domain is None: func_name, domain = func_name.split(":")
+        return self.base_executor.function_output_type(func_name, domain)
+
+    def function_input_type(self, func_name, domain = None):
+        if domain is None: func_name, domain = func_name.split(":")
+        return self.base_executor.function_input_type(func_name, domain)
+    
+    def display(self):
+        G = self.eval_graph
+        import matplotlib.pyplot as plt
+        from networkx.drawing.nx_pydot import graphviz_layout
+
+        H = G.copy()
+        for n, d in H.nodes(data=True):
+            d.pop('inputs', None)  # remove 'weight' if it exists
+            d.pop('output', None)  # remove 'weight' if it exists
+        for u, v, d in H.edges(data=True):
+            d.pop('output', None)  # remove 'weight' if it exists
+
+        pos = graphviz_layout(H, prog='dot')  # Layout for the nodes
+        edge_colors = [d.get('color', '#ffffff') for (u, v, d) in G.edges(data=True)]
+        node_colors = [d.get('color', '#ffffff') for n, d in G.nodes(data=True)]
+
+        node_weights = [float(data['weight']) for node, data in G.nodes(data=True)]
+        plt.figure("redutive execution",figsize=(8, 6), frameon = False)
+
+        for node, color, alpha in zip(G.nodes(), node_colors, node_weights):
+            nx.draw_networkx_nodes(G, pos, nodelist=[node], node_color=color, node_size=2500, alpha=alpha )
+        #nx.draw_networkx_labels(G, pos, font_color="white", font_size = 9)
+        nx.draw_networkx_edges(G, pos, edge_color= edge_colors , arrows=True, arrowsize=10, arrowstyle="-|>")
+        
+        for node, (x, y) in pos.items():
+            label = f"{float(G.nodes[node]['weight']):.2f}"
+            d = G.nodes[node]
+            node_color = G.nodes[node]["text_color"] if 'text_color' in G.nodes[node]  else "white"
+            if isinstance(d['output'].vtype, TypeBase): out_label = f"V:{float(d['output'].value):.2f}\nTp: {d['output'].vtype.alias.split(':')[0]}"
+            else: out_label = f"V:{float(d['output'].value):.2f}\nTp: {d['output'].vtype}"
+            plt.text(x + -3., y + 4.95, label, fontsize=8, color='white', va='center' )
+            plt.text(x + -3., y - 5.95, out_label, fontsize=5, color=node_color, va='center' )
+            plt.text(x + -3., y, node, fontsize=9, color=node_color, va='center' )
+
+
+        edge_labels = {(u, v): f"{float(d['weight']):.2f}" if 'weight' in d else '' for u, v, d in G.edges(data=True)}
+
+        nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_size=10)
+        
+        for (u, v, d) in G.edges(data=True):
+            (x1, y1) = pos[u]
+            (x2, y2) = pos[v]
+            if 'output' not in d: continue
+            try: label = f"V:{float(d['output'].value):.2f} Tp: {d['output'].vtype.alias.split(':')[0]}"
+            except: label = f"V:{d['output'].value} Tp: {d['output'].vtype.alias.split(':')[0]}"
+            xm, ym = (x1 + x2) / 2,  (y1 + y2) / 2
+            bias_x, bias_y = 0.3,  -0.1
+            plt.text(xm + bias_x, ym + bias_y, label, fontsize=9, color='#3a5f7d', ha='center', va='center' )
+        from matplotlib.offsetbox import OffsetImage, AnnotationBbox
+        ax = plt.gca()
+        ax.set_facecolor('none')  # Transparent background
+        for spine in ax.spines.values():
+            spine.set_visible(False)
+        ax.tick_params(left=False, right=False, labelleft=False, labelbottom=False, bottom=False)
+        plt.show()
+        return
+
+    def evaluate(self, expression, grounding):
+        self.init_graph()
         if not isinstance(expression, Expression):
             expression = self.parse_expression(expression)
 
         grounding = grounding if self._grounding is not None else grounding
 
         with self.with_grounding(grounding):
-            return self._evaluate(expression)
-
-    def _evaluate(self, expr):
-        """tracking of equivalent symbols along the expressions"""
-        if isinstance(expr, FunctionApplicationExpression):
-            func_name, func_domain = expr.func.name.split(":")
-            types = self.get_function(expr.func.name)["parameters"]
-
-            args = [Value(types[i], self._evaluate(arg)) for i,arg in enumerate(expr.args)]
-            chain_expecation = self.chain_evaluate(func_name, args, func_domain)
+            outputs, out_name = self._evaluate(expression)
+            self.eval_graph.add_node("outputs", weight = 1.0, inputs = outputs, color = "#0d0d0d", output = outputs)
+            self.eval_graph.add_edge(out_name, "outputs", output = outputs, color = "#0d0d0d")
             
-            return chain_expecation
+            return outputs
+
+    def _evaluate(self, expr : Expression):
+        """Internal implementation of the executor. This method will be called by the public method :meth:`execute`.
+        This function basically implements a depth-first search on the expression tree.
+
+        Args:
+            expr: the expression to execute.
+
+        Returns:
+            The result of the execution.
+        """
+
+        if isinstance(expr, FunctionApplicationExpression):
+            func_name = expr.func.name
+
+            if func_name not in self.node_count: self.node_count[func_name] = 0
+            else: self.node_count[func_name] += 1
+            node_count = self.node_count[func_name]
+            count_func_name = f"{func_name.split(':')[0]}_{node_count}"
+            self.eval_graph.add_node(count_func_name, weight = 1.0, color = "#3a5f7d")
+
+
+            output_type = self.base_executor.function_output_type(func_name)
+            args = []
+            for arg in expr.args:
+                arg_value, arg_name = self._evaluate(arg) # A List of Values
+                args.append(arg_value)
+                self.eval_graph.add_edge(arg_name, count_func_name, output = arg_value, color = "#0d0d0d")
+
+            reduce_funcs, reduce_graph = self.reduce_unifier.reduce_args(func_name,args)#List[Tuple[str, List[Value], Any]]
+
+            """handle the visualization of the reduction graph"""
+            reduce_nodes, reduce_edges = reduce_graph
+            for node in reduce_nodes:
+                if node != func_name:
+                    for reduce_func in reduce_funcs:
+                        if reduce_func[0] == node:
+                            node_weight = reduce_func[2]
+                    self.eval_graph.add_node(f"{node.split(':')[0]}_{node_count}", weight = node_weight, color = "#048393", text_color = '#0d0d0d')
+                else:
+                    for reduce_func in reduce_funcs:
+                        if reduce_func[0] == node:
+                            node_weight = reduce_func[2]
+                    self.eval_graph.nodes[count_func_name]["weight"] = node_weight
+
+            for edge in reduce_edges:
+                src_node = f"{edge[0].split(':')[0]}_{node_count}"
+                tgt_node = f"{edge[1].split(':')[0]}_{node_count}"
+                if src_node != func_name:
+                    self.eval_graph.add_edge(f"{src_node}", tgt_node, weight = float(edge[2].detach()[0]), color = "#048393")
+
+            expect_output = 0.0
+            for reduce_func in reduce_funcs:
+                rfunc_name, reduce_args, weight = reduce_func
+                measure : Value = self.base_executor.execute(rfunc_name, reduce_args)
+                expect_output += measure.value * weight
+
+                if func_name != rfunc_name:
+                    self.eval_graph.nodes[f"{rfunc_name.split(':')[0]}_{node_count}"]["output"] = measure
+                else:
+                    self.eval_graph.nodes[count_func_name]["output"] = measure                    
+
+
+            return Value(output_type, expect_output), count_func_name
 
         elif isinstance(expr, ConstantExpression):
             assert isinstance(expr.const, Value)
             return expr.const
         elif isinstance(expr, VariableExpression):
-            return expr.name
-        elif isinstance(expr, LogicalAndExpression):
-            return expr.operands
-        elif isinstance(expr, ListExpression):
-            """f(x)->y, List[f]: List(x) -> List(y))
-            List[List[f]]: List[List(x)] -? List[List(y)]
-            """
-            value_list = []
-            func_name = expr.func.name.split(":")
-            types = self.get_function(expr.func.name)["parameters"]
-            
-            return value_list
+
+            assert isinstance(expr.name, Value)
+            return expr.const
         else:
             raise NotImplementedError(f'Unknown expression type: {type(expr)}')
