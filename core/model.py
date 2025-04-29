@@ -4,7 +4,7 @@ from typing import List, Union, Any
 from helchriss.domain import load_domain_string
 from helchriss.knowledge.symbolic import Expression
 from helchriss.knowledge.executor import CentralExecutor
-from core.metaphors.diagram_executor import MetaphorExecutor
+from core.metaphors.diagram_executor import ReductiveExecutor
 from core.grammar.ccg_parser import ChartParser
 from core.grammar.lexicon import CCGSyntacticType, LexiconEntry, SemProgram
 from core.grammar.learn import enumerate_search
@@ -29,9 +29,10 @@ class MetaLearner(nn.Module):
     def __init__(self, domains : List[Union[CentralExecutor]], vocab = None):
         super().__init__()
         self._domain :List[Union[CentralExecutor]]  = domains
-        self.executor : CentralExecutor = MetaphorExecutor(domains)
+        self.executor : CentralExecutor = ReductiveExecutor(domains)
         
         self.vocab = vocab
+        self.lexicon_entries = nn.ModuleDict({})
         self.parser = None
         self.gather_format = self.executor.gather_format
 
@@ -98,7 +99,7 @@ class MetaLearner(nn.Module):
         self.entries = enumerate_search(self.types, self.functions, max_depth = depth)
         #for syn_type, program in self.entries:
         #    print(syn_type, program)
-        lexicon_entries = {} 
+        lexicon_entries = nn.ModuleDict({})
         for word in self.vocab:
             lexicon_entries[word] = []
             for syn_type, program in self.entries:
@@ -109,6 +110,10 @@ class MetaLearner(nn.Module):
 
         self.lexicon_entries = lexicon_entries
         self.parser = ChartParser(lexicon_entries)
+
+    def add_vocab(self, vocab: List[str], domains : List[str]):
+        """this method add a new set of vocab and related domains that could associate it with """
+        return -1
 
     def forward(self, sentence, grounding = None, topK = None):
         parses = self.parser.parse(sentence, topK = topK)

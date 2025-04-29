@@ -10,7 +10,7 @@ import argparse
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument("--command",          default = "train",   help = "the commands to run for the scripts")
+parser.add_argument("--command",          default = "interact_aluneth",   help = "the commands to run for the scripts")
 """possible command types are in the following format
 --train_ccsp_{domain} : to train a energy graph diffusion model that learns to do the CCSP problem.
 --train_metaphor_{domain} : to train a specific domain information, this domain is supposed to be in the target model.
@@ -30,12 +30,13 @@ parser.add_argument("--ckpt_name",		  default = "mifafa")
 
 """handle the textual token encoder"""
 parser.add_argument("--corpus",           default = "data/corpus.txt")
+parser.add_argument("--vocab_path",		  default = "data/core_vocab.txt")
 parser.add_argument("--vocab_size",       default = 10000,     help = "number of vocabulary to hold in the text encoder")
 
 """handle the image mask object encoder"""
 parser.add_argument("--num_channels",     default = 3,         help = "number of input channels of the image encoder")
 
-
+parser.add_argument("--core_knowledge",   default = "configs/core_domains.yaml", help = "the config of the core knowlege to load")
 parser.add_argument("--load_ckpt",  default = None,      help = "load the checkpoint")
 
 config = parser.parse_args()

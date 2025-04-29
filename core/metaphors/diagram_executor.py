@@ -141,6 +141,9 @@ class ExecutorGroup(FunctionExecutor):
 
             self.update_type_registry(domain_executor)
             #self.update_function_registry(domain_executor)
+
+    @property
+    def gather_format(self): return self._gather_format
     
     @property
     def types(self): return self._type_registry
@@ -204,6 +207,7 @@ class ReductiveExecutor(FunctionExecutor):
         super().__init__(None)
         self.base_executor : FunctionExecutor = executor
         self.reduce_unifier : ReductiveUnifier = ReductiveUnifier() # use this structur to store the caster and hierarchies
+        self._gather_format = "{}:{}"
 
         """maintain the evaluation graph just to visualize and sanity check"""
         self.eval_graph : nx.DiGraph = nx.DiGraph()
@@ -211,6 +215,9 @@ class ReductiveExecutor(FunctionExecutor):
         self.node_outputs = []
         self.node_inputs = []
         self.record = 1
+
+    def gather_format(self, name, domain):
+        return self._gather_format.format(name, domain)
 
     def init_graph(self):
         self.eval_graph = nx.DiGraph()

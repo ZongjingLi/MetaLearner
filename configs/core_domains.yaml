@@ -1,6 +1,10 @@
-database:
-  host: localhost
-  port: 5432
-  user: admin
-  password: secret
 name: "prototype"
+domains:
+    intergers:
+      name: "integers_executor"
+      path: "domains.numbers.integers_domain"
+    order:
+      name: "order_executor"
+      path: "domains.structure.order_domain"
+vocab:
+    path: "data/core_vocab.txt"

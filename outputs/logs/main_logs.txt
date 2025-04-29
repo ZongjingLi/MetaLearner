@@ -1,0 +1,293 @@
+[29 01:17:46 63@main.py:Main] try to interact with model aluneth.
+[29 01:23:36 65@main.py:Main] try to interact with model aluneth.
+[29 01:23:36 66@main.py:Main] using the core knowledge stored in configs/core_domains.yaml
+[29 01:23:36 69@main.py:Main] WRN not loading any checkpoint!!!
+[29 01:26:28 70@main.py:Main] try to interact with model aluneth.
+[29 01:26:28 23@main.py:Main] using the core knowledge stored in configs/core_domains.yaml
+[29 01:26:28 26@main.py:Main] WRN not loading any checkpoint!!!
+[29 01:27:19 67@main.py:Main] try to interact with model aluneth.
+[29 01:27:19 23@main.py:Main] using the core knowledge stored in configs/core_domains.yaml
+[29 01:27:19 26@main.py:Main] WRN not loading any checkpoint!!!
+[29 01:37:02 66@main.py:Main] try to interact with model aluneth.
+[29 01:37:02 23@main.py:Main] using the core knowledge stored in configs/core_domains.yaml
+[29 01:37:02 26@main.py:Main] WRN not loading any checkpoint!!!
+[29 01:41:58 67@main.py:Main] try to interact with model aluneth.
+[29 01:41:58 23@main.py:Main] using the core knowledge stored in configs/core_domains.yaml
+[29 01:41:58 26@main.py:Main] WRN not loading any checkpoint!!!
+[29 01:42:32 69@main.py:Main] try to interact with model aluneth.
+[29 01:42:32 23@main.py:Main] using the core knowledge stored in configs/core_domains.yaml
+[29 01:42:32 26@main.py:Main] WRN not loading any checkpoint!!!
+[29 01:43:44 72@main.py:Main] try to interact with model aluneth.
+[29 01:43:44 23@main.py:Main] using the core knowledge stored in configs/core_domains.yaml
+[29 01:43:44 26@main.py:Main] WRN not loading any checkpoint!!!
+[29 01:44:00 72@main.py:Main] try to interact with model aluneth.
+[29 01:44:00 23@main.py:Main] using the core knowledge stored in configs/core_domains.yaml
+[29 01:44:00 26@main.py:Main] WRN not loading any checkpoint!!!
+[29 01:44:35 73@main.py:Main] try to interact with model aluneth.
+[29 01:44:35 23@main.py:Main] using the core knowledge stored in configs/core_domains.yaml
+[29 01:44:35 26@main.py:Main] WRN not loading any checkpoint!!!
+[29 01:45:09 73@main.py:Main] try to interact with model aluneth.
+[29 01:45:09 23@main.py:Main] using the core knowledge stored in configs/core_domains.yaml
+[29 01:45:09 26@main.py:Main] WRN not loading any checkpoint!!!
+[29 01:45:12 73@main.py:Main] try to interact with model aluneth.
+[29 01:45:12 23@main.py:Main] using the core knowledge stored in configs/core_domains.yaml
+[29 01:45:12 26@main.py:Main] WRN not loading any checkpoint!!!
+[29 01:45:17 73@main.py:Main] try to interact with model aluneth.
+[29 01:45:17 23@main.py:Main] using the core knowledge stored in configs/core_domains.yaml
+[29 01:45:17 26@main.py:Main] WRN not loading any checkpoint!!!
+[29 01:45:56 73@main.py:Main] try to interact with model aluneth.
+[29 01:45:56 23@main.py:Main] using the core knowledge stored in configs/core_domains.yaml
+[29 01:45:56 26@main.py:Main] WRN not loading any checkpoint!!!
+[29 01:45:56 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[29 01:45:56 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[29 01:45:56 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[29 01:45:56 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[29 01:45:56 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[29 01:45:56 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[29 01:45:56 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[29 01:45:56 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[29 01:45:56 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function greater automatically registered.
+[29 01:45:56 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function lesser automatically registered.
+[29 01:45:56 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[29 01:45:56 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function inf automatically registered.
+[29 01:45:56 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function sup automatically registered.
+[29 01:46:22 74@main.py:Main] try to interact with model aluneth.
+[29 01:46:22 23@main.py:Main] using the core knowledge stored in configs/core_domains.yaml
+[29 01:46:22 26@main.py:Main] WRN not loading any checkpoint!!!
+[29 01:46:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[29 01:46:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[29 01:46:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[29 01:46:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[29 01:46:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[29 01:46:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[29 01:46:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[29 01:46:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[29 01:46:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function greater automatically registered.
+[29 01:46:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function lesser automatically registered.
+[29 01:46:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[29 01:46:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function inf automatically registered.
+[29 01:46:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function sup automatically registered.
+[29 01:47:00 76@main.py:Main] try to interact with model aluneth.
+[29 01:47:00 23@main.py:Main] using the core knowledge stored in configs/core_domains.yaml
+[29 01:47:00 26@main.py:Main] WRN not loading any checkpoint!!!
+[29 01:47:12 76@main.py:Main] try to interact with model aluneth.
+[29 01:47:12 23@main.py:Main] using the core knowledge stored in configs/core_domains.yaml
+[29 01:47:12 26@main.py:Main] WRN not loading any checkpoint!!!
+[29 01:47:24 76@main.py:Main] try to interact with model aluneth.
+[29 01:47:24 23@main.py:Main] using the core knowledge stored in configs/core_domains.yaml
+[29 01:47:24 26@main.py:Main] WRN not loading any checkpoint!!!
+[29 01:47:24 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[29 01:47:24 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[29 01:47:24 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[29 01:47:24 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[29 01:47:24 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[29 01:47:24 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[29 01:47:24 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[29 01:47:24 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[29 01:47:24 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function greater automatically registered.
+[29 01:47:24 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function lesser automatically registered.
+[29 01:47:24 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[29 01:47:24 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function inf automatically registered.
+[29 01:47:24 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function sup automatically registered.
+[29 01:49:18 82@main.py:Main] try to interact with model aluneth.
+[29 01:49:18 23@main.py:Main] using the core knowledge stored in configs/core_domains.yaml
+[29 01:49:18 26@main.py:Main] WRN not loading any checkpoint!!!
+[29 01:49:18 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[29 01:49:18 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[29 01:49:18 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[29 01:49:18 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[29 01:49:18 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[29 01:49:18 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[29 01:49:18 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[29 01:49:18 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[29 01:49:18 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function greater automatically registered.
+[29 01:49:18 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function lesser automatically registered.
+[29 01:49:18 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[29 01:49:18 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function inf automatically registered.
+[29 01:49:18 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function sup automatically registered.
+[29 01:49:35 82@main.py:Main] try to interact with model aluneth.
+[29 01:49:35 23@main.py:Main] using the core knowledge stored in configs/core_domains.yaml
+[29 01:49:35 26@main.py:Main] WRN not loading any checkpoint!!!
+[29 01:49:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[29 01:49:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[29 01:49:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[29 01:49:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[29 01:49:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[29 01:49:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[29 01:49:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[29 01:49:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[29 01:49:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function greater automatically registered.
+[29 01:49:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function lesser automatically registered.
+[29 01:49:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[29 01:49:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function inf automatically registered.
+[29 01:49:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function sup automatically registered.
+[29 01:49:42 82@main.py:Main] try to interact with model aluneth.
+[29 01:49:42 23@main.py:Main] using the core knowledge stored in configs/core_domains.yaml
+[29 01:49:42 26@main.py:Main] WRN not loading any checkpoint!!!
+[29 01:49:42 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[29 01:49:42 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[29 01:49:42 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[29 01:49:42 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[29 01:49:42 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[29 01:49:42 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[29 01:49:42 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[29 01:49:42 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[29 01:49:42 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function greater automatically registered.
+[29 01:49:42 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function lesser automatically registered.
+[29 01:49:42 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[29 01:49:42 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function inf automatically registered.
+[29 01:49:42 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function sup automatically registered.
+[29 01:49:42 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[29 01:49:50 82@main.py:Main] try to interact with model aluneth.
+[29 01:49:50 23@main.py:Main] using the core knowledge stored in configs/core_domains.yaml
+[29 01:49:50 26@main.py:Main] WRN not loading any checkpoint!!!
+[29 01:49:50 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[29 01:49:50 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[29 01:49:50 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[29 01:49:50 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[29 01:49:50 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[29 01:49:50 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[29 01:49:50 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[29 01:49:50 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[29 01:49:50 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function greater automatically registered.
+[29 01:49:50 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function lesser automatically registered.
+[29 01:49:50 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[29 01:49:50 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function inf automatically registered.
+[29 01:49:50 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function sup automatically registered.
+[29 01:49:50 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[29 01:50:57 82@main.py:Main] try to interact with model aluneth.
+[29 01:50:57 23@main.py:Main] using the core knowledge stored in configs/core_domains.yaml
+[29 01:50:57 26@main.py:Main] WRN not loading any checkpoint!!!
+[29 01:50:57 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[29 01:50:57 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[29 01:50:57 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[29 01:50:57 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[29 01:50:57 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[29 01:50:57 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[29 01:50:57 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[29 01:50:57 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[29 01:50:57 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function greater automatically registered.
+[29 01:50:57 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function lesser automatically registered.
+[29 01:50:57 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[29 01:50:57 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function inf automatically registered.
+[29 01:50:57 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function sup automatically registered.
+[29 01:50:57 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[29 01:51:38 82@main.py:Main] try to interact with model aluneth.
+[29 01:51:38 23@main.py:Main] using the core knowledge stored in configs/core_domains.yaml
+[29 01:51:38 26@main.py:Main] WRN not loading any checkpoint!!!
+[29 01:51:38 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[29 01:51:38 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[29 01:51:38 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[29 01:51:38 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[29 01:51:38 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[29 01:51:38 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[29 01:51:38 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[29 01:51:38 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[29 01:51:38 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function greater automatically registered.
+[29 01:51:38 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function lesser automatically registered.
+[29 01:51:38 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[29 01:51:38 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function inf automatically registered.
+[29 01:51:38 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function sup automatically registered.
+[29 01:51:38 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[29 01:52:20 82@main.py:Main] try to interact with model aluneth.
+[29 01:52:20 23@main.py:Main] using the core knowledge stored in configs/core_domains.yaml
+[29 01:52:20 26@main.py:Main] WRN not loading any checkpoint!!!
+[29 01:52:20 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[29 01:52:20 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[29 01:52:20 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[29 01:52:20 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[29 01:52:20 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[29 01:52:20 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[29 01:52:20 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[29 01:52:20 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[29 01:52:20 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function greater automatically registered.
+[29 01:52:20 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function lesser automatically registered.
+[29 01:52:20 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[29 01:52:20 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function inf automatically registered.
+[29 01:52:20 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function sup automatically registered.
+[29 01:52:20 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[29 01:53:34 82@main.py:Main] try to interact with model aluneth.
+[29 01:53:34 23@main.py:Main] using the core knowledge stored in configs/core_domains.yaml
+[29 01:53:34 26@main.py:Main] WRN not loading any checkpoint!!!
+[29 01:53:34 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[29 01:53:34 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[29 01:53:34 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[29 01:53:34 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[29 01:53:34 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[29 01:53:34 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[29 01:53:34 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[29 01:53:34 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[29 01:53:34 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function greater automatically registered.
+[29 01:53:34 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function lesser automatically registered.
+[29 01:53:34 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[29 01:53:34 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function inf automatically registered.
+[29 01:53:34 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function sup automatically registered.
+[29 01:53:34 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[29 01:53:50 84@main.py:Main] try to interact with model aluneth.
+[29 01:53:50 23@main.py:Main] using the core knowledge stored in configs/core_domains.yaml
+[29 01:53:50 26@main.py:Main] WRN not loading any checkpoint!!!
+[29 01:53:50 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[29 01:53:50 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[29 01:53:50 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[29 01:53:50 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[29 01:53:50 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[29 01:53:50 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[29 01:53:50 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[29 01:53:50 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[29 01:53:50 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function greater automatically registered.
+[29 01:53:50 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function lesser automatically registered.
+[29 01:53:50 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[29 01:53:50 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function inf automatically registered.
+[29 01:53:50 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function sup automatically registered.
+[29 01:53:50 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[29 02:02:54 84@main.py:Main] try to interact with model aluneth.
+[29 02:02:54 23@main.py:Main] using the core knowledge stored in configs/core_domains.yaml
+[29 02:02:54 26@main.py:Main] WRN not loading any checkpoint!!!
+[29 02:02:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[29 02:02:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[29 02:02:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[29 02:02:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[29 02:02:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[29 02:02:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[29 02:02:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[29 02:02:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[29 02:02:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function greater automatically registered.
+[29 02:02:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function lesser automatically registered.
+[29 02:02:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[29 02:02:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function inf automatically registered.
+[29 02:02:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function sup automatically registered.
+[29 02:02:54 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[29 02:02:57 84@main.py:Main] try to interact with model aluneth.
+[29 02:02:57 23@main.py:Main] using the core knowledge stored in configs/core_domains.yaml
+[29 02:02:57 26@main.py:Main] WRN not loading any checkpoint!!!
+[29 02:02:57 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[29 02:02:57 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[29 02:02:57 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[29 02:02:57 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[29 02:02:57 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[29 02:02:57 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[29 02:02:57 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[29 02:02:57 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[29 02:02:57 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function greater automatically registered.
+[29 02:02:57 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function lesser automatically registered.
+[29 02:02:57 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[29 02:02:57 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function inf automatically registered.
+[29 02:02:57 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function sup automatically registered.
+[29 02:02:57 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[29 02:03:16 84@main.py:Main] try to interact with model aluneth.
+[29 02:03:16 23@main.py:Main] using the core knowledge stored in configs/core_domains.yaml
+[29 02:03:16 26@main.py:Main] WRN not loading any checkpoint!!!
+[29 02:03:16 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[29 02:03:16 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[29 02:03:16 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[29 02:03:16 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[29 02:03:16 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[29 02:03:16 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[29 02:03:16 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[29 02:03:16 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[29 02:03:16 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function greater automatically registered.
+[29 02:03:16 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function lesser automatically registered.
+[29 02:03:16 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[29 02:03:16 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function inf automatically registered.
+[29 02:03:16 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function sup automatically registered.
+[29 02:03:16 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain

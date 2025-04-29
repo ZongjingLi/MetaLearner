@@ -17,6 +17,35 @@ from helchriss.logger import get_logger, set_output_file
 main_logger = get_logger("Main")
 set_output_file("outputs/logs/main_logs.txt")
 
+def load_metalearner(config):
+    core_knowledge_config = config.core_knowledge
+    checkpoint_dir = config.load_ckpt
+    main_logger.info(f"using the core knowledge stored in {core_knowledge_config}")
+    if checkpoint_dir:
+        main_logger.info(f"loading the checkpoint parameters in {checkpoint_dir}")
+    else: main_logger.warning("not loading any checkpoint!!!")
+    with open(core_knowledge_config, 'r') as file:
+        model_config = yaml.safe_load(file)
+
+    """start to load the model config, core knowledge and lexicon associated with it"""
+    model_name = model_config["name"]
+
+    # load the domain functions used for the meta-learner
+    domain_executors = []
+    for domain_name in model_config["domains"]:
+        domain =  model_config["domains"][domain_name]
+        path = domain["path"]
+        name = domain["name"]
+        exec(f"from {path} import {name}")
+        domain_executors.append(eval(name))
+
+    # load the lexicon entries and the vocab learned in the meta-learner
+    vocab_path = model_config["vocab"]
+    with open(vocab_path, 'r', encoding='utf-8') as f:
+        vocab = [line.strip() for line in f]
+
+    from core.model import MetaLearner
+    return MetaLearner(domain_executors, vocab)
 
 def process_command(command):
     if regex.match("train_ccsp_*", command):
@@ -50,41 +79,16 @@ def process_command(command):
     if regex.match("train_mcl_*", command):
         main_logger.info("start training the metaphorical concept learner")
         domain = command[10:]
-        from core.model import MetaLearner
+        model = load_metalearner(config)
 
-
-        with open('config.yaml', 'r') as file:
-            config = yaml.safe_load(file)
-
-        model = EnsembleModel(config)
-
-    
-    if command == "interact":
-        main_logger.info("start the interactive mode of the metaphorical concept learner")
-        from core.model import EnsembleModel
-        model = EnsembleModel(config)
-        
-        # Import and start the server
-        from experiments.server import make_app
-        import tornado
-        
-        # Create and start the server with the model
-        app = make_app(model=model)
-        port = getattr(config, 'port', 8888)  # Use config port if available, else default to 8888
-        app.listen(port)
-        
-        main_logger.info(f"Server running on http://localhost:{port}")
-        
-        # Start the Tornado IO loop
-        try:
-            tornado.ioloop.IOLoop.current().start()
-        except KeyboardInterrupt:
-            main_logger.info("Server stopped by user")
-            tornado.ioloop.IOLoop.current().stop()
+    if regex.match("interact_*", command):
+        model_name = command[9:]
+        main_logger.info(f"try to interact with model {model_name}.")
+        model = load_metalearner(config)
 
 if __name__ == "__main__":
     from config import config
 
     sys.stdout.write(f"command type: {config.command}\n")
 
-    #process_command(config.command)
+    process_command(config.command)

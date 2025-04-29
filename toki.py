@@ -1,5 +1,3 @@
-""" a working typing system"""
-
 
 """ a union of executor bundles"""
 from domains.numbers.integers_domain import integers_executor
