@@ -1,0 +1,55 @@
+(domain BlockWorld)
+(:type
+    state - vector[float, 4]        ;; [x, y] coordinates, is clear, is holding
+)
+(: constant
+    hand-free
+)
+(:predicate
+    ;; Basic position predicate
+    block_position ?x-state -> vector[float, 2]
+    
+    ;; Stacking predicates
+    on ?x-state ?y-state -> boolean
+    cleared ?x-state -> boolean
+    
+    ;; Manipulation predicates
+    holding ?x-state -> boolean
+)
+
+(:action
+    (
+        name: pick
+        parameters: ?o1
+        precondition: (and (cleared ?o1) (hand-free) )
+        effect:
+        (and-do
+            (and-do
+                (assign (holding ?o1) true)
+                (assign (cleared ?o1) false)
+            )
+            (assign (hand-free) false)
+        )
+    )
+    (
+        name: place
+        parameters: ?o1 ?o2
+        precondition:
+            (and (holding ?o1) (cleared ?o2))
+        effect :
+            (and-do
+            (and-do
+                        (assign (hand-free) true)
+                (and-do
+                        (assign (holding ?o1) false)
+                    (and-do
+                        (assign (cleared ?o2) false)
+                        (assign (cleared ?o1) true)
+                    )
+                )
+                
+            )
+                (assign (on ?x ?y) true)
+            )
+    )
+)

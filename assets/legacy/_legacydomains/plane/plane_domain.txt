@@ -1,0 +1,21 @@
+(domain Plane)
+(:type
+    state - vector[float,2]
+)
+(:predicate
+    pos ?x-state -> vector[float,2]
+    angle ?x-state -> float
+
+    ;; spatial relations left, right and other prepositions
+    plane-left ?x-pos ?y-pos -> boolean
+    plane-right ?x-pos ?y-pos -> boolean
+    plane-above ?x-pos ?y-pos -> boolean
+    plane-below ?x-pos ?y-pos -> boolean
+    
+    ;; spatial relations that are independent of the relative position but only the distance
+    plane-near ?x-pos ?y-pos -> boolean
+    plane-far ?x-pos ?y-pos -> boolean
+)
+(:derived
+    distance-to-zero ?x-state expr: (??f (pos ?x))
+)

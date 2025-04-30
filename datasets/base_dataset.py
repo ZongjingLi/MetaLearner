@@ -2,9 +2,6 @@
 import torch
 from torch.utils.data import Dataset, DataLoader
 
-import torch
-
-import torch
 
 def collate_tensors_with_mask(tensor_list):
     """
@@ -39,35 +36,19 @@ def collate_tensors_with_mask(tensor_list):
 tensor_list = [torch.randn(3, 4, 5), torch.randn(5, 4, 5), torch.randn(2, 4, 5)]
 batch_tensor, mask = collate_tensors_with_mask(tensor_list)
 
-print("Batch Tensor:\n", batch_tensor)
-print("Mask:\n", mask)
+#print("Batch Tensor:\n", batch_tensor)
+#print("Mask:\n", mask)
+
+from torch.utils.data import DataLoader
+from helchriss.utils.data import ListDataset
+from helchriss.utils.data import GroundBaseDataset
+from helchriss.dsl.dsl_values import Value
+from typing import List, Dict, Mapping, Union, Any
 
 
-#tensor_list = [torch.randn(3, 4), torch.randn(5, 4), torch.randn(2, 4)]
-#batch_tensor, mask = collate_tensors_with_mask(tensor_list)
-
-
-class GroundTruthDataset(Dataset):
-    def __init__(self):
-        super().__init__()
-        self.perception_module_name = None
-
-    def __len__(self):
-        return []
-
-    def __getitem__(self, idx):
-        """ each item will be an a diction that contains, input, modal, ground truth, effective mask
-        Returns:
-            input: anything that an perception module can take as inoput
-            modal: a object centric detection module that take
-        """
-        return idx
-    
-class QuestionAnsweringDataset(Dataset):
-    def __init__(self):
-        super().__init__()
-
-    def __len__(self): return 0
-
-    def __getitem__(self, idx):
-        return 
+class SceneGroundingDataset(ListDataset):
+    def __init__(self, queries : List[str], answers : List[Union[Value, Any]], groundings : None):
+        query_size = len(queries)
+        if groundings is None: groundings = [{} for _ in range(query_size)]
+        data = [{"query":queries[i], "answer":answers[i], "grounding": groundings[i]} for i in range(query_size)]
+        super().__init__(data)

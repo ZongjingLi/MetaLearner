@@ -4,6 +4,7 @@ from typing import List, Mapping, Tuple, Any, Union, Dict
 import torch
 import torch.nn as nn
 import networkx as nx
+import os
 
 class LocalFrame(nn.Module):
     """store 1) a nn.ModuleDict of type self casters that adapts 2) a nn.ModuleDict that perform type casting to target function"""
@@ -48,11 +49,36 @@ class LocalFrame(nn.Module):
             meta_args.append((caster_name, meta_arg_values))
         return meta_args
 
+    def save_ckpt(self, ckpt):
+        return
+
+    def load_ckpt(self, ckpt):
+        return 0
+
 
 class ReductiveUnifier(nn.Module):
     def __init__(self):
         super().__init__()
         self.frames = nn.ModuleDict({}) # local frames of functions
+
+    def save_ckpt(self, ckpt_path):
+        if not os.path.exists(f"{ckpt_path}/frames"): os.makedirs(f"{ckpt_path}/frames")
+        for frame_name in self.frames:
+            print(f"{ckpt_path}/frames/{frame_name}.pth")
+            torch.save(self.frames[frame_name], f"{ckpt_path}/frames/{frame_name}.pth")#.save_ckpt(f"{ckpt_path}/frames/{frame_name}")
+        return 0
+
+    def load_ckpt(self, ckpt_path):
+        frames_dir = f"{ckpt_path}/frames"
+        for filename in os.listdir(frames_dir):
+            file_path = os.path.join(frames_dir, filename)
+            if os.path.isfile(file_path):
+                
+                if ":" in filename and filename[-4:] == ".pth":
+                    self.frames[filename[:-4]] = torch.load(file_path, weights_only = False)
+
+ 
+        return 0
 
     def add_function_frame(self, name : str, frame : LocalFrame): self.frames[name] = frame
 

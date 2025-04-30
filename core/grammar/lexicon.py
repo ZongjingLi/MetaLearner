@@ -2,7 +2,7 @@
 # @Author: zongjingli
 # @Date:   2025-02-19 20:25:05
 # @Last Modified by:   zongjingli
-# @Last Modified time: 2025-02-20 08:59:38
+# @Last Modified time: 2025-04-29 06:25:38
 import math
 from typing import Dict, List, Tuple, Set, Optional, Any, Union
 import numpy as np
@@ -71,23 +71,23 @@ class SemProgram:
                 self.lambda_vars == other.lambda_vars)
 
 
-class LexiconEntry:
+class LexiconEntry(nn.Module):
     """
     A lexicon entry for a word, containing syntactic type and semantic program
     """
     def __init__(self, word: str, syn_type: CCGSyntacticType, sem_program: SemProgram, weight: Union[float, torch.Tensor] = 0.0):
+        super().__init__()
         self.word = word
         self.syn_type = syn_type
         self.sem_program = sem_program
         
         # Convert weight to PyTorch tensor if it's not already
         if isinstance(weight, float):
-            self._weight = torch.tensor(weight, requires_grad=True)
+            self.weight = nn.Parameter(torch.tensor(weight, requires_grad=True) )
         else:
-            self._weight = weight
-    
-    @property
-    def weight(self): return self._weight
+            self.weight = nn.Parameter(weight)
+        self.weight.requires_grad_ = True
+
 
     def __str__(self):
         weight_value = self.weight.item() if isinstance(self.weight, torch.Tensor) else math.exp(self.weight)

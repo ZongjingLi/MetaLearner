@@ -1,0 +1,19 @@
+(domain Geometry)
+(:type
+    img - vector[float,128,128,3]
+)
+(:predicate
+    is-equation ?x-symbol -> boolean
+    if-function ?x-symbol -> boolean
+    is-constant ?x-symbol -> boolean
+)
+(:action
+    (
+        name:  make-equation
+        parameters: ?o1
+        precondition: (true)
+        effect: (
+            assign (green ?o1) true
+        )
+    )
+)

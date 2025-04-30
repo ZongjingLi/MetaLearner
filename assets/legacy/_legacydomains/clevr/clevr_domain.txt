@@ -1,0 +1,16 @@
+(domain Clevr)
+(:type
+    state - vector[float,128]
+    color - vector[float, 3]
+)
+(:predicate
+    pos ?x-state -> vector[float, 2]
+    left ?x-pos ?y-pos -> boolean
+    right ?x-pos ?y-pos -> boolean
+
+    color ?x-state -> vector[float, 3]
+    red ?x - color -> boolean
+    green ?x - color -> boolean
+    blue ?x - color -> boolean
+
+)

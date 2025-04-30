@@ -1,0 +1,119 @@
+start: instruction+
+
+
+instruction: VARNAME
+            | domain_definition
+            | type_definitions
+            | predicate_definitions
+            | constants_definition
+            | derived_definitions
+            | action_definitions
+            | functional_definitions
+            | constraint_definitions
+            | VARIABLE
+
+// domain definition
+domain_definition: "(" "domain" VARNAME ")"
+
+// types definition group
+type_definitions: "(" ":" "type" type_definition+ ")"
+type_definition: object_type_name "-" parent_type_name | object_type_name
+object_type_name: value_type_name | vector_type_name
+parent_type_name: object_type_name | vector_type_name
+
+// predicate definition group
+predicate_definitions: "(" ":" "predicate" predicate_definition+ ")"
+predicate_definition: predicate_name parameters | predicate_name parameters "->" object_type_name
+predicate_name: VARNAME
+parameters: parameter+
+parameter: VARIABLE | typed_variable
+
+// derived definition group
+derived_definitions: "(" ":" "derived" derived_definition+ ")"
+derived_definition:  derived_name parameters "expr" ":" expr_function_call 
+derived_name: VARNAME
+
+// constants definition group
+constants_definition: "(" ":" "constant" all_constant + ")"
+
+// action definition group
+action_definitions: "(" ":" "action" action_definition+ ")"
+action_definition: "(" "name" ":" action_name "parameters" ":" parameters "precondition" ":" precondition "effect" ":" effect ")"
+action_name: VARNAME
+precondition: expr_function_call
+effect: expr_function_call
+
+// functional_definitions group
+functional_definitions: "(" ":" "functionals" functional_definition+ ")"
+functional_definition: "(" "functional" ":" functional_name ")"
+functional_name: VARNAME
+
+// constraints definitions group
+constraint_definitions: "(" ":" "constraint" constraint_definition+ ")"
+constraint_definition: "(" VARNAME ":" VARNAME+ ")"
+
+// slots
+slot: SLOT slot_name
+slot_name: VARNAME
+SLOT: "??"
+
+// number type definition 
+NUMBER: ("0".."9")+ 
+FLOATNUMBER: NUMBER "." NUMBER
+
+constant: CONSTNAME
+typed_constant: constant "-" object_type_name
+?all_constant: constant | typed_constant
+
+// variable name format definition
+%import common.LETTER
+%import common.DIGIT
+variable: VARIABLE
+VARIABLE: "?" VARNAME | "??"
+VARNAME: ("_" | LETTER ) ("_"|"-"|LETTER|DIGIT)*
+CONSTNAME: ("_" | LETTER) ("_"|"-"|"#"|":"|LETTER|DIGIT)*
+
+
+typed_variable: VARIABLE "-" object_type_name
+
+// types and predicate transforms
+ARROW: "->"
+
+value_type_name: type_name | vector_type_name
+vector_type_name: "vector" "[" vector_choice  vector_size+ "]"
+
+type_name: VARNAME
+vector_choice: VARNAME
+vector_size: "," NUMBER
+
+// predefined data_type
+
+// expression function call type
+?expr_function_call: function_call 
+?expr: variable | constant | expr_function_call | FLOATNUMBER | NUMBER
+
+function_call: "(" (function_name | method_name) expr* ")"
+function_name: VARNAME | slot
+method_name: VARNAME SCOPE_SEP VARNAME
+
+SCOPE_SEP: "::"
+
+TRUE: "true"
+FALSE: "false"
+bool: TRUE | FALSE
+
+// primitive operation definition
+PLUS: "+"
+MINUS: "-"
+EXISTS: "exists"
+IOTA: "iota"
+?quantifier: EXISTS | IOTA
+
+WHITESPACE: (" " | "\n")+
+
+%ignore WHITESPACE
+
+NEWLINE: "\n"
+COMMENT: ";" /(.)*/ NEWLINE
+//       | "#" /(.)+/ NEWLINE
+%ignore COMMENT

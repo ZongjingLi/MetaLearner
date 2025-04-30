@@ -1,6 +1,8 @@
 from helchriss.dsl.dsl_values import Value
 from typing import List
-from core.model import SceneGroundingDataset
+from .base_dataset import SceneGroundingDataset
+
+
 
 # dataset of integer domain addition and max and min etc.
 num_queries = ["two plus one", "two plus three", "one plus one", "red plus two"]

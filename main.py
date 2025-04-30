@@ -9,6 +9,7 @@ import os
 import sys
 import regex
 import yaml
+import torch
 import numpy as np
 from tqdm import tqdm
 from helchriss.logger import get_logger, set_output_file
@@ -17,10 +18,10 @@ from helchriss.logger import get_logger, set_output_file
 main_logger = get_logger("Main")
 set_output_file("outputs/logs/main_logs.txt")
 
-def load_metalearner(config):
+def create_prototype_metalearner(config):
     core_knowledge_config = config.core_knowledge
     checkpoint_dir = config.load_ckpt
-    main_logger.info(f"using the core knowledge stored in {core_knowledge_config}")
+    main_logger.info(f"using the core knowledge stored in {core_knowledge_config} to create prototype")
     if checkpoint_dir:
         main_logger.info(f"loading the checkpoint parameters in {checkpoint_dir}")
     else: main_logger.warning("not loading any checkpoint!!!")
@@ -32,20 +33,25 @@ def load_metalearner(config):
 
     # load the domain functions used for the meta-learner
     domain_executors = []
+    domain_infos = {}
     for domain_name in model_config["domains"]:
         domain =  model_config["domains"][domain_name]
         path = domain["path"]
         name = domain["name"]
+        domain_infos[domain_name] = {"path" : path, "name" : name}
         exec(f"from {path} import {name}")
         domain_executors.append(eval(name))
 
     # load the lexicon entries and the vocab learned in the meta-learner
-    vocab_path = model_config["vocab"]
+    vocab_path = model_config["vocab"]["path"]
+
     with open(vocab_path, 'r', encoding='utf-8') as f:
         vocab = [line.strip() for line in f]
 
     from core.model import MetaLearner
-    return MetaLearner(domain_executors, vocab)
+    model = MetaLearner(domain_executors, vocab)
+    model.domain_infos = domain_infos
+    return model
 
 def process_command(command):
     if regex.match("train_ccsp_*", command):
@@ -84,7 +90,43 @@ def process_command(command):
     if regex.match("interact_*", command):
         model_name = command[9:]
         main_logger.info(f"try to interact with model {model_name}.")
-        model = load_metalearner(config)
+        from core.model import MetaLearner
+
+        model = MetaLearner([], [])
+
+        model = model.load_ckpt(f"outputs/checkpoints/{model_name}")
+        model.entries_setup()
+        
+
+        model("one plus two", {})
+
+        meta_expr = model.executor.parse_expression("lesser:Order(one:Integers(),two:Integers())")
+        #model.infer_metaphor_expressions([meta_expr])
+
+
+        values, weights, programs = model("one plus two", {})
+        from datasets.numbers_dataset import get_dataset
+        model.train(get_dataset(), epochs = 20, lr = 1e-3)
+
+        model.parse_display("one plus two")
+
+        #model.save_ckpt("outputs/checkpoints/aluneth")
+
+        import tornado
+        from assets.app import make_app
+
+        #app = make_app(model)
+        #os.system("lsof -ti:8888 | xargs kill -9")
+        #app.listen(8888)
+        #main_logger.info("server started at http://localhost:8888")
+        #tornado.ioloop.IOLoop.current().start()
+
+    if regex.match("create_*", command):
+        model = create_prototype_metalearner(config)
+        model.entries_setup()
+        model.save_ckpt("outputs/checkpoints/prototype")
+
+
 
 if __name__ == "__main__":
     from config import config

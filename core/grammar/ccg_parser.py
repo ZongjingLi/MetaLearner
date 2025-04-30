@@ -5,6 +5,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from .lexicon import CCGSyntacticType, SemProgram, LexiconEntry
+import re
 
 class CCGRule:
     """Abstract base class for CCG combinatory rules"""
@@ -87,11 +88,14 @@ class BackwardApplication(CCGRule):
             )
         else:
             new_args = right_entry.sem_program.args.copy()
-            new_args.append(left_entry.sem_program)
+            new_args.append(left_entry.sem_sprogram)
             new_program = SemProgram(right_entry.sem_program.func_name, new_args)
         
         # Use PyTorch addition to maintain gradient graph
         combined_weight = left_entry.weight + right_entry.weight
+        #print("start")
+        #print(left_entry.weight,left_entry.weight + right_entry.weight)
+        #print("done")
         return LexiconEntry("", result_type, new_program, combined_weight)
 
 
@@ -101,12 +105,14 @@ class ChartParser(nn.Module):
     Implementation of G2L2 parser with CKY-E2 algorithm
     Modified to support PyTorch gradient computation
     """
-    def __init__(self, lexicon: Dict[str, List[LexiconEntry]], rules: List[CCGRule] = None):
-        super(ChartParser, self).__init__()
+    def __init__(self, lexicon, rules: List[CCGRule] = [ForwardApplication(), BackwardApplication()]):
+
         self.lexicon = lexicon
-        self.rules =  [ForwardApplication, BackwardApplication] if rules is None else rules
+        #@self.entries = nn.ModuleDict()
+        #self.rules =  [ForwardApplication, BackwardApplication] if rules is None else rules
         
         # Initialize trainable parameters
+        #""" This whole thing is a legacy method and parser should be seperate with entries
         self.word_weights = nn.ParameterDict()
         for word, entries in lexicon.items():
             for i, entry in enumerate(entries):
@@ -115,25 +121,48 @@ class ChartParser(nn.Module):
                 param = nn.Parameter(entry.weight.clone())
                 self.word_weights[param_name] = param
                 entry._weight = param
+        #"""
 
     def get_likely_entries(self, word : str, K : int = 3) -> List[LexiconEntry]:
-        """given a word we find the top K"""
-        entries : List[LexiconEntry] = sorted(self.lexicon[word], key=lambda e: e.weight, reverse=True)[:K]
-        return entries
+         """given a word we find the top K"""
+         entries : List[LexiconEntry] = sorted(self.lexicon[word], key=lambda e: e.weight, reverse=True)[:K]
+         return entries
 
-    def parse(self, sentence: str, topK = None, forced = False):
+    def group_lexicon_entries(self, moduledict : List[nn.Module]):
+        grouped = {}
+        pattern = re.compile(r'(.+?)_(\d+)$')  # match 'word_{i}'
+    
+        for key, module in moduledict.items():
+            match = pattern.match(key)
+            if match:
+                word, idx = match.groups()
+                idx = int(idx)
+                if word not in grouped:
+                    grouped[word] = [module]
+                else:
+                    grouped[word].append(module)
+            else:
+                raise ValueError(f"Key '{key}' does not match expected pattern 'word_idx'")
+
+        return grouped
+
+    def purge_entries(self, threshold = 0.2):
+        return
+
+    def parse(self, sentence: str, lexicon, topK = None, forced = False):
         """check if the sentence can be merged correctly
         forced : if forced then any syntatic type are allowed to combine with each other, ignore the syntatic type differences
         """
+        lexicon = self.group_lexicon_entries(self.entries)
         words = sentence.split()
         n = len(words)
-        
         # initialize the base case for the parsing of the word and lexicon
         chart = {} # stores a list of entries for each interval
         for i in range(n):
             word = words[i]
-            if word in self.lexicon:
-                chart[(i, i+1)] = self.lexicon[word] if topK is None else self.get_likely_entries(word, topK)
+            if word in lexicon:
+                chart[(i, i+1)] = lexicon[word] if topK is None else self.get_likely_entries(lexicon, word, topK)
+
             else:
                 chart[(i, i+1)] = []
                 print(f"Warning: Word '{word}' not in lexicon")
@@ -225,8 +254,9 @@ class ChartParser(nn.Module):
             return torch.tensor(0.0, requires_grad=True)
         
         # For multiple parses, combine probabilities
+        #print( torch.stack([entry.weight for entry in parse_result]))
         log_weights = torch.stack([entry.weight for entry in parse_result])
-        #print(log_weights.max(), log_weights.min())
+
         log_probs = F.log_softmax(log_weights, dim=0)
         
         # Return the log probability of the most likely parse

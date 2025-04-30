@@ -5,6 +5,7 @@
  # @Modified time: 2025-03-23 00:19:35
  # @Description:
 '''
+import os
 from typing import List, Union, Mapping, Dict, Any, Tuple
 import torch
 import torch.nn as nn
@@ -142,6 +143,21 @@ class ExecutorGroup(FunctionExecutor):
             self.update_type_registry(domain_executor)
             #self.update_function_registry(domain_executor)
 
+    def save_ckpt(self, ckpt_path):
+        if not os.path.exists(f"{ckpt_path}/frames"): os.makedirs(f"{ckpt_path}/domains")
+        for executor in self.executors_group:
+
+            torch.save(executor.state_dict(), f"{ckpt_path}/domains/{executor.domain.domain_name}.pth")
+        return 0
+
+    def load_ckpt(self, ckpt_path):
+        for executor in self.executors_group:
+            try:
+                executor.load_state_dict(torch.load(f"{ckpt_path}/domains/{executor.domain.domain_name}.pth"))
+            except:
+                pass
+        return 0
+
     @property
     def gather_format(self): return self._gather_format
     
@@ -216,6 +232,17 @@ class ReductiveExecutor(FunctionExecutor):
         self.node_inputs = []
         self.record = 1
 
+
+    def save_ckpt(self, ckpt_path = "tmp.ckpt"):
+        self.base_executor.save_ckpt(ckpt_path)
+        self.reduce_unifier.save_ckpt(ckpt_path)
+        return 0
+
+    def load_ckpt(self, ckpt_path = "tmp.ckpt"):
+        self.base_executor.load_ckpt(ckpt_path)
+        self.reduce_unifier.load_ckpt(ckpt_path)
+        return self
+
     def gather_format(self, name, domain):
         return self._gather_format.format(name, domain)
 
@@ -227,7 +254,7 @@ class ReductiveExecutor(FunctionExecutor):
         self.record = 1
     
     def infer_reductions(self, expr : Expression, verbose = 0) -> List[Tuple[str, List[TypeBase], List[TypeBase]]]:
-        """given an ecxpression, use the unifer to infer if there exist casting of types or change in the local frames"""
+        """given an expression, use the unifer to infer if there exist casting of types or change in the local frames"""
         metaphor_exprs = []
         def dfs(expr : Expression):
             if isinstance(expr, FunctionApplicationExpression):
@@ -360,7 +387,7 @@ class ReductiveExecutor(FunctionExecutor):
         ax.tick_params(left=False, right=False, labelleft=False, labelbottom=False, bottom=False)
         if fname is not None:
             plt.savefig(f"{fname}.png")
-        plt.show()
+        #plt.show()
         return
 
     def evaluate(self, expression, grounding):
@@ -396,7 +423,6 @@ class ReductiveExecutor(FunctionExecutor):
             node_count = self.node_count[func_name]
             count_func_name = f"{func_name.split(':')[0]}_{node_count}"
             self.eval_graph.add_node(count_func_name, weight = 1.0, color = "#3a5f7d")
-
 
             output_type = self.base_executor.function_output_type(func_name)
             args = []

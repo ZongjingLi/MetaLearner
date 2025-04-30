@@ -1,0 +1,45 @@
+(domain Spatial)
+(:type
+    state - vector[float, 128]
+    shape3d - vector[float, 128]    ;; 3D shape representation
+    curve2d - vector[float, 64]     ;; 2D curve representation
+    direction - vector[float, 3]     ;; 3D direction vector
+)
+(:predicate
+    ;; Basic shape/curve predicates
+    get_shape ?x-shape3d -> vector[float, 128]
+    get_curve ?x-curve2d -> vector[float, 64]
+    
+    ;; RCC-8 Topology predicates
+    disconnected ?x-shape3d ?y-shape3d -> float
+    externally_connected ?x-shape3d ?y-shape3d -> float
+    partial_overlap ?x-shape3d ?y-shape3d -> float
+    equal ?x-shape3d ?y-shape3d -> float
+    tangential_proper_part ?x-shape3d ?y-shape3d -> float
+    non_tangential_proper_part ?x-shape3d ?y-shape3d -> float
+    
+    ;; Cardinal direction predicates (3D)
+    north_of ?x-shape3d ?y-shape3d -> float
+    south_of ?x-shape3d ?y-shape3d -> float
+    east_of ?x-shape3d ?y-shape3d -> float
+    west_of ?x-shape3d ?y-shape3d -> float
+    above ?x-shape3d ?y-shape3d -> float
+    below ?x-shape3d ?y-shape3d -> float
+    
+    ;; Relative orientation predicates
+    left_of ?x-shape3d ?y-shape3d ?ref-direction -> float
+    right_of ?x-shape3d ?y-shape3d ?ref-direction -> float
+    in_front_of ?x-shape3d ?y-shape3d ?ref-direction -> float
+    behind ?x-shape3d ?y-shape3d ?ref-direction -> float
+    
+    ;; Distance predicates
+    very_near ?x-shape3d ?y-shape3d -> float
+    near ?x-shape3d ?y-shape3d -> float
+    far ?x-shape3d ?y-shape3d -> float
+    very_far ?x-shape3d ?y-shape3d -> float
+
+    ;; 2D curve specific predicates
+    curve_intersect ?x-curve2d ?y-curve2d -> float
+    curve_parallel ?x-curve2d ?y-curve2d -> float
+    curve_perpendicular ?x-curve2d ?y-curve2d -> float
+)

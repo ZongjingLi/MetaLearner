@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meta Concept Learner</title>
+    <link rel="stylesheet" href="{{ static_url('style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Text Analysis Tool</h1>
+        
+        <div class="row">
+            <div class="col">
+                <div class="panel input-panel">
+                    <div class="panel-header">Input Text</div>
+                    <div class="panel-body">
+                        <textarea id="inputText" placeholder="Type your text here..."></textarea>
+                        <button id="enterButton">Enter</button>
+                    </div>
+                </div>
+                
+                <div class="panel file-panel">
+                    <div class="panel-header">Upload File</div>
+                    <div class="panel-body">
+                        <div class="file-upload">
+                            <label for="fileInput">
+                                <div class="upload-area">
+                                    <span>Click to choose file</span>
+                                    <span class="subtext">Display if is image or video</span>
+                                </div>
+                            </label>
+                            <input type="file" id="fileInput" style="display: none;">
+                        </div>
+                        <div id="filePreview" class="file-preview"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col">
+                <div class="panel list-panel">
+                    <div class="panel-header">Results</div>
+                    <div class="panel-body">
+                        <div class="list-container">
+                            <ul id="resultsList"></ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="panel image-panel">
+                    <div class="panel-header">Parse Tree</div>
+                    <div class="panel-body">
+                        <div class="image-container">
+                            <img id="parseTreeImage" src="{{ static_url('images/parse_tree.png') }}" alt="Parse tree will be displayed here">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ static_url('script.js') }}"></script>
+</body>
+</html>
