@@ -36,8 +36,8 @@ class MetaLearner(nn.Module):
         self.executor : CentralExecutor = ReductiveExecutor(ExecutorGroup(domains))
         
         self.vocab = vocab
-        self.entries = []
-        self.parser = ChartParser(self.entries)
+        self.lexicon_entries = {}
+        self.lexicon_parser = ChartParser(self.lexicon_entries)
 
         self.gather_format = self.executor.gather_format
         self.entries_setup()
@@ -70,7 +70,7 @@ class MetaLearner(nn.Module):
         with open(f"{ckpt_path}/{vocab_path}", 'r', encoding='utf-8') as f:
             vocab = [line.strip() for line in f]
         self.vocab = vocab
-        self.lexicon_entries = torch.load(f"{ckpt_path}/lexicon_entries.ckpt", weights_only=False)
+        #self.lexicon_entries = torch.load(f"{ckpt_path}/lexicon_entries.ckpt", weights_only=False)
 
         self.name = model_config["name"]
        
@@ -131,6 +131,22 @@ class MetaLearner(nn.Module):
         return domain_functions
 
 
+    def entries_setup(self, depth = 1):
+        self.entries = enumerate_search(self.types, self.functions, max_depth = depth)
+        #for syn_type, program in self.entries:
+        #    print(syn_type, program)
+        lexicon_entries = {} 
+        for word in self.vocab:
+            lexicon_entries[word] = []
+            for syn_type, program in self.entries:
+
+                lexicon_entries[word].append(LexiconEntry(
+                    word, syn_type, program, weight = torch.tensor(-0.0, requires_grad=True)
+                ))
+
+        self.lexicon_entries = lexicon_entries
+        self.parser = ChartParser(lexicon_entries)
+    
     def group_lexicon_entries(self, moduledict : List[nn.Module]):
         grouped = {}
         pattern = re.compile(r'(.+?)_(\d+)$')  # match 'word_{i}'
@@ -149,26 +165,14 @@ class MetaLearner(nn.Module):
 
         return grouped
 
-    def entries_setup(self, depth = 1):
-        entries = enumerate_search(self.types, self.functions, max_depth = depth)
-        #for syn_type, program in self.entries:
-        #    print(syn_type, program)
-        for word in self.vocab:
-
-            for idx, (syn_type, program) in enumerate(entries):
-
-                self.lexicon_entries[f"{word}_{idx}"] = LexiconEntry(
-                    word, syn_type, program, weight = torch.randn([1]) + torch.tensor(-0.0, requires_grad=True)
-                )
-        return 0
 
     def add_vocab(self, vocab: List[str], domains : List[str]):
         """this method add a new set of vocab and related domains that could associate it with """
         return -1
 
     def forward(self, sentence, grounding = None, topK = None, train = True):
-
-        parses = self.parser.parse(sentence,  topK = topK)
+        lexicons = self.group_lexicon_entries(self.lexicon_entries)
+        parses = self.parser.parse(sentence, lexicons,  topK = topK)
         log_distrs = self.parser.get_parse_probability(parses)
 
         
@@ -263,7 +267,7 @@ class MetaLearner(nn.Module):
         return self
 
     def parse_display(self, sentence):
-        parses = self.parser.parse(sentence, self.group_lexicon_entries(self.lexicon_entries))
+        parses = self.parser.parse(sentence)
         distrs = self.parser.get_parse_probability(parses)
         parse_with_prob = list(zip(parses, distrs))
         sorted_parses = sorted(parse_with_prob, key=lambda x: x[1], reverse=True)

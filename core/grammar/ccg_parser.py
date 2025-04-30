@@ -101,27 +101,19 @@ class ChartParser(nn.Module):
     Implementation of G2L2 parser with CKY-E2 algorithm
     Modified to support PyTorch gradient computation
     """
-    def __init__(self, lexicon: Dict[str, List[LexiconEntry]], rules: List[CCGRule] = None):
+    def __init__(self, rules: List[CCGRule] = None):
         super(ChartParser, self).__init__()
-        self.lexicon = lexicon
         self.rules =  [ForwardApplication, BackwardApplication] if rules is None else rules
         
-        # Initialize trainable parameters
-        self.word_weights = nn.ParameterDict()
-        for word, entries in lexicon.items():
-            for i, entry in enumerate(entries):
-                param_name = f"{word}_{i}"
+ 
 
-                param = nn.Parameter(entry.weight.clone())
-                self.word_weights[param_name] = param
-                entry._weight = param
 
-    def get_likely_entries(self, word : str, K : int = 3) -> List[LexiconEntry]:
+    def get_likely_entries(self, word : str, lexicon, K : int = 3) -> List[LexiconEntry]:
         """given a word we find the top K"""
-        entries : List[LexiconEntry] = sorted(self.lexicon[word], key=lambda e: e.weight, reverse=True)[:K]
+        entries : List[LexiconEntry] = sorted(lexicon[word], key=lambda e: e.weight, reverse=True)[:K]
         return entries
 
-    def parse(self, sentence: str, topK = None, forced = False):
+    def parse(self, sentence: str, lexicon, topK = None, forced = False):
         """check if the sentence can be merged correctly
         forced : if forced then any syntatic type are allowed to combine with each other, ignore the syntatic type differences
         """
@@ -133,7 +125,7 @@ class ChartParser(nn.Module):
         for i in range(n):
             word = words[i]
             if word in self.lexicon:
-                chart[(i, i+1)] = self.lexicon[word] if topK is None else self.get_likely_entries(word, topK)
+                chart[(i, i+1)] = lexicon[word] if topK is None else self.get_likely_entries(word, topK)
             else:
                 chart[(i, i+1)] = []
                 print(f"Warning: Word '{word}' not in lexicon")
