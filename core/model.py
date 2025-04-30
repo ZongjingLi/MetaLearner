@@ -36,8 +36,8 @@ class MetaLearner(nn.Module):
         self.executor : CentralExecutor = ReductiveExecutor(ExecutorGroup(domains))
         
         self.vocab = vocab
-        self.lexicon_entries = {}
-        self.lexicon_parser = ChartParser(self.lexicon_entries)
+        self.lexicon_entries = nn.ModuleDict({})
+        self.lexicon_parser = None#ChartParser(self.lexicon_entries)
 
         self.gather_format = self.executor.gather_format
         self.entries_setup()
@@ -70,7 +70,7 @@ class MetaLearner(nn.Module):
         with open(f"{ckpt_path}/{vocab_path}", 'r', encoding='utf-8') as f:
             vocab = [line.strip() for line in f]
         self.vocab = vocab
-        #self.lexicon_entries = torch.load(f"{ckpt_path}/lexicon_entries.ckpt", weights_only=False)
+        self.lexicon_entries = torch.load(f"{ckpt_path}/lexicon_entries.ckpt", weights_only=False)
 
         self.name = model_config["name"]
        
@@ -137,14 +137,13 @@ class MetaLearner(nn.Module):
         #    print(syn_type, program)
         lexicon_entries = {} 
         for word in self.vocab:
-            lexicon_entries[word] = []
+            lexicon_entries[word] = nn.ModuleList([])
             for syn_type, program in self.entries:
 
                 lexicon_entries[word].append(LexiconEntry(
                     word, syn_type, program, weight = torch.tensor(-0.0, requires_grad=True)
                 ))
-
-        self.lexicon_entries = lexicon_entries
+        self.lexicon_entries = nn.ModuleDict(lexicon_entries)
         self.parser = ChartParser(lexicon_entries)
     
     def group_lexicon_entries(self, moduledict : List[nn.Module]):
@@ -171,8 +170,9 @@ class MetaLearner(nn.Module):
         return -1
 
     def forward(self, sentence, grounding = None, topK = None, train = True):
-        lexicons = self.group_lexicon_entries(self.lexicon_entries)
-        parses = self.parser.parse(sentence, lexicons,  topK = topK)
+
+        #self.group_lexicon_entries(self.lexicon_entries)
+        parses = self.parser.parse(sentence,  topK = topK)
         log_distrs = self.parser.get_parse_probability(parses)
 
         
