@@ -1,1 +1,1 @@
-python main.py --command="interact"
+python main.py --command="interact_aluneth"

@@ -8,6 +8,7 @@ import re
 import yaml
 import torch
 import torch.nn as nn
+import matplotlib.pyplot as plt
 from typing import List, Union, Any
 from helchriss.domain import load_domain_string
 from helchriss.knowledge.symbolic import Expression
@@ -42,59 +43,106 @@ class MetaLearner(nn.Module):
         self.gather_format = self.executor.gather_format
         self.entries_setup() 
 
-    def load_ckpt(self, ckpt_path):
+    def save_ckpt(self, ckpt_path):
+        """
+        Save the model checkpoint including lexicon entries, weights, and domain information
+        
+        Args:
+            ckpt_path: Path to save the checkpoint
+        """
+        if not os.path.exists(ckpt_path):  os.makedirs(ckpt_path)
 
+        """ create the vocab and corresponding lexicons for the parser"""
+        data = {
+            "name": self.name,
+            "domains": self.domain_infos,
+            "vocab": {"path": "core_vocab.txt"},
+        }
+        write_vocab(self.vocab, f"{ckpt_path}/core_vocab.txt")
+        
+        # save lexicon entries structure (without weights) only function and type
+        serializable_lexicon = {}
+        for word, entries in self.parser.lexicon.items():
+            serializable_entries = []
+            for entry in entries:
+                # Create serializable version (without nn.Parameter weights)
+                serializable_entry = {
+                    'word': entry.word,
+                    'syn_type': entry.syn_type,
+                    'sem_program': entry.sem_program,
+                    'idx': entries.index(entry)  # Keep track of original index
+                }
+                serializable_entries.append(serializable_entry)
+            serializable_lexicon[word] = serializable_entries
+        torch.save(serializable_lexicon, f"{ckpt_path}/lexicon_entries.pth")
+        
+        self.parser.save_weights(f"{ckpt_path}/lexicon_weights.pth") # save lexicon weights separately
+        self.executor.save_ckpt(ckpt_path) # save domain knowledge and other stuff
+
+        with open(f'{ckpt_path}/config.yaml', 'w') as file: # save config file
+            yaml.dump(data, file, default_flow_style=False)
+        
+        return 0
+
+    def load_ckpt(self, ckpt_path):
+        """
+        Load the model checkpoint including lexicon entries, weights, and domain information
+        
+        Args:
+            ckpt_path: Path to load the checkpoint from
+        """
         core_knowledge_config = f"{ckpt_path}/config.yaml"
-        state_dict_dir = f"{ckpt_path}/state_dict.pth"
+        state_dict_path = f"{ckpt_path}/state_dict.pth"
 
         with open(core_knowledge_config, 'r') as file:
             model_config = yaml.safe_load(file)
 
-        """start to load the model config, core knowledge and lexicon associated with it"""
-
+        """ load the model config, core knowledge and lexicon associated with it """
+        
         # load the domain functions used for the meta-learner
         domain_executors = []
         for domain_name in model_config["domains"]:
-            domain =  model_config["domains"][domain_name]
+            domain = model_config["domains"][domain_name]
             path = domain["path"]
             name = domain["name"]
-            self.domain_infos[domain_name] = {"path" : path, "name" : name}
+            self.domain_infos[domain_name] = {"path": path, "name": name}
             exec(f"from {path} import {name}")
             domain_executors.append(eval(name))
+        
         self._domain = domain_executors
         self.executor = ReductiveExecutor(ExecutorGroup(domain_executors))
         self.executor.load_ckpt(ckpt_path)
 
-        # load the lexicon entries and the vocab learned in the meta-learner
+        # load the vocabulary
         vocab_path = model_config["vocab"]["path"]
         with open(f"{ckpt_path}/{vocab_path}", 'r', encoding='utf-8') as f:
             vocab = [line.strip() for line in f]
         self.vocab = vocab
-        #self.lexicon_entries = torch.load(f"{ckpt_path}/lexicon_entries.ckpt", weights_only=False)
+        
+        # load the lexicon entries (structure without weights)
+        serialized_lexicon = torch.load(f"{ckpt_path}/lexicon_entries.pth", weights_only=False)
+        
+        # reconstruct lexicon entries
+        lexicon_entries = {}
+        for word, entries in serialized_lexicon.items():
+            word_entries = []
+            for entry_data in entries:
+                # Create LexiconEntry with a placeholder weight (will be updated later)
+                entry = LexiconEntry(
+                    entry_data['word'],
+                    entry_data['syn_type'],
+                    entry_data['sem_program'],
+                    torch.tensor(0.0)  # Placeholder weight, will be replaced by loading weights
+                )
+                word_entries.append(entry)
+            lexicon_entries[word] = word_entries
+
+        self.parser = ChartParser(lexicon_entries) # create parser with the loaded lexicon
+        
+        self.parser.load_weights(f"{ckpt_path}/lexicon_weights.pth") # load lexicon weights
 
         self.name = model_config["name"]
-       
         return self
-
-    def save_ckpt(self, ckpt_path):
-        if not os.path.exists(ckpt_path): os.makedirs(ckpt_path)
-        #torch.save(self.state_dict(), f"{ckpt_path}/state_dict.ckpt")
-
-        """create the vocab and corresponding lexicons"""
-        data = {
-            "name" : self.name,
-            "domains": self.domain_infos,
-            "vocab": {"path":"core_vocab.txt"},
-        }
-        write_vocab(self.vocab, f"{ckpt_path}/core_vocab.txt")
-        torch.save(self.lexicon_entries,  f"{ckpt_path}/lexicon_entries.ckpt")
-        
-        """save the structure of the domain knowledge and other stuff"""
-        self.executor.save_ckpt(ckpt_path)
-
-        with open(f'{ckpt_path}/config.yaml', 'w') as file:
-            yaml.dump(data, file, default_flow_style=False)
-        return 0
 
     
     def freeze_word(self,word):
@@ -158,26 +206,23 @@ class MetaLearner(nn.Module):
     def entries_setup(self, depth = 1):
         entries = enumerate_search(self.types, self.functions, max_depth = depth)
     
-        self.lexicon_entries = dict()
-    
-
+        lexicon_entries = dict()
         for word in self.vocab:
             for idx, (syn_type, program) in enumerate(entries):
-                self.lexicon_entries[f"{word}_{idx}"] = LexiconEntry(
+                lexicon_entries[f"{word}_{idx}"] = LexiconEntry(
                         word, syn_type, program, weight = torch.randn(1).item() - 0.0
                     )
-    
-        grouped_lexicon = self.group_lexicon_entries(self.lexicon_entries)
-    
+
+        grouped_lexicon = self.group_lexicon_entries(lexicon_entries)    
         self.parser = ChartParser(grouped_lexicon)
-        self.lexicon_entries = None
+
         return 0
 
     def add_vocab(self, vocab: List[str], domains : List[str]):
         """this method add a new set of vocab and related domains that could associate it with """
         return -1
 
-    def forward(self, sentence, grounding = None, topK = None, train = True):
+    def forward(self, sentence, grounding = None, topK = None, plot : bool = False):
 
         parses = self.parser.parse(sentence,  topK = topK)
         log_distrs = self.parser.get_parse_probability(parses)
@@ -201,9 +246,11 @@ class MetaLearner(nn.Module):
                 results.append(None)
                 probs.append(parse_prob)
 
-        import matplotlib.pyplot as plt
-        plt.cla()
-        self.executor.display("assets/static/images/parse_tree")
+
+        #
+        if plot:
+            plt.cla()
+            self.executor.display("assets/static/images/parse_tree")
 
         return results, probs, programs
 
@@ -212,7 +259,7 @@ class MetaLearner(nn.Module):
             infers = self.executor.infer_reductions(meta_expr)
             self.executor.add_metaphors(infers)
 
-    def train(self, dataset : SceneGroundingDataset,  epochs : int = 100, lr = 1e-2, topK = None):
+    def train(self, dataset : SceneGroundingDataset,  epochs : int = 1000, lr = 1e-2, topK = None):
         import tqdm.gui as tqdmgui
         optim = torch.optim.Adam(self.parameters(), lr = lr)
         # epoch_bar = tqdmgui.tqdm(range(epochs), desc="Training epochs", unit="epoch")
@@ -235,7 +282,6 @@ class MetaLearner(nn.Module):
                         assert isinstance(result, Value), f"{programs[i]} result is :{result} and not a Value type"
 
                         if answer.vtype in result.vtype.alias:
-
                             if answer.vtype == "boolean":
                                 measure_loss =  torch.nn.functional.binary_cross_entropy_with_logits(result.value - answer.value)
                             if answer.vtype == "int" or answer.type == "float":
@@ -243,26 +289,21 @@ class MetaLearner(nn.Module):
 
                             loss += measure_conf * measure_loss
                         else:
+                            #loss += 0.0
+                            lex_loss = 100.
+                            loss += measure_conf * lex_loss # suppress type-not-match outputs
 
-                            loss += measure_conf # suppress type-not-match outputs
-
-                        #from torchviz import make_dot
-                        #dot = make_dot(loss, params=dict(self.named_parameters()))
-                        #dot.render("computation_graph", format="png")  # Saves to computation_graph.png
-                        #dot.view()
-                        #dot.render("graph", format="png")
+                        if 0:
+                            from torchviz import make_dot
+                            dot = make_dot(loss, params=dict(self.named_parameters()))
+                            dot.render("computation_graph", format="png")  # Saves to computation_graph.png
+                            dot.view()
+                            dot.render("graph", format="png")
 
 
                     else: loss += measure_conf # suppress the non-sense outputs
             optim.zero_grad()
             loss.backward()
-            params_with_grad = [
-             (name, param) for name, param in self.named_parameters()
-                if param.grad is not None and param.grad.abs().sum() > 0
-            ]
-
-            for name, param in params_with_grad:
-                print(name)
             optim.step()
 
             avg_loss = loss / len(dataset) if len(dataset) > 0 else 0

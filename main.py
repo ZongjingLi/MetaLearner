@@ -82,46 +82,54 @@ def process_command(command):
         torch.save(model.state_dict(),"checkpoints/{command}_state.pth")
         main_logger.info("finish the training and saved in checkpoints/{command}_state.pth")
 
-    if regex.match("train_mcl_*", command):
+    if regex.match("train_mcl", command):
         main_logger.info("start training the metaphorical concept learner")
-        domain = command[10:]
-        model = load_metalearner(config)
-
-    if regex.match("interact_*", command):
-        model_name = command[9:]
-        main_logger.info(f"try to interact with model {model_name}.")
         from core.model import MetaLearner
 
+        with open(config.dataset_config, 'r') as file:
+            dataset_config = yaml.safe_load(file)
+
+        load_name = config.load_model
         model = MetaLearner([], [])
+        model = model.load_ckpt(f"outputs/checkpoints/{load_name}")
 
-        model = model.load_ckpt(f"outputs/checkpoints/{model_name}")
-        model.entries_setup()
-        
+        dataset_name     = config.dataset_name
+        train_epochs     = config.epochs
+        train_lr         = config.lr
+        dataset_path     = dataset_config[dataset_name]["path"]
+        dataset_getter   = dataset_config[dataset_name]["getter"]
+        exec(f"from {dataset_path} import {dataset_getter}")
+        train_dataset = eval(f"{dataset_getter}()")
 
-        meta_expr = model.executor.parse_expression("lesser:Order(one:Integers(),two:Integers())")
-        #model.infer_metaphor_expressions([meta_expr])
+        model.train(train_dataset, epochs = train_epochs, lr = train_lr)
+
+        save_name = config.save_model
+        model.save_ckpt(f"outputs/checkpoints/{save_name}")
 
 
-        from datasets.numbers_dataset import get_dataset
-        model.train(get_dataset(), epochs = 20, lr = 1e-3)
-
-        model.parse_display("one plus two")
-
-        #model.save_ckpt("outputs/checkpoints/aluneth")
-
+    if regex.match("interact_*", command):
         import tornado
         from assets.app import make_app
+        from core.model import MetaLearner
+        model_name = command[9:]
+        main_logger.info(f"try to interact with model {model_name}.")
 
-        #app = make_app(model)
-        #os.system("lsof -ti:8888 | xargs kill -9")
-        #app.listen(8888)
-        #main_logger.info("server started at http://localhost:8888")
-        #tornado.ioloop.IOLoop.current().start()
+
+        model = MetaLearner([], [])
+        model = model.load_ckpt(f"outputs/checkpoints/{model_name}")
+
+        """start the interaction with the model using the web application"""
+        app = make_app(model)
+        os.system("lsof -ti:8888 | xargs kill -9")
+        app.listen(8888)
+        main_logger.info("server started at http://localhost:8888")
+        tornado.ioloop.IOLoop.current().start()
 
     if regex.match("create_*", command):
         model = create_prototype_metalearner(config)
         model.entries_setup()
         model.save_ckpt("outputs/checkpoints/prototype")
+        main_logger.info(f"created model {model_name} and saved successfully.")
 
 
 

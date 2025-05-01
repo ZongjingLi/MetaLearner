@@ -1,0 +1,10 @@
+domains:
+  intergers:
+    name: integers_executor
+    path: domains.numbers.integers_domain
+  order:
+    name: order_executor
+    path: domains.structure.order_domain
+name: prototype
+vocab:
+  path: core_vocab.txt

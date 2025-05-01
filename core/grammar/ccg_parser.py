@@ -129,7 +129,44 @@ class ChartParser(nn.Module):
         self.lexicon = module_dict#nn.ModuleDict(module_dict)
         self.lexicon_weight = nn.ParameterDict(weight_dict)
         self.rules = [ForwardApplication, BackwardApplication] if rules is None else rules
-    
+
+    def save_weights(self, save_path):
+        """
+        Save the lexicon weights to a file
+        
+        Args:
+            save_path: Path to save the weights
+        """
+        weight_dict = {}
+        for key, param in self.lexicon_weight.items():
+            weight_dict[key] = param.data.clone()
+        
+        torch.save(weight_dict, save_path)
+        
+    def load_weights(self, load_path):
+        """
+        Load lexicon weights from a file
+        
+        Args:
+            load_path: Path to load the weights from
+        """
+        weight_dict = torch.load(load_path)
+        
+        # Create new ParameterDict
+        new_weight_dict = nn.ParameterDict()
+        
+        for key, value in weight_dict.items():
+            new_weight_dict[key] = nn.Parameter(value)
+        
+        self.lexicon_weight = new_weight_dict
+        
+        # Update the lexicon entries with the loaded weights
+        for word, entries in self.lexicon.items():
+            for idx, entry in enumerate(entries):
+                weight_key = f"{word}_{idx}"
+                if weight_key in self.lexicon_weight:
+                    entry.weight = self.lexicon_weight[weight_key]
+
     def get_entry_weight(self, word: str, idx: int) -> torch.Tensor:
         """Get weight for a lexicon entry from the centralized parameter dictionary"""
         weight_key = f"{word}_{idx}"
@@ -218,7 +255,7 @@ class ChartParser(nn.Module):
         """Calculate probability for each parse"""
         if not parses: 
             return torch.tensor([], requires_grad=True)
-        print(list(self.parameters()))
+        #print(list(self.parameters()))
         # Get weights and apply softmax
         weights = torch.stack([parse.weight for parse in parses])
         

@@ -80,15 +80,12 @@ class LexiconEntry:
         
         # Convert weight to parameter
         if isinstance(weight, float) or isinstance(weight, int):
-            self._weight = torch.tensor(float(weight))
+            self.weight = torch.tensor(float(weight), requires_grad=True)
         elif isinstance(weight, torch.Tensor) and not isinstance(weight, nn.Parameter):
-            self._weight = weight
+            self.weight = weight
         else:
-            self._weight = weight  # Already a parameter
+            self.weight = weight  # Already a parameter
     
-    @property
-    def weight(self):
-        return self._weight
     
     def __str__(self):
         weight_value = self._weight.item()
