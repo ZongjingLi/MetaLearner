@@ -55,8 +55,9 @@ class ForwardApplication(CCGRule):
             new_program = SemProgram(left_entry.sem_program.func_name, new_args)
         
         # Create a new lexicon entry with combined weight
-        # Use PyTorch addition to maintain gradient graph
+        # Use direct addition to maintain gradient graph
         combined_weight = left_entry.weight + right_entry.weight
+        
         return LexiconEntry(f"{left_entry.word} {right_entry.word}", result_type, new_program, combined_weight)
 
 class BackwardApplication(CCGRule):
@@ -94,43 +95,32 @@ class BackwardApplication(CCGRule):
         combined_weight = left_entry.weight + right_entry.weight
         return LexiconEntry("", result_type, new_program, combined_weight)
 
-
-
 class ChartParser(nn.Module):
     """
     Implementation of G2L2 parser with CKY-E2 algorithm
     Modified to support PyTorch gradient computation
     """
-    def __init__(self, lexicon: Dict[str, List[LexiconEntry]], rules: List[CCGRule] = None):
-        super(ChartParser, self).__init__()
-        self.lexicon = lexicon
-        self.rules =  [ForwardApplication, BackwardApplication] if rules is None else rules
+    def __init__(self, lexicon: nn.ModuleDict, rules: List[CCGRule] = None):
+        super().__init__()
         
-        # Initialize trainable parameters
-        self.word_weights = nn.ParameterDict()
-        for word, entries in lexicon.items():
-            for i, entry in enumerate(entries):
-                param_name = f"{word}_{i}"
+        module_dict = {}
+        for word_key, entries in lexicon.items():
+            assert all(isinstance(e, nn.Module) for e in entries)
+            module_dict[word_key] = nn.ModuleList(entries)  # Register entries properly
+        self.lexicon = nn.ModuleDict(module_dict)  # Register dict properly
 
-                param = nn.Parameter(entry.weight.clone())
-                self.word_weights[param_name] = param
-                entry._weight = param
-
-
-    def get_likely_entries(self, word : str, K : int = 3) -> List[LexiconEntry]:
+        self.rules = [ForwardApplication, BackwardApplication] if rules is None else rules
+    
+    def get_likely_entries(self, word: str, K: int = 3) -> List[LexiconEntry]:
         """given a word we find the top K"""
-        entries : List[LexiconEntry] = sorted(self.lexicon[word], key=lambda e: e.weight, reverse=True)[:K]
+        if word not in self.lexicon: return []
+        entries = sorted(self.lexicon[word], key=lambda e: e.weight, reverse=True)[:K]
         return entries
 
     def parse(self, sentence: str, topK = None, forced = False):
-        """check if the sentence can be merged correctly
-        forced : if forced then any syntatic type are allowed to combine with each other, ignore the syntatic type differences
-        """
         words = sentence.split()
         n = len(words)
-        
-        # initialize the base case for the parsing of the word and lexicon
-        chart = {} # stores a list of entries for each interval
+        chart = {}
         for i in range(n):
             word = words[i]
             if word in self.lexicon:
@@ -139,18 +129,16 @@ class ChartParser(nn.Module):
                 chart[(i, i+1)] = []
                 print(f"Warning: Word '{word}' not in lexicon")
     
-        # dp the possible parsing from subintervals 
+        # Fill chart with dynamic programming
         for length in range(2, n+1):
             for start in range(n - length + 1):
                 end = start + length
                 chart[(start, end)] = []
                 
-                # enumerate all the possible split points on the interval
                 for split in range(start+1, end):
                     left_entries = chart[(start, split)]
                     right_entries = chart[(split, end)]
                     
-                    # combine all the possible entried in each of the possible pairs
                     for left_entry in left_entries:
                         for right_entry in right_entries:
                             for rule in self.rules:
@@ -161,101 +149,37 @@ class ChartParser(nn.Module):
                                 if applicable:
                                     result = rule.apply(left_entry, right_entry)
                                     if result:
+                                        # Register the new entry to track parameters
                                         chart[(start, end)].append(result)
-
-                #self._expected_execution(chart[(start, end)])
+        
         return chart[(0, n)]
     
-    def _expected_execution(self, entries: List[LexiconEntry]):
-        """
-        Implement the Expected Execution from the paper
-        Compress derivations with identical structure but different subtrees
-        """
-        if not entries:
-            return
-            
-        # Group entries by their syntactic type 
-        by_type = {}
-        for entry in entries:
-            key = str(entry.syn_type)
-            if key not in by_type:
-                by_type[key] = []
-            by_type[key].append(entry)
+    def get_parse_probability(self, parses):
+        """Calculate probability for each parse"""
+        if not parses: return torch.tensor([], requires_grad=True)
         
-        # For each group, merge entries with similar structure
-        for type_key, type_entries in by_type.items():
-            # Find entries with the same program structure
-            by_program_structure = {}
-            for entry in type_entries:
-                # In real implementation, we would check program structure
-                # Here, we just use function name as a proxy for structure
-                key = entry.sem_program.func_name
-                if key not in by_program_structure:
-                    by_program_structure[key] = []
-                by_program_structure[key].append(entry)
-            
-            # Merge entries with the same structure
-            for prog_key, prog_entries in by_program_structure.items():
-                if len(prog_entries) > 1:
-                    # Compute the expected program by combining weights using PyTorch operations
-                    # Convert weights to a tensor while maintaining gradient tracking
-                    weights_tensor = torch.stack([entry.weight for entry in prog_entries])
-                    log_softmax_weights = F.log_softmax(weights_tensor, dim=0)
-                    
-                    # Use LogSumExp trick for numerical stability while maintaining gradients
-                    log_total_weight = torch.logsumexp(weights_tensor, dim=0)
-                    
-                    # Use the first entry as a template
-                    merged_entry = prog_entries[0]
-                    merged_entry.weight = log_total_weight
-                    
-                    # Store softmax weights for potential future reference
-                    merged_entry.structure_weights = torch.exp(log_softmax_weights)
-                    
-                    # Remove the merged entries from the original list
-                    for entry in prog_entries[1:]:
-                        if entry in entries:
-                            entries.remove(entry)
-    
-    def get_parse_probability(self, parse_result):
-        """
-        Get probabilities of parse results that can be used for gradient-based optimization
-        Returns a tensor that can be used for loss computation
-        """
-        if not parse_result:
-            return torch.tensor(0.0, requires_grad=True)
+        # Get weights and apply softmax
+        #print([parse.weight.requires_grad for parse in parses])
+        weights = torch.stack([parse.weight for parse in parses])
+
+        log_probs = F.log_softmax(weights, dim=0)
+
+        optim = torch.optim.Adam(self.parameters(), lr = 1e-2)
         
-        # For multiple parses, combine probabilities
-        log_weights = torch.stack([entry.weight for entry in parse_result])
-        #print(log_weights.max(), log_weights.min())
-        log_probs = F.log_softmax(log_weights, dim=0)
+
+        loss = torch.sum(log_probs)    
+        optim.zero_grad()
+        loss.backward()
         
-        # Return the log probability of the most likely parse
-        # or you could return the logsumexp for the probability of all valid parses
-        return log_probs  # Return highest probability parse
-    
-    def forward(self, sentence: str, target_program: str = None):
-        """
-        Forward pass for the parser, returns loss that can be used for optimization
-        If target_program is specified, computes loss against that specific program
-        """
-        parses = self.parse(sentence)
+        params_with_grad = [
+             (name, param) for name, param in self.named_parameters()
+                if param.grad is not None and param.grad.abs().sum() > 0
+            ]
+
+        for name, param in params_with_grad:
+            print(name)
+
+        optim.step()
         
-        # If no parses found, return a high loss
-        if not parses:
-            return torch.tensor(float('inf'), requires_grad=True)
-        
-        # If target program specified, find it in the parses
-        if target_program:
-            for i, parse in enumerate(parses):
-                if str(parse.sem_program) == target_program:
-                    # Return negative log probability as loss
-                    log_weights = torch.stack([entry.weight for entry in parses])
-                    log_probs = F.log_softmax(log_weights, dim=0)
-                    return -log_probs[i]
-            
-            # Target program not found - return high loss
-            return torch.tensor(float('inf'), requires_grad=True)
-            
-        # Otherwise, return negative log probability of the best parse
-        return -self.get_parse_probability(parses)
+
+        return log_probs

@@ -69,26 +69,27 @@ class SemProgram:
         return (self.func_name == other.func_name and 
                 self.args == other.args and 
                 self.lambda_vars == other.lambda_vars)
-
-
+    
+    
 class LexiconEntry(nn.Module):
-    """
-    A lexicon entry for a word, containing syntactic type and semantic program
-    """
     def __init__(self, word: str, syn_type: CCGSyntacticType, sem_program: SemProgram, weight: Union[float, torch.Tensor] = 0.0):
         super().__init__()
         self.word = word
         self.syn_type = syn_type
         self.sem_program = sem_program
         
-        # Convert weight to PyTorch tensor if it's not already
-        if isinstance(weight, float):
-            self.weight = nn.Parameter(torch.tensor(weight, requires_grad=True) )
+        # Convert weight to parameter
+        if isinstance(weight, float) or isinstance(weight, int):
+            self._weight = nn.Parameter(torch.tensor(float(weight), requires_grad=True))
+        elif isinstance(weight, torch.Tensor) and not isinstance(weight, nn.Parameter):
+            self._weight = nn.Parameter(weight.clone().detach(), requires_grad=True)
         else:
-            self.weight = nn.Parameter(weight)
-        self.weight.requires_grad_ = True
-
-
+            self._weight = weight  # Already a parameter
+    
+    @property
+    def weight(self):
+        return self._weight
+    
     def __str__(self):
-        weight_value = self.weight.item() if isinstance(self.weight, torch.Tensor) else math.exp(self.weight)
+        weight_value = self._weight.item()
         return f"{self.word} : {self.syn_type} : {self.sem_program} : {weight_value:.3f}"

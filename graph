@@ -1,10 +1,8 @@
 digraph {
-	graph [size="120.75,120.75"]
+	graph [size="119.69999999999999,119.69999999999999"]
 	node [align=left fontname=monospace fontsize=10 height=0.2 ranksep=0.1 shape=box style=filled]
 	13312019728 [label="
  ()" fillcolor=darkolivegreen1]
-	13305524336 [label=AddBackward0]
-	13305526112 -> 13305524336
 	13305526112 [label=AddBackward0]
 	13305526640 -> 13305526112
 	13305526640 [label=AddBackward0]
@@ -957,10 +955,5 @@ digraph {
 	13305525248 -> 13305526256
 	13305525248 [label=SelectBackward0]
 	13315193920 -> 13305525248
-	13305525728 -> 13305524336
-	13305525728 [label=ExpBackward0]
-	13315300224 -> 13305525728
-	13315300224 [label=SelectBackward0]
-	13315193920 -> 13315300224
-	13305524336 -> 13312019728
+	13305526112 -> 13312019728
 }

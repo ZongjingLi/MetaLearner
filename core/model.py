@@ -37,10 +37,10 @@ class MetaLearner(nn.Module):
         
         self.vocab = vocab
         self.lexicon_entries = nn.ModuleDict({})
-        self.lexicon_parser = None#ChartParser(self.lexicon_entries)
+        self.parser = ChartParser(self.lexicon_entries)
 
         self.gather_format = self.executor.gather_format
-        self.entries_setup()
+        self.entries_setup() 
 
     def load_ckpt(self, ckpt_path):
 
@@ -96,6 +96,12 @@ class MetaLearner(nn.Module):
             yaml.dump(data, file, default_flow_style=False)
         return 0
 
+    
+    def freeze_word(self,word):
+        for entry in self.parser.word_weights:
+            if word in entry:
+                self.parser.word_weights[entry]._requires_grad = False
+
     @property
     def domains(self):
         gather_domains = []
@@ -131,21 +137,6 @@ class MetaLearner(nn.Module):
         return domain_functions
 
 
-    def entries_setup(self, depth = 1):
-        self.entries = enumerate_search(self.types, self.functions, max_depth = depth)
-        #for syn_type, program in self.entries:
-        #    print(syn_type, program)
-        lexicon_entries = {} 
-        for word in self.vocab:
-            lexicon_entries[word] = nn.ModuleList([])
-            for syn_type, program in self.entries:
-
-                lexicon_entries[word].append(LexiconEntry(
-                    word, syn_type, program, weight = torch.tensor(-0.0, requires_grad=True)
-                ))
-        self.lexicon_entries = nn.ModuleDict(lexicon_entries)
-        self.parser = ChartParser(lexicon_entries)
-    
     def group_lexicon_entries(self, moduledict : List[nn.Module]):
         grouped = {}
         pattern = re.compile(r'(.+?)_(\d+)$')  # match 'word_{i}'
@@ -164,6 +155,23 @@ class MetaLearner(nn.Module):
 
         return grouped
 
+    def entries_setup(self, depth = 1):
+        entries = enumerate_search(self.types, self.functions, max_depth = depth)
+    
+        self.lexicon_entries = nn.ModuleDict({})
+    
+
+        for word in self.vocab:
+            for idx, (syn_type, program) in enumerate(entries):
+                self.lexicon_entries[f"{word}_{idx}"] = LexiconEntry(
+                        word, syn_type, program, weight = torch.randn(1).item() - 0.0
+                    )
+    
+        grouped_lexicon = self.group_lexicon_entries(self.lexicon_entries)
+    
+        self.parser = ChartParser(grouped_lexicon)
+        self.lexicon_entries = None
+        return 0
 
     def add_vocab(self, vocab: List[str], domains : List[str]):
         """this method add a new set of vocab and related domains that could associate it with """
@@ -171,7 +179,6 @@ class MetaLearner(nn.Module):
 
     def forward(self, sentence, grounding = None, topK = None, train = True):
 
-        #self.group_lexicon_entries(self.lexicon_entries)
         parses = self.parser.parse(sentence,  topK = topK)
         log_distrs = self.parser.get_parse_probability(parses)
 
@@ -189,7 +196,7 @@ class MetaLearner(nn.Module):
                 result = self.executor.evaluate(expr, grounding)
                 results.append(result)
                 probs.append(parse_prob)
-                programs.append(str(program))
+
             else:
                 results.append(None)
                 probs.append(parse_prob)
@@ -209,20 +216,17 @@ class MetaLearner(nn.Module):
         import tqdm.gui as tqdmgui
         optim = torch.optim.Adam(self.parameters(), lr = lr)
         # epoch_bar = tqdmgui.tqdm(range(epochs), desc="Training epochs", unit="epoch")
-        for key in self.parameters():
-            #print(key, key.grad)
-            pass
+        #print(list(self.parameters()))
+
         epoch_bar = tqdm(range(epochs), desc="Training epochs", unit="epoch")
 
         for epoch in epoch_bar:
             loss = 0.0     
             for idx, sample in dataset:
-
                 query = sample["query"]
                 answer = sample["answer"]
                 grounding = sample["grounding"]
-
-                results, probs, programs = self(query, grounding, topK)
+                results, probs, programs = self(query, grounding)
                 if not results: print(f"no parsing found for query:{query}")
                 for i,result in enumerate(results):
 
@@ -251,14 +255,14 @@ class MetaLearner(nn.Module):
 
                     else: loss += measure_conf # suppress the non-sense outputs
             optim.zero_grad()
-            loss.backward()
+            #loss.backward()
             params_with_grad = [
              (name, param) for name, param in self.named_parameters()
                 if param.grad is not None and param.grad.abs().sum() > 0
             ]
 
             for name, param in params_with_grad:
-                print(f"{name} contributed to the loss")
+                print(name)
             optim.step()
 
             avg_loss = loss / len(dataset) if len(dataset) > 0 else 0

@@ -98,13 +98,10 @@ def process_command(command):
         model.entries_setup()
         
 
-        model("one plus two", {})
-
         meta_expr = model.executor.parse_expression("lesser:Order(one:Integers(),two:Integers())")
         #model.infer_metaphor_expressions([meta_expr])
 
 
-        values, weights, programs = model("one plus two", {})
         from datasets.numbers_dataset import get_dataset
         model.train(get_dataset(), epochs = 20, lr = 1e-3)
 
@@ -134,3 +131,5 @@ if __name__ == "__main__":
     sys.stdout.write(f"command type: {config.command}\n")
 
     process_command(config.command)
+
+    
