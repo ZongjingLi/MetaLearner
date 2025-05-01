@@ -71,7 +71,7 @@ class SemProgram:
                 self.lambda_vars == other.lambda_vars)
     
     
-class LexiconEntry(nn.Module):
+class LexiconEntry:
     def __init__(self, word: str, syn_type: CCGSyntacticType, sem_program: SemProgram, weight: Union[float, torch.Tensor] = 0.0):
         super().__init__()
         self.word = word
@@ -80,9 +80,9 @@ class LexiconEntry(nn.Module):
         
         # Convert weight to parameter
         if isinstance(weight, float) or isinstance(weight, int):
-            self._weight = nn.Parameter(torch.tensor(float(weight), requires_grad=True))
+            self._weight = torch.tensor(float(weight))
         elif isinstance(weight, torch.Tensor) and not isinstance(weight, nn.Parameter):
-            self._weight = nn.Parameter(weight.clone().detach(), requires_grad=True)
+            self._weight = weight
         else:
             self._weight = weight  # Already a parameter
     
@@ -93,3 +93,4 @@ class LexiconEntry(nn.Module):
     def __str__(self):
         weight_value = self._weight.item()
         return f"{self.word} : {self.syn_type} : {self.sem_program} : {weight_value:.3f}"
+    

@@ -36,7 +36,7 @@ class MetaLearner(nn.Module):
         self.executor : CentralExecutor = ReductiveExecutor(ExecutorGroup(domains))
         
         self.vocab = vocab
-        self.lexicon_entries = nn.ModuleDict({})
+        self.lexicon_entries = {}#nn.ModuleDict({})
         self.parser = ChartParser(self.lexicon_entries)
 
         self.gather_format = self.executor.gather_format
@@ -70,7 +70,7 @@ class MetaLearner(nn.Module):
         with open(f"{ckpt_path}/{vocab_path}", 'r', encoding='utf-8') as f:
             vocab = [line.strip() for line in f]
         self.vocab = vocab
-        self.lexicon_entries = torch.load(f"{ckpt_path}/lexicon_entries.ckpt", weights_only=False)
+        #self.lexicon_entries = torch.load(f"{ckpt_path}/lexicon_entries.ckpt", weights_only=False)
 
         self.name = model_config["name"]
        
@@ -158,7 +158,7 @@ class MetaLearner(nn.Module):
     def entries_setup(self, depth = 1):
         entries = enumerate_search(self.types, self.functions, max_depth = depth)
     
-        self.lexicon_entries = nn.ModuleDict({})
+        self.lexicon_entries = dict()
     
 
         for word in self.vocab:
@@ -255,7 +255,7 @@ class MetaLearner(nn.Module):
 
                     else: loss += measure_conf # suppress the non-sense outputs
             optim.zero_grad()
-            #loss.backward()
+            loss.backward()
             params_with_grad = [
              (name, param) for name, param in self.named_parameters()
                 if param.grad is not None and param.grad.abs().sum() > 0

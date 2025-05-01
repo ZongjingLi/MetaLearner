@@ -5,7 +5,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from .lexicon import CCGSyntacticType, SemProgram, LexiconEntry
-
 class CCGRule:
     """Abstract base class for CCG combinatory rules"""
     @staticmethod
@@ -55,7 +54,7 @@ class ForwardApplication(CCGRule):
             new_program = SemProgram(left_entry.sem_program.func_name, new_args)
         
         # Create a new lexicon entry with combined weight
-        # Use direct addition to maintain gradient graph
+        # The weight is the sum of the two entries' weights (maintaining the gradient graph)
         combined_weight = left_entry.weight + right_entry.weight
         
         return LexiconEntry(f"{left_entry.word} {right_entry.word}", result_type, new_program, combined_weight)
@@ -91,40 +90,102 @@ class BackwardApplication(CCGRule):
             new_args.append(left_entry.sem_program)
             new_program = SemProgram(right_entry.sem_program.func_name, new_args)
         
-        # Use PyTorch addition to maintain gradient graph
+        # The weight is the sum of the two entries' weights (maintaining the gradient graph)
         combined_weight = left_entry.weight + right_entry.weight
-        return LexiconEntry("", result_type, new_program, combined_weight)
-
+        
+        return LexiconEntry(f"{left_entry.word} {right_entry.word}", result_type, new_program, combined_weight)
+    
 class ChartParser(nn.Module):
     """
     Implementation of G2L2 parser with CKY-E2 algorithm
-    Modified to support PyTorch gradient computation
+    Modified to support PyTorch gradient computation with centralized weight management
     """
-    def __init__(self, lexicon: nn.ModuleDict, rules: List[CCGRule] = None):
+    def __init__(self, lexicon: Dict[str, List], rules: List = None):
         super().__init__()
         
+        # Create ModuleDict for lexicon structure (without weights)
         module_dict = {}
+        # Create ParameterDict for lexicon weights
+        weight_dict = {}
+        
         for word_key, entries in lexicon.items():
-            assert all(isinstance(e, nn.Module) for e in entries)
-            module_dict[word_key] = nn.ModuleList(entries)  # Register entries properly
-        self.lexicon = nn.ModuleDict(module_dict)  # Register dict properly
-
+            # Store entries without their weights
+            module_list = []
+            for idx, entry in enumerate(entries):
+                # Create unique parameter key for each word-type combination
+                weight_key = f"{word_key}_{idx}"
+                # Store the initial weight value
+                if isinstance(entry.weight, nn.Parameter):
+                    weight_dict[weight_key] = entry.weight
+                else:
+                    # Convert to parameter if it's not already
+                    weight_dict[weight_key] = nn.Parameter(entry.weight)
+                
+                # Add entry to module list (it will be used as a template)
+                module_list.append(entry)
+            
+            module_dict[word_key] = (module_list)
+        
+        self.lexicon = module_dict#nn.ModuleDict(module_dict)
+        self.lexicon_weight = nn.ParameterDict(weight_dict)
         self.rules = [ForwardApplication, BackwardApplication] if rules is None else rules
     
-    def get_likely_entries(self, word: str, K: int = 3) -> List[LexiconEntry]:
-        """given a word we find the top K"""
-        if word not in self.lexicon: return []
-        entries = sorted(self.lexicon[word], key=lambda e: e.weight, reverse=True)[:K]
-        return entries
+    def get_entry_weight(self, word: str, idx: int) -> torch.Tensor:
+        """Get weight for a lexicon entry from the centralized parameter dictionary"""
+        weight_key = f"{word}_{idx}"
+        return self.lexicon_weight[weight_key]
+    
+    def get_likely_entries(self, word: str, K: int = 3) -> List:
+        """Get top K lexicon entries for a word based on their weights"""
+        if word not in self.lexicon: 
+            return []
+        
+        # Get entries and their weights
+        entries = self.lexicon[word]
+        weights = [self.get_entry_weight(word, idx) for idx in range(len(entries))]
+        
+        # Sort by weights (descending)
+        entry_weights = list(zip(entries, weights))
+        sorted_entries = sorted(entry_weights, key=lambda x: x[1], reverse=True)[:K]
+        
+        # Create new LexiconEntry objects with proper weights
+        result = []
+        for entry, weight in sorted_entries:
+            # Create a new entry with the weight from our parameter dict
+            new_entry = LexiconEntry(
+                entry.word,
+                entry.syn_type,
+                entry.sem_program,
+                weight  # This is an nn.Parameter
+            )
+            result.append(new_entry)
+        
+        return result
 
     def parse(self, sentence: str, topK = None, forced = False):
         words = sentence.split()
         n = len(words)
         chart = {}
+        
+        # Fill in the chart with lexicon entries for each word
         for i in range(n):
             word = words[i]
             if word in self.lexicon:
-                chart[(i, i+1)] = self.lexicon[word] if topK is None else self.get_likely_entries(word, topK)
+                if topK is None:
+                    # Get all entries with their weights from parameter dict
+                    entries = []
+                    for idx, entry in enumerate(self.lexicon[word]):
+                        weight = self.get_entry_weight(word, idx)
+                        new_entry = LexiconEntry(
+                            entry.word,
+                            entry.syn_type,
+                            entry.sem_program,
+                            weight  # This is an nn.Parameter
+                        )
+                        entries.append(new_entry)
+                    chart[(i, i+1)] = entries
+                else:
+                    chart[(i, i+1)] = self.get_likely_entries(word, topK)
             else:
                 chart[(i, i+1)] = []
                 print(f"Warning: Word '{word}' not in lexicon")
@@ -149,37 +210,36 @@ class ChartParser(nn.Module):
                                 if applicable:
                                     result = rule.apply(left_entry, right_entry)
                                     if result:
-                                        # Register the new entry to track parameters
                                         chart[(start, end)].append(result)
         
         return chart[(0, n)]
     
     def get_parse_probability(self, parses):
         """Calculate probability for each parse"""
-        if not parses: return torch.tensor([], requires_grad=True)
-        
+        if not parses: 
+            return torch.tensor([], requires_grad=True)
+        print(list(self.parameters()))
         # Get weights and apply softmax
-        #print([parse.weight.requires_grad for parse in parses])
         weights = torch.stack([parse.weight for parse in parses])
-
+        
+        # Use softmax to get log probabilities
         log_probs = F.log_softmax(weights, dim=0)
 
-        optim = torch.optim.Adam(self.parameters(), lr = 1e-2)
         
-
-        loss = torch.sum(log_probs)    
-        optim.zero_grad()
-        loss.backward()
-        
-        params_with_grad = [
-             (name, param) for name, param in self.named_parameters()
-                if param.grad is not None and param.grad.abs().sum() > 0
-            ]
-
-        for name, param in params_with_grad:
-            print(name)
-
-        optim.step()
-        
-
         return log_probs
+    
+    def compute_loss(self, parses, target_idx=0):
+        """Compute negative log likelihood loss for training"""
+        if not parses:
+            return torch.tensor(0.0, requires_grad=True)
+            
+        log_probs = self.get_parse_probability(parses)
+        
+        # Use negative log likelihood of the target parse as loss
+        if target_idx < len(log_probs):
+            loss = -log_probs[target_idx]
+        else:
+            # If target_idx is out of bounds, use the most likely parse
+            loss = -log_probs[0]
+            
+        return loss
