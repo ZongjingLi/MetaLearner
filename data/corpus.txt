@@ -1,8 +1,0 @@
-This is a sentence.
-This is also a sentence.
-This is the default corpus.
-this is real and correct.
-two plus one.
-two plus three.
-one plus one.
-red plus two.

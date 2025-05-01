@@ -107,6 +107,7 @@ def process_command(command):
         model.save_ckpt(f"outputs/checkpoints/{save_name}")
 
 
+
     if regex.match("interact_*", command):
         import tornado
         from assets.app import make_app

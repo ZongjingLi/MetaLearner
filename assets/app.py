@@ -62,7 +62,12 @@ class ProcessHandler(tornado.web.RequestHandler):
             tensor_img = transform(img)
             grounding = {"input_image" : tensor_img} # should not be jus a empty dict but actually read the image
 
-        self.model(input_text, grounding)
+        values, weights, programs = self.model.verbose_call(input_text, grounding)
+        items = []
+        for i in range(len(values)):
+            items.append(f"{programs[i]} -> {values[i].value}-{values[i].vtype} P:{weights[i]:.2f} ")
+
+
         # Return results as JSON
         self.write(json.dumps({
             "list_items": items,

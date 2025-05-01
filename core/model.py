@@ -227,7 +227,6 @@ class MetaLearner(nn.Module):
         parses = self.parser.parse(sentence,  topK = topK)
         log_distrs = self.parser.get_parse_probability(parses)
 
-        
         results = []
         probs = []
         programs = []
@@ -246,11 +245,6 @@ class MetaLearner(nn.Module):
                 results.append(None)
                 probs.append(parse_prob)
 
-
-        #
-        if plot:
-            plt.cla()
-            self.executor.display("assets/static/images/parse_tree")
 
         return results, probs, programs
 
@@ -319,3 +313,30 @@ class MetaLearner(nn.Module):
         for i, parse in enumerate(sorted_parses[:4]):
             print(f"{parse[0].sem_program}, {float(parse[1].exp()):.2f}")
         print("")
+
+    
+    def verbose_call(self, sentence, grounding = {}, plot = True, K = 4):
+        parses = self.parser.parse(sentence)
+        distrs = self.parser.get_parse_probability(parses)
+        parse_with_prob = list(zip(parses, distrs))
+        sorted_parses = sorted(parse_with_prob, key=lambda x: x[1], reverse=True)
+        values = []
+        programs = []
+        weights = []
+        for i, parse in enumerate(sorted_parses[:1]):
+            value = self.executor.evaluate(str(parse[0].sem_program), grounding)
+            values.append(value)
+            programs.append(str(parse[0].sem_program))
+            weights.append(float(parse[1].exp()))
+            print(f"{parse[0].sem_program}, {float(parse[1].exp()):.2f}", value)
+            plt.cla()
+            self.executor.display("assets/static/images/parse_tree")
+
+        for i, parse in enumerate(sorted_parses[2:K]):
+            value = self.executor.evaluate(str(parse[0].sem_program), grounding)
+            values.append(value)
+            programs.append(str(parse[0].sem_program))
+            weights.append(float(parse[1].exp()))
+            print(f"{parse[0].sem_program}, {float(parse[1].exp()):.2f}", value)
+
+        return values, weights, programs

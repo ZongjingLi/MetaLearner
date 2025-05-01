@@ -1,0 +1,3 @@
+Blockworld:
+    path: "datasets.numbers_dataset"
+    getter: "get_dataset"
