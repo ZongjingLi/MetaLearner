@@ -257,7 +257,6 @@ class MetaLearner(nn.Module):
         import tqdm.gui as tqdmgui
         optim = torch.optim.Adam(self.parameters(), lr = lr)
         # epoch_bar = tqdmgui.tqdm(range(epochs), desc="Training epochs", unit="epoch")
-        #print(list(self.parameters()))
 
         epoch_bar = tqdm(range(epochs), desc="Training epochs", unit="epoch")
 
@@ -323,20 +322,17 @@ class MetaLearner(nn.Module):
         values = []
         programs = []
         weights = []
+        for i, parse in enumerate(sorted_parses[:K]):
+            value = self.executor.evaluate(str(parse[0].sem_program), grounding)
+            values.append(value)
+            programs.append(str(parse[0].sem_program))
+            weights.append(float(parse[1].exp()))
+            #print(f"{parse[0].sem_program}, {float(parse[1].exp()):.2f}", value)
+
         for i, parse in enumerate(sorted_parses[:1]):
             value = self.executor.evaluate(str(parse[0].sem_program), grounding)
-            values.append(value)
-            programs.append(str(parse[0].sem_program))
-            weights.append(float(parse[1].exp()))
-            print(f"{parse[0].sem_program}, {float(parse[1].exp()):.2f}", value)
-            plt.cla()
-            self.executor.display("assets/static/images/parse_tree")
-
-        for i, parse in enumerate(sorted_parses[2:K]):
-            value = self.executor.evaluate(str(parse[0].sem_program), grounding)
-            values.append(value)
-            programs.append(str(parse[0].sem_program))
-            weights.append(float(parse[1].exp()))
-            print(f"{parse[0].sem_program}, {float(parse[1].exp()):.2f}", value)
-
         return values, weights, programs
+    
+    def eval_graph(self):
+        from core.metaphors.diagram_executor import convert_graph_to_visualization_data
+        return convert_graph_to_visualization_data(self.executor.eval_graph)

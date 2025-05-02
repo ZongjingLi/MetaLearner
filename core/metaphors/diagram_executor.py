@@ -476,3 +476,68 @@ class ReductiveExecutor(FunctionExecutor):
             return expr.const
         else:
             raise NotImplementedError(f'Unknown expression type: {type(expr)}')
+        
+import json
+import networkx as nx
+
+def convert_graph_to_visualization_data(G):
+    """
+    Convert a NetworkX graph to visualization data format needed for D3.js
+    
+    Args:
+        G: NetworkX graph (eval_graph from the model)
+    
+    Returns:
+        dict: JSON-serializable dictionary with nodes and edges data
+    """
+    # Initialize nodes and edges lists
+    nodes = []
+    edges = []
+    
+    # Process nodes
+    for node_id, node_data in G.nodes(data=True):
+        # Create node entry
+        node = {
+            "id": str(node_id),
+            "weight": float(node_data.get('weight', 1.0)),
+            "color": node_data.get('color', '#3a5f7d'),
+            "text_color": node_data.get('text_color', 'white')
+        }
+        
+        # Add output information if available
+        if 'output' in node_data:
+            output_data = node_data['output']
+            output_info = {
+                "value": float(output_data.value) if hasattr(output_data, 'value') else str(output_data),
+                "vtype": output_data.vtype.alias.split(':')[0] if hasattr(output_data.vtype, 'alias') else str(output_data.vtype)
+            }
+            node["output"] = output_info
+        
+        nodes.append(node)
+    
+    # Process edges
+    for source, target, edge_data in G.edges(data=True):
+        # Create edge entry
+        edge = {
+            "source": str(source),
+            "target": str(target),
+            "weight": float(edge_data.get('weight', 1.0)),
+            "color": edge_data.get('color', '#555555')
+        }
+        
+        # Add output information if available
+        if 'output' in edge_data:
+            output_data = edge_data['output']
+            output_info = {
+                "value": float(output_data.value) if hasattr(output_data, 'value') else str(output_data),
+                "vtype": output_data.vtype.alias.split(':')[0] if hasattr(output_data.vtype, 'alias') else str(output_data.vtype)
+            }
+            edge["output"] = output_info
+        
+        edges.append(edge)
+    
+    # Return the combined data
+    return {
+        "nodes": nodes,
+        "edges": edges
+    }

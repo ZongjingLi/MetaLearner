@@ -3,62 +3,558 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meta Concept Learner</title>
-    <link rel="stylesheet" href="{{ static_url('style.css') }}">
+    <title>Meta Concept Learner - Graph Visualization</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            background-color: #f8f9fa;
+        }
+        
+        .container {
+            width: 95%;
+            max-width: 1400px;
+            margin: 20px auto;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            background-color: #fff;
+            overflow: hidden;
+        }
+        
+        .header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 15px 25px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .content {
+            padding: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .left-panel {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .right-panel {
+            flex: 2;
+            min-width: 400px;
+        }
+        
+        .panel {
+            border: 1px solid #e3e3e3;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        
+        .panel-header {
+            padding: 12px 15px;
+            background-color: #f1f1f1;
+            font-weight: bold;
+            border-bottom: 1px solid #e3e3e3;
+        }
+        
+        .panel-content {
+            padding: 15px;
+        }
+        
+        #input-text {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: vertical;
+            min-height: 100px;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+            font-family: inherit;
+        }
+        
+        .input-panel button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+        
+        .input-panel button:hover {
+            background-color: #2980b9;
+        }
+        
+        .file-upload {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .file-label {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            text-align: center;
+            background-color: #f8f9fa;
+            border: 2px dashed #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .file-label:hover {
+            background-color: #eaeaea;
+            border-color: #3498db;
+        }
+        
+        #file-input {
+            display: none;
+        }
+        
+        #file-display {
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        #graph-container {
+            width: 100%;
+            height: 600px;
+            overflow: hidden;
+            background-color: #fdfdfd;
+            border: 1px solid #eee;
+            border-radius: 4px;
+        }
+        
+        .results-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .results-list li {
+            padding: 8px 12px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .results-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .node circle {
+            stroke: #333;
+            stroke-width: 1.5px;
+        }
+        
+        .node text {
+            font-family: Arial, sans-serif;
+            pointer-events: none;
+        }
+        
+        .link {
+            fill: none;
+            stroke-width: 1.5px;
+        }
+        
+        .arrowhead {
+            fill: #666;
+        }
+        
+        .edge-label {
+            font-size: 10px;
+            font-family: Arial, sans-serif;
+            pointer-events: none;
+        }
+        
+        /* Loading spinner */
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .content {
+                flex-direction: column;
+            }
+            
+            .left-panel, .right-panel {
+                width: 100%;
+            }
+            
+            #graph-container {
+                height: 400px;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <h1>Meta Concept Learner</h1>
+        <div class="header">Meta Concept Learner</div>
         
-        <div class="row">
-            <div class="col">
+        <div class="content">
+            <div class="left-panel">
                 <div class="panel input-panel">
                     <div class="panel-header">Input Text</div>
-                    <div class="panel-body">
-                        <textarea id="inputText" placeholder="Type your text here..."></textarea>
-                        <button id="enterButton">Enter</button>
+                    <div class="panel-content">
+                        <textarea id="input-text" placeholder="Enter your text here..."></textarea>
+                        <button id="process-btn">Process</button>
+                        
+                        <div class="file-upload">
+                            <label for="file-input" class="file-label">
+                                Click to choose file
+                                <div style="font-size: 0.8em; margin-top: 5px; color: #666;">
+                                    (Images will be displayed when uploaded)
+                                </div>
+                            </label>
+                            <input type="file" id="file-input" accept="image/*,video/*">
+                            <div id="file-display"></div>
+                        </div>
                     </div>
                 </div>
                 
-                <div class="panel file-panel">
-                    <div class="panel-header">Upload File</div>
-                    <div class="panel-body">
-                        <div class="file-upload">
-                            <label for="fileInput">
-                                <div class="upload-area">
-                                    <span>Click to choose file</span>
-                                    <span class="subtext">Display if is image or video</span>
-                                </div>
-                            </label>
-                            <input type="file" id="fileInput" style="display: none;">
-                        </div>
-                        <div id="filePreview" class="file-preview"></div>
+                <div class="panel">
+                    <div class="panel-header">Results</div>
+                    <div class="panel-content">
+                        <div id="loader" class="loader"></div>
+                        <ul id="results-list" class="results-list"></ul>
                     </div>
                 </div>
             </div>
             
-            <div class="col">
-                <div class="panel list-panel">
-                    <div class="panel-header">Results</div>
-                    <div class="panel-body">
-                        <div class="list-container">
-                            <ul id="resultsList"></ul>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="panel image-panel">
+            <div class="right-panel">
+                <div class="panel">
                     <div class="panel-header">Parse Tree</div>
-                    <div class="panel-body">
-                        <div class="image-container">
-                            <img id="parseTreeImage" src="{{ static_url('images/parse_tree.png') }}" alt="Parse tree will be displayed here">
-                        </div>
+                    <div class="panel-content">
+                        <div id="graph-container"></div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="{{ static_url('script.js') }}"></script>
+    <script>
+        // DOM elements
+        const inputText = document.getElementById('input-text');
+        const fileInput = document.getElementById('file-input');
+        const fileDisplay = document.getElementById('file-display');
+        const processBtn = document.getElementById('process-btn');
+        const resultsList = document.getElementById('results-list');
+        const loader = document.getElementById('loader');
+        const graphContainer = document.getElementById('graph-container');
+        
+        // File upload handling
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            fileDisplay.textContent = `Selected file: ${file.name}`;
+            
+            // Display image preview if it's an image
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.style.maxWidth = '100%';
+                    img.style.maxHeight = '200px';
+                    img.style.marginTop = '10px';
+                    img.style.borderRadius = '4px';
+                    
+                    // Clear previous preview if exists
+                    const prevPreview = fileDisplay.querySelector('img');
+                    if (prevPreview) {
+                        fileDisplay.removeChild(prevPreview);
+                    }
+                    
+                    fileDisplay.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // Process button handling
+        processBtn.addEventListener('click', processInput);
+        
+        // Function to process the input
+        function processInput() {
+            // Show loading indicator
+            loader.style.display = 'block';
+            resultsList.innerHTML = '';
+            
+            // Create form data for the request
+            const formData = new FormData();
+            formData.append('input_text', inputText.value);
+            
+            // Add file if selected
+            if (fileInput.files.length > 0) {
+                formData.append('file', fileInput.files[0]);
+            }
+            
+            // Send the request
+            fetch('/process', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Hide loader
+                loader.style.display = 'none';
+                
+                // Display results
+                if (data.list_items && data.list_items.length > 0) {
+                    data.list_items.forEach(item => {
+                        const li = document.createElement('li');
+                        li.textContent = item;
+                        resultsList.appendChild(li);
+                    });
+                } else {
+                    const li = document.createElement('li');
+                    li.textContent = 'No results found.';
+                    resultsList.appendChild(li);
+                }
+                
+                // Update graph visualization
+                if (data.graph_data) {
+                    renderGraph(data.graph_data);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                loader.style.display = 'none';
+                
+                const li = document.createElement('li');
+                li.textContent = 'Error processing request.';
+                li.style.color = 'red';
+                resultsList.appendChild(li);
+            });
+        }
+        
+        // Load initial graph data
+        function loadInitialGraphData() {
+            fetch('/graph_data')
+                .then(response => response.json())
+                .then(data => {
+                    renderGraph(data);
+                })
+                .catch(error => {
+                    console.error('Error loading initial graph:', error);
+                    // If no initial data, render sample graph
+                    renderSampleGraph();
+                });
+        }
+        
+        // Render sample graph for when no data is available
+        function renderSampleGraph() {
+            const sampleData = {
+                nodes: [
+                    { id: "two_0", weight: 1.0, output: { value: 2.0, vtype: "int" }, color: "#3a5f7d", text_color: "white" },
+                    { id: "one_0", weight: 1.0, output: { value: 1.0, vtype: "int" }, color: "#3a5f7d", text_color: "white" },
+                    { id: "plus_0", weight: 1.0, output: { value: 3.0, vtype: "int" }, color: "#3a5f7d", text_color: "white" },
+                    { id: "outputs", weight: 1.0, output: { value: 3.0, vtype: "int" }, color: "#000000", text_color: "white" }
+                ],
+                edges: [
+                    { source: "two_0", target: "plus_0", weight: 1.0, output: { value: 2.0, vtype: "int" }, color: "#555555" },
+                    { source: "one_0", target: "plus_0", weight: 1.0, output: { value: 1.0, vtype: "int" }, color: "#555555" },
+                    { source: "plus_0", target: "outputs", weight: 1.0, output: { value: 3.0, vtype: "int" }, color: "#555555" }
+                ]
+            };
+            
+            renderGraph(sampleData);
+        }
+        
+        // Render graph with D3.js
+        function renderGraph(data) {
+            // Clear previous SVG
+            d3.select("#graph-container").html("");
+            
+            const width = graphContainer.clientWidth;
+            const height = graphContainer.clientHeight;
+            
+            // Create SVG
+            const svg = d3.select("#graph-container")
+                .append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .call(d3.zoom().on("zoom", function(event) {
+                    g.attr("transform", event.transform);
+                }))
+                .append("g");
+                
+            const g = svg.append("g");
+            
+            // Define arrow marker
+            svg.append("defs").append("marker")
+                .attr("id", "arrowhead")
+                .attr("viewBox", "0 -5 10 10")
+                .attr("refX", 26) // Adjusted to position properly with node radius
+                .attr("refY", 0)
+                .attr("orient", "auto")
+                .attr("markerWidth", 6)
+                .attr("markerHeight", 6)
+                .attr("class", "arrowhead")
+                .append("path")
+                .attr("d", "M0,-5L10,0L0,5");
+            
+            // Create force simulation
+            const simulation = d3.forceSimulation()
+                .force("link", d3.forceLink().id(d => d.id).distance(150))
+                .force("charge", d3.forceManyBody().strength(-800))
+                .force("center", d3.forceCenter(width / 2, height / 2))
+                .force("x", d3.forceX(width / 2).strength(0.1))
+                .force("y", d3.forceY(height / 2).strength(0.1));
+            
+            // Create links with data
+            const link = g.append("g")
+                .selectAll("path")
+                .data(data.edges)
+                .enter().append("path")
+                .attr("class", "link")
+                .attr("stroke", d => d.color || "#555")
+                .attr("marker-end", "url(#arrowhead)");
+            
+            // Create nodes with data
+            const node = g.append("g")
+                .selectAll(".node")
+                .data(data.nodes)
+                .enter().append("g")
+                .attr("class", "node")
+                .call(d3.drag()
+                    .on("start", dragstarted)
+                    .on("drag", dragged)
+                    .on("end", dragended));
+            
+            // Add circles to nodes
+            node.append("circle")
+                .attr("r", 30)
+                .attr("fill", d => d.color || "#3a5f7d")
+                .attr("opacity", d => d.weight || 1.0)
+                .attr("stroke", "#222");
+            
+            // Add node ID text
+            node.append("text")
+                .attr("dy", ".35em")
+                .attr("text-anchor", "middle")
+                .attr("fill", d => d.text_color || "white")
+                .text(d => d.id);
+            
+            // Add node weight label
+            node.append("text")
+                .attr("dy", "-20")
+                .attr("text-anchor", "middle")
+                .attr("fill", "white")
+                .attr("font-size", "8px")
+                .text(d => d.weight ? `${d.weight.toFixed(2)}` : "");
+            
+            // Add node output and type info
+            node.append("text")
+                .attr("dy", "20")
+                .attr("text-anchor", "middle")
+                .attr("fill", d => d.text_color || "white")
+                .attr("font-size", "8px")
+                .text(d => {
+                    if (!d.output) return "";
+                    return `V:${parseFloat(d.output.value).toFixed(2)} Tp:${d.output.vtype}`;
+                });
+            
+            // Create edge labels (weights)
+            const edgeLabels = g.append("g")
+                .selectAll(".edge-label")
+                .data(data.edges)
+                .enter().append("text")
+                .attr("class", "edge-label")
+                .attr("dy", -5)
+                .attr("text-anchor", "middle")
+                .attr("fill", "#333")
+                .text(d => d.weight ? `${d.weight.toFixed(2)}` : "");
+            
+            // Create edge value and type labels
+            const edgeValueLabels = g.append("g")
+                .selectAll(".edge-value-label")
+                .data(data.edges)
+                .enter().append("text")
+                .attr("class", "edge-label")
+                .attr("dy", 15)
+                .attr("text-anchor", "middle")
+                .attr("fill", "#3a5f7d")
+                .text(d => {
+                    if (!d.output) return "";
+                    return `V:${parseFloat(d.output.value).toFixed(2)} Tp:${d.output.vtype}`;
+                });
+            
+            // Update positions on simulation tick
+            simulation.nodes(data.nodes).on("tick", ticked);
+            simulation.force("link").links(data.edges);
+            
+            // Function to update element positions on tick
+            function ticked() {
+                // Update link positions
+                link.attr("d", d => {
+                    const dx = d.target.x - d.source.x;
+                    const dy = d.target.y - d.source.y;
+                    const dr = Math.sqrt(dx * dx + dy * dy);
+                    
+                    // Return curved path
+                    return `M${d.source.x},${d.source.y}A${dr},${dr} 0 0,1 ${d.target.x},${d.target.y}`;
+                });
+                
+                // Update node positions
+                node.attr("transform", d => `translate(${d.x},${d.y})`);
+                
+                // Update edge label positions
+                edgeLabels.attr("x", d => (d.source.x + d.target.x) / 2)
+                    .attr("y", d => (d.source.y + d.target.y) / 2);
+                
+                edgeValueLabels.attr("x", d => (d.source.x + d.target.x) / 2)
+                    .attr("y", d => (d.source.y + d.target.y) / 2);
+            }
+            
+            // Drag functions
+            function dragstarted(event, d) {
+                if (!event.active) simulation.alphaTarget(0.3).restart();
+                d.fx = d.x;
+                d.fy = d.y;
+            }
+            
+            function dragged(event, d) {
+                d.fx = event.x;
+                d.fy = event.y;
+            }
+            
+            function dragended(event, d) {
+                if (!event.active) simulation.alphaTarget(0);
+                d.fx = null;
+                d.fy = null;
+            }
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadInitialGraphData();
+        });
+    </script>
 </body>
 </html>

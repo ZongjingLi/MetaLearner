@@ -8,6 +8,7 @@ class MainHandler(tornado.web.RequestHandler):
     def get(self):
         self.render("index.html")
         
+
 class ProcessHandler(tornado.web.RequestHandler):
     def initialize(self, model):
         self.model = model
@@ -39,41 +40,56 @@ class ProcessHandler(tornado.web.RequestHandler):
             }
         
         # Process both text and file using the model
-        # For demo purposes, we'll create a simple list
-        items = []
-        
-        if input_text:
-            items.extend(input_text.split())
-            
         grounding = None
         if file_info:
-            items.append(f"Processed file: {file_info['filename']}")
+            # Handle image processing for grounding
             if file_info['content_type'].startswith('image/'):
-                items.append("Type: Image")
-            elif file_info['content_type'].startswith('video/'):
-                items.append("Type: Video")
-                
-            """TODO: the grounding of the model need to read the input and save here"""
-            from torchvision import transforms
-            from PIL import Image
+                # This would be replaced with actual image processing code
+                from torchvision import transforms
+                from PIL import Image
 
-            img = Image.open("assets"+file_info["path"])
-            transform = transforms.ToTensor()
-            tensor_img = transform(img)
-            grounding = {"input_image" : tensor_img} # should not be jus a empty dict but actually read the image
+                try:
+                    img_path = os.path.join(os.path.dirname(__file__), "static/uploads", file_info['filename'])
+                    img = Image.open(img_path)
+                    transform = transforms.ToTensor()
+                    tensor_img = transform(img)
+                    grounding = {"input_image": tensor_img}
+                except Exception as e:
+                    print(f"Error processing image: {e}")
+                    grounding = {}
 
+        # Process the input with the model
         values, weights, programs = self.model.verbose_call(input_text, grounding)
+        
+        # Format the results
         items = []
         for i in range(len(values)):
             items.append(f"{programs[i]} -> {values[i].value}-{values[i].vtype} P:{weights[i]:.2f} ")
 
+        # Generate graph data after processing
+        graph_data = json.loads(json.dumps(self.model.eval_graph()))
 
         # Return results as JSON
         self.write(json.dumps({
             "list_items": items,
-            "image_updated": True,
+            "graph_data": graph_data,
             "file_info": file_info
         }))
+
+class GraphDataHandler(tornado.web.RequestHandler):
+    def initialize(self, model):
+        self.model = model
+        
+    def get(self):
+        """
+        Return the graph data for visualization
+        """
+        # Get graph data from model
+        graph_data = self.model.display()
+        
+        # Set JSON header
+        self.set_header("Content-Type", "application/json")
+        self.write(graph_data)
 
 def make_app(model=None):
     static_path = os.path.join(os.path.dirname(__file__), "static")
