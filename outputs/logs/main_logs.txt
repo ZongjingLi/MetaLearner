@@ -12864,3 +12864,256 @@
 [01 20:17:14 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function sup automatically registered.
 [01 20:17:14 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
 [01 20:17:14 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:03:46 86@main.py:Main] start training the metaphorical concept learner
+[01 21:03:46 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:03:46 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:03:46 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function one automatically registered.
+[01 21:03:46 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function two automatically registered.
+[01 21:03:46 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function three automatically registered.
+[01 21:03:46 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function N automatically registered.
+[01 21:03:46 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function Z automatically registered.
+[01 21:03:46 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function plus automatically registered.
+[01 21:03:46 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[01 21:03:46 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[01 21:03:46 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function greater automatically registered.
+[01 21:03:46 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function lesser automatically registered.
+[01 21:03:46 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function equal automatically registered.
+[01 21:03:46 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function inf automatically registered.
+[01 21:03:46 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function sup automatically registered.
+[01 21:03:46 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:03:46 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:05:26 86@main.py:Main] start training the metaphorical concept learner
+[01 21:05:26 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:05:26 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:05:26 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function one automatically registered.
+[01 21:05:26 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function two automatically registered.
+[01 21:05:26 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function three automatically registered.
+[01 21:05:26 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function N automatically registered.
+[01 21:05:26 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function Z automatically registered.
+[01 21:05:26 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function plus automatically registered.
+[01 21:05:26 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[01 21:05:26 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[01 21:05:26 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function greater automatically registered.
+[01 21:05:26 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function lesser automatically registered.
+[01 21:05:26 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function equal automatically registered.
+[01 21:05:26 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function inf automatically registered.
+[01 21:05:26 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function sup automatically registered.
+[01 21:05:26 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:05:26 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:05:38 86@main.py:Main] start training the metaphorical concept learner
+[01 21:05:38 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:05:38 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:05:39 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function one automatically registered.
+[01 21:05:39 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function two automatically registered.
+[01 21:05:39 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function three automatically registered.
+[01 21:05:39 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function N automatically registered.
+[01 21:05:39 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function Z automatically registered.
+[01 21:05:39 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function plus automatically registered.
+[01 21:05:39 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[01 21:05:39 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[01 21:05:39 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function greater automatically registered.
+[01 21:05:39 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function lesser automatically registered.
+[01 21:05:39 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function equal automatically registered.
+[01 21:05:39 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function inf automatically registered.
+[01 21:05:39 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function sup automatically registered.
+[01 21:05:39 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:05:39 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:06:46 86@main.py:Main] start training the metaphorical concept learner
+[01 21:06:47 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:06:47 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:06:47 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function one automatically registered.
+[01 21:06:47 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function two automatically registered.
+[01 21:06:47 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function three automatically registered.
+[01 21:06:47 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function N automatically registered.
+[01 21:06:47 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function Z automatically registered.
+[01 21:06:47 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function plus automatically registered.
+[01 21:06:47 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[01 21:06:47 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[01 21:06:47 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function greater automatically registered.
+[01 21:06:47 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function lesser automatically registered.
+[01 21:06:47 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function equal automatically registered.
+[01 21:06:47 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function inf automatically registered.
+[01 21:06:47 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function sup automatically registered.
+[01 21:06:47 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:06:47 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:07:20 86@main.py:Main] start training the metaphorical concept learner
+[01 21:07:20 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:07:20 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:07:20 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function one automatically registered.
+[01 21:07:20 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function two automatically registered.
+[01 21:07:20 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function three automatically registered.
+[01 21:07:20 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function N automatically registered.
+[01 21:07:20 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function Z automatically registered.
+[01 21:07:20 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function plus automatically registered.
+[01 21:07:20 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[01 21:07:20 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[01 21:07:20 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function greater automatically registered.
+[01 21:07:20 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function lesser automatically registered.
+[01 21:07:20 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function equal automatically registered.
+[01 21:07:20 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function inf automatically registered.
+[01 21:07:20 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function sup automatically registered.
+[01 21:07:20 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:07:20 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:07:33 86@main.py:Main] start training the metaphorical concept learner
+[01 21:07:33 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:07:33 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:07:33 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function one automatically registered.
+[01 21:07:33 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function two automatically registered.
+[01 21:07:33 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function three automatically registered.
+[01 21:07:33 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function N automatically registered.
+[01 21:07:33 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function Z automatically registered.
+[01 21:07:33 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function plus automatically registered.
+[01 21:07:33 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[01 21:07:33 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[01 21:07:33 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function greater automatically registered.
+[01 21:07:33 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function lesser automatically registered.
+[01 21:07:33 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function equal automatically registered.
+[01 21:07:33 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function inf automatically registered.
+[01 21:07:33 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function sup automatically registered.
+[01 21:07:33 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:07:33 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:07:54 86@main.py:Main] start training the metaphorical concept learner
+[01 21:07:54 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:07:54 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:07:54 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function one automatically registered.
+[01 21:07:54 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function two automatically registered.
+[01 21:07:54 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function three automatically registered.
+[01 21:07:54 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function N automatically registered.
+[01 21:07:54 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function Z automatically registered.
+[01 21:07:54 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function plus automatically registered.
+[01 21:07:54 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[01 21:07:54 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[01 21:07:54 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function greater automatically registered.
+[01 21:07:54 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function lesser automatically registered.
+[01 21:07:54 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function equal automatically registered.
+[01 21:07:54 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function inf automatically registered.
+[01 21:07:54 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function sup automatically registered.
+[01 21:07:54 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:07:54 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:08:19 86@main.py:Main] start training the metaphorical concept learner
+[01 21:08:19 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:08:19 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:08:19 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function one automatically registered.
+[01 21:08:19 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function two automatically registered.
+[01 21:08:19 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function three automatically registered.
+[01 21:08:19 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function N automatically registered.
+[01 21:08:19 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function Z automatically registered.
+[01 21:08:19 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function plus automatically registered.
+[01 21:08:19 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[01 21:08:19 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[01 21:08:19 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function greater automatically registered.
+[01 21:08:19 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function lesser automatically registered.
+[01 21:08:19 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function equal automatically registered.
+[01 21:08:19 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function inf automatically registered.
+[01 21:08:19 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function sup automatically registered.
+[01 21:08:19 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:08:19 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:08:40 86@main.py:Main] start training the metaphorical concept learner
+[01 21:08:40 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:08:40 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:08:40 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function one automatically registered.
+[01 21:08:40 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function two automatically registered.
+[01 21:08:40 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function three automatically registered.
+[01 21:08:40 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function N automatically registered.
+[01 21:08:40 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function Z automatically registered.
+[01 21:08:40 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function plus automatically registered.
+[01 21:08:40 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[01 21:08:40 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[01 21:08:40 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function greater automatically registered.
+[01 21:08:40 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function lesser automatically registered.
+[01 21:08:40 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function equal automatically registered.
+[01 21:08:40 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function inf automatically registered.
+[01 21:08:40 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function sup automatically registered.
+[01 21:08:40 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:08:40 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:08:59 86@main.py:Main] start training the metaphorical concept learner
+[01 21:08:59 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:08:59 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:08:59 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function one automatically registered.
+[01 21:08:59 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function two automatically registered.
+[01 21:08:59 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function three automatically registered.
+[01 21:08:59 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function N automatically registered.
+[01 21:08:59 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function Z automatically registered.
+[01 21:08:59 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function plus automatically registered.
+[01 21:08:59 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[01 21:08:59 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[01 21:08:59 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function greater automatically registered.
+[01 21:08:59 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function lesser automatically registered.
+[01 21:08:59 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function equal automatically registered.
+[01 21:08:59 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function inf automatically registered.
+[01 21:08:59 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function sup automatically registered.
+[01 21:08:59 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:08:59 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:09:31 86@main.py:Main] start training the metaphorical concept learner
+[01 21:09:31 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:09:31 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:09:31 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function one automatically registered.
+[01 21:09:31 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function two automatically registered.
+[01 21:09:31 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function three automatically registered.
+[01 21:09:31 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function N automatically registered.
+[01 21:09:31 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function Z automatically registered.
+[01 21:09:31 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function plus automatically registered.
+[01 21:09:31 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[01 21:09:31 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[01 21:09:31 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function greater automatically registered.
+[01 21:09:31 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function lesser automatically registered.
+[01 21:09:31 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function equal automatically registered.
+[01 21:09:31 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function inf automatically registered.
+[01 21:09:31 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function sup automatically registered.
+[01 21:09:31 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:09:31 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:11:18 86@main.py:Main] start training the metaphorical concept learner
+[01 21:11:18 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:11:18 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:11:18 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function one automatically registered.
+[01 21:11:18 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function two automatically registered.
+[01 21:11:18 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function three automatically registered.
+[01 21:11:18 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function N automatically registered.
+[01 21:11:18 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function Z automatically registered.
+[01 21:11:18 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function plus automatically registered.
+[01 21:11:18 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[01 21:11:18 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[01 21:11:18 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function greater automatically registered.
+[01 21:11:18 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function lesser automatically registered.
+[01 21:11:18 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function equal automatically registered.
+[01 21:11:18 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function inf automatically registered.
+[01 21:11:18 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function sup automatically registered.
+[01 21:11:18 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:11:18 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:12:42 86@main.py:Main] start training the metaphorical concept learner
+[01 21:12:42 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:12:42 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:12:42 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function one automatically registered.
+[01 21:12:42 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function two automatically registered.
+[01 21:12:42 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function three automatically registered.
+[01 21:12:42 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function N automatically registered.
+[01 21:12:42 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function Z automatically registered.
+[01 21:12:42 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function plus automatically registered.
+[01 21:12:42 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[01 21:12:42 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[01 21:12:43 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function greater automatically registered.
+[01 21:12:43 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function lesser automatically registered.
+[01 21:12:43 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function equal automatically registered.
+[01 21:12:43 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function inf automatically registered.
+[01 21:12:43 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function sup automatically registered.
+[01 21:12:43 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[01 21:12:43 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[02 11:56:28 116@main.py:Main] try to interact with model aluneth.
+[02 11:56:28 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[02 11:56:28 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[02 11:56:28 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function one automatically registered.
+[02 11:56:28 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function two automatically registered.
+[02 11:56:28 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function three automatically registered.
+[02 11:56:28 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function N automatically registered.
+[02 11:56:28 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function Z automatically registered.
+[02 11:56:28 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function plus automatically registered.
+[02 11:56:28 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[02 11:56:28 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[02 11:56:28 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function greater automatically registered.
+[02 11:56:28 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function lesser automatically registered.
+[02 11:56:28 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function equal automatically registered.
+[02 11:56:28 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function inf automatically registered.
+[02 11:56:28 46@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] Function sup automatically registered.
+[02 11:56:28 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[02 11:56:28 27@executor.py:/opt/anaconda3/envs/soulforge/lib/python3.9/site-packages/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[02 11:56:28 126@main.py:Main] server started at http://localhost:8888

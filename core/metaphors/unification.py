@@ -64,13 +64,16 @@ class ReductiveUnifier(nn.Module):
     def save_ckpt(self, ckpt_path):
         if not os.path.exists(f"{ckpt_path}/frames"): os.makedirs(f"{ckpt_path}/frames")
         for frame_name in self.frames:
-            print(f"{ckpt_path}/frames/{frame_name}.pth")
+            #print(f"{ckpt_path}/frames/{frame_name}.pth")
             torch.save(self.frames[frame_name], f"{ckpt_path}/frames/{frame_name}.pth")#.save_ckpt(f"{ckpt_path}/frames/{frame_name}")
         return 0
 
     def load_ckpt(self, ckpt_path):
+
         frames_dir = f"{ckpt_path}/frames"
+
         for filename in os.listdir(frames_dir):
+
             file_path = os.path.join(frames_dir, filename)
             if os.path.isfile(file_path):
                 

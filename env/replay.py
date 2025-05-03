@@ -5,6 +5,7 @@ from helchriss.envs.base_env import BaseEnv
 from helchriss.envs.contact import ContactModel
 from helchriss.utils.data import ListDataset
 from env.mechanism.pick_mechanism import PickBlockEnv
+from env.random_env import RandomizedEnv
 import torch
 import torch.nn as nn
 import random
