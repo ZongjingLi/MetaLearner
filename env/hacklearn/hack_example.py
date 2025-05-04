@@ -2,12 +2,7 @@
 # @Author: zongjingli
 # @Date:   2025-05-03 15:14:02
 # @Last Modified by:   zongjingli
-# @Last Modified time: 2025-05-03 15:26:36
-# -*- coding: utf-8 -*-
-# @Author: zongjingli
-# @Date:   2025-05-03 14:14:46
-# @Last Modified by:   zongjingli
-# @Last Modified time: 2025-05-03 15:25:50
+# @Last Modified time: 2025-05-03 21:16:52
 import gymnasium as gym
 import minihack
 from hack_utils import render_pixels, init_render
