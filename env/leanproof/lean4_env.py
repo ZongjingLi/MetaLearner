@@ -12,11 +12,33 @@ class SoulforgeLeanEnv:
         dojo, state_0 = Dojo(entry).__enter__()
         self.dojo = dojo
         self.init_state = state_0
-        print(dojo.run_cmd(state_0, "#eval 5"))
-        print(dojo.run_cmd(state_0, "#eval 6"))
-
+        self.curr_state = None
+        self.steps = 0
+        self.truncate_steps = 1000
+    
+    def step(self, action : str):
+        self.curr_state = self.dojo.run_cmd(self.curr_state, action)
+        reward = 0.0
+        self.steps += 1
+        terminated = False
+        truncated = True if self.steps > self.truncate_steps else False
+        info = {}
+        return self.curr_state, reward, terminated, truncated, info
+    
+    def reset(self):
+        self.curr_state = self.init_state
+        self.steps = 0
+        return self.curr_state
+    
 
 
 if __name__ == "__main__":
     soulforge = SoulforgeLeanEnv()
-    #print(len(['robot0_joint_pos_cos', 'robot0_joint_pos_sin', 'robot0_joint_vel', 'robot0_eef_pos', 'robot0_eef_quat', 'robot0_eef_quat_site', 'robot0_gripper_qpos', 'robot0_gripper_qvel', 'cube_pos', 'cube_quat', 'gripper_to_cube_pos', 'robot0_proprio-state', 'object-state']))
+    done = False
+    soulforge.reset()
+    while not done:
+        command = input()
+        obs, reward, done, truncated, info = soulforge.step(command)
+        print(obs.message)
+        #print(dojo.run_cmd(state_0, "#eval 5"))
+        #print(dojo.run_cmd(state_0, "#eval 6"))

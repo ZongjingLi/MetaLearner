@@ -69,9 +69,7 @@ class ReductiveUnifier(nn.Module):
         return 0
 
     def load_ckpt(self, ckpt_path):
-
         frames_dir = f"{ckpt_path}/frames"
-
         for filename in os.listdir(frames_dir):
 
             file_path = os.path.join(frames_dir, filename)

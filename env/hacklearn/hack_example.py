@@ -70,20 +70,24 @@ operate_actions = (
     nethack.Command.CLOSE,
 )
 
+
 action_space = compass_actions + operate_actions
 
-env = gym.make(
+
+def make_env():
+    env = gym.make(
     "MiniHack-Navigation-Custom-v0",
     des_file = des_file,
-    observation_keys = {"pixel","glyphs", "colors"},
+    observation_keys = {"pixel","glyphs", "colors", "message"},
     actions = action_space, 
     max_episode_steps = 1000
     )
+    return env
 
+
+env = make_env()
 
 policy = DummyPolicy(env)
-
-
 rewards = run_policy(env, policy, render = 1)
 
 print(rewards)
