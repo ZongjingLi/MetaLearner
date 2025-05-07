@@ -10,7 +10,7 @@ import argparse
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument("--command",          default = "interact_aluneth",   help = "the commands to run for the scripts")
+parser.add_argument("--command",          default = "interact_summer",   help = "the commands to run for the scripts")
 """possible command types are in the following format
 --train_ccsp_{domain} : to train a energy graph diffusion model that learns to do the CCSP problem.
 --train_metaphor_{domain} : to train a specific domain information, this domain is supposed to be in the target model.

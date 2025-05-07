@@ -12,8 +12,20 @@ __all__ = ["get_dataset"]
 
 
 # dataset of integer domain addition and max and min etc.
-num_queries = ["two plus one", "two plus three", "one plus one", "red plus two"]
-num_answers = [Value("int",3.0),Value("int",5.0), Value("int", 2.0), Value("int", 3.0)]
+num_queries = ["two plus one", "two plus three", "one plus one", "red plus two",
+               "three bigger than one",
+               "three bigger than two",
+               "one smaller than two",
+               "one smaller than three",
+               "one smaller than two plus three",
+               ]
+num_answers = [Value("int",3.0),Value("int",5.0), Value("int", 2.0), Value("int", 3.0),
+               Value("boolean", 1.0),
+               Value("boolean", 1.0),
+               Value("boolean", 1.0),
+               Value("boolean", 1.0),
+               Value("boolean", 1.0),
+               ]
 n_queries = len(num_queries)
 num_groundings = [None] * n_queries
 

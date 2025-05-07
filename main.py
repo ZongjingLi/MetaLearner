@@ -20,7 +20,7 @@ set_output_file("outputs/logs/main_logs.txt")
 
 def create_prototype_metalearner(config):
     core_knowledge_config = config.core_knowledge
-    checkpoint_dir = config.load_ckpt
+    checkpoint_dir = config.load_model
     main_logger.info(f"using the core knowledge stored in {core_knowledge_config} to create prototype")
     if checkpoint_dir:
         main_logger.info(f"loading the checkpoint parameters in {checkpoint_dir}")
@@ -127,8 +127,14 @@ def process_command(command):
         tornado.ioloop.IOLoop.current().start()
 
     if regex.match("create_*", command):
+        model_name = command[7:]
         model = create_prototype_metalearner(config)
         model.entries_setup()
+        
+        from helchriss.knowledge.symbolic import Expression
+        expr = Expression.parse_program_string("smaller:Integers(inf:Order(), sup:Order())")
+        model.infer_metaphor_expressions([expr])
+
         model.save_ckpt("outputs/checkpoints/prototype")
         main_logger.info(f"created model {model_name} and saved successfully.")
 

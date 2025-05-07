@@ -274,6 +274,8 @@ class ReductiveExecutor(FunctionExecutor):
                 """TODO: add the return type for constants"""
                 assert isinstance(expr.const, Value)
                 return expr.const
+            
+            print(expr)
             return [None,None]
         dfs(expr)
         if verbose:
@@ -281,17 +283,28 @@ class ReductiveExecutor(FunctionExecutor):
             stprint(metaphor_exprs)
         return metaphor_exprs
     
-    def add_metaphors(self, metaphors : List[Tuple[str, List[TypeBase], List[TypeBase]]]):
+    def add_metaphors(self, metaphors : List[Tuple[str, List[TypeBase], List[TypeBase]]], caster = None):
         for metaphor in metaphors:
-            target_func = metaphor[0]
-            target_types = metaphor[1]
-            source_types = metaphor[2]
-            source_hypothesis = self.gather_functions(source_types)
-            for source_func in source_hypothesis:
-                input_type = self.function_input_type(*source_func.split(":"))
-                output_type = self.function_input_type(*target_func.split(":"))
-                shared_caster = infer_caster(input_type, output_type)
-                self.add_reduction(source_func, target_func, shared_caster)
+            target_func, target_types, source_types = metaphor
+
+            input_type = source_types #self.function_input_type(*reduce_func.split(":"))      # actual input type for the function
+            expect_type = self.function_input_type(*target_func.split(":"))     # expect input type for the function
+            output_type = self.function_input_type(*target_func.split(":"))     # the output type for the target function
+
+            """create the local frame that gathers other `source` functions to the `target` function"""
+            if caster is None: caster = infer_caster(input_type, expect_type)
+            cast_frame : LocalFrame = LocalFrame(target_func, expect_type, output_type, caster)
+            
+            reduce_hypothesis = self.gather_functions(source_types)
+            for reduce_func in reduce_hypothesis:
+                cast_frame.add_source_caster(reduce_func, 0.0) # init the reduction `g`->`f` weight logits 0.0
+
+            frame_name = target_func + str(hash((tuple(input_type) + tuple(expect_type) + tuple(output_type))))
+            
+
+
+            self.reduce_unifier.add_function_frame(frame_name, cast_frame) # multiple frame lead to the same procedure
+
         return 1
     
     def gather_functions(self, input_type : List[TypeBase], output_type : TypeBase = None) -> List[str]:
@@ -306,17 +319,7 @@ class ReductiveExecutor(FunctionExecutor):
                 else:
                     output_funcs.append(func)
         return output_funcs
-    
-    def add_reduction(self, source_func : str, target_func : str, caster = None):
-        input_type = self.function_input_type(*source_func.split(":"))
-        output_type = self.function_input_type(*target_func.split(":"))
-        cast_frame : LocalFrame = LocalFrame(target_func, input_type, output_type)
 
-        if caster is None: caster = infer_caster(input_type, output_type)
-        cast_frame.add_meta_caster(source_func, caster)
-
-        self.reduce_unifier.add_function_frame(target_func, cast_frame)
-        return 1
     @property
     def types(self): return self.base_executor.types
 

@@ -8,38 +8,24 @@ import os
 
 class LocalFrame(nn.Module):
     """store 1) a nn.ModuleDict of type self casters that adapts 2) a nn.ModuleDict that perform type casting to target function"""
-    def __init__(self, func_name, natural_type : List[TypeBase], output_type : TypeBase):
+    def __init__(self, func_name, natural_type : List[TypeBase], output_type : TypeBase, caster : nn.Module = None):
         super().__init__()
         self.func_name : str = func_name
         self.output_type : TypeBase = output_type
         self.natural_types : List[TypeBase] = natural_type # this is a natural type, any new type need to be casted to this type to perform evaluation
 
-        self.endo_casters = nn.ModuleDict() # how a new type map the the current natural type
-        self.meta_casters = nn.ModuleDict() # how to map current to function to other function
-    
-    def add_endo_caster(self, neotype, caster): self.endo_casters[neotype] = caster
-    
-    def add_meta_caster(self, dest, caster): self.meta_casters[dest] = caster
+        assert caster is not None, "need to provide a fixed caster from the `g` to `f`"
+        self.arg_caster : nn.Module =  caster # how to map the `s` argument to the `t` argument
+        self.func_mappers = nn.ParameterDict({}) # how to map the g function to the `f` function entailment
 
-    def compatible(self, input_args : List[Value]) -> List[List[Tuple[Value, Union[float, torch.Tensor]]]]:
-        for arg in input_args:
-            if  arg.vtype not in self.endo_casters: return False
-        return True
-        
-    def endo_cast_args(self, args : List[Value]) -> List[Tuple[Value, Union[float, torch.Tensor]]]:
-        """execute the current frame function using the input, if not natural type then transform."""
-        targs = list()
-        for i,arg in enumerate(args):
-            if arg.vtype == self.natural_types[i]: # if no type cast, input is natural type
-                tvalue = arg.value
-                logp_weight = 0.0
-            else: # if exist type cast, but input can be casted to the natural args
-                assert arg.vtype in self.endo_casters, f"{arg} is not a valid input, cannot transform by self casters"
-                tvalue, logp_weight = self.endo_casters[arg.vtype](arg.value)
-            
-            targs.append((Value(self.natural_types[i], tvalue),logp_weight))
-        return targs
+    def add_source_caster(self, dest : str, weight : Union[float, torch.Tensor] = 0.0):
+        """dest : str the `g` function that can reduce to `f` """
+        if not isinstance(weight, torch.Tensor):
+            self.func_mappers[dest] = nn.Parameter(torch.tensor(weight))
+        else:
+            self.func_mappers[dest] = nn.Parameter(weight)
 
+    """TODO: remove this"""
     def meta_cast_args(self, args : List[Value]) -> List[Tuple[str, List[Tuple[Value, torch.Tensor]] ] ]:
         meta_args = []
         for caster_name in self.meta_casters:
@@ -48,12 +34,6 @@ class LocalFrame(nn.Module):
 
             meta_args.append((caster_name, meta_arg_values))
         return meta_args
-
-    def save_ckpt(self, ckpt):
-        return
-
-    def load_ckpt(self, ckpt):
-        return 0
 
 
 class ReductiveUnifier(nn.Module):
@@ -71,19 +51,90 @@ class ReductiveUnifier(nn.Module):
     def load_ckpt(self, ckpt_path):
         frames_dir = f"{ckpt_path}/frames"
         for filename in os.listdir(frames_dir):
-
             file_path = os.path.join(frames_dir, filename)
             if os.path.isfile(file_path):
-                
                 if ":" in filename and filename[-4:] == ".pth":
                     self.frames[filename[:-4]] = torch.load(file_path, weights_only = False)
-
- 
         return 0
 
     def add_function_frame(self, name : str, frame : LocalFrame): self.frames[name] = frame
 
-    def reduce_args(self, func : str, args : List[Value]) -> Tuple[List[Tuple[str, List[Value], Any]], Any]:
+    def edges(self, query) -> List[Tuple[str, torch.Tensor, nn.Module]]:
+        """for the query node given `query` find all the tuples of """
+        edges = []
+        for _, frame in self.frames.items():
+            assert isinstance(frame, LocalFrame), f"{frame} is not a local frame"
+            if query in frame.func_mappers:
+                dest_func   : str           =  frame.func_name
+                dest_weight : torch.Tensor  =  torch.sigmoid(frame.func_mappers[query])
+                dest_caster : nn.Module     =  frame.arg_caster
+                dest_type   : str           =  frame.natural_types
+                edges.append([dest_func, dest_type, dest_weight, dest_caster])
+        return edges
+    
+    def arged_edges(self, query, args : List[Value]) -> List[Tuple[str, List[Value], torch.Tensor]]:
+        edges = self.edges(query)
+        arged_edges = []
+        for edge in edges:
+            dest_func, dest_types, func_weight, caster = edge
+            meta_args = caster(args)
+            reduce_args = [Value(dest_types[i],arg[0][0]) for i,arg in enumerate(meta_args)] # the list of args of reduce
+            arg_weight = torch.sigmoid(sum([arg[1] for arg in meta_args]))  # the total reduce weights
+
+            arged_edges.append([dest_func, reduce_args, arg_weight * func_weight])
+
+        return arged_edges
+
+    def reduce_args(self, qfunc : str, args : List[Value]) -> Tuple[List[Tuple[str, List[Value], Any]], Any]:
+        """ gather possible reductions of the function and the corresponding weights (logits)
+        Args:
+            func : as the name of the function in a str
+            args : as a list of values (typed)
+        Returns:
+            a list of distribution, representing the possible reduction, and corresponding args, and weights
+            as return the Any as a graph of reduction
+        """
+        func_nodes = self.frames.keys()
+
+        """1. here we find the reduce_nodes, reduce_edges"""
+        reduce_nodes = set()        #  nodes in the dfs(q) component generated by the query
+        reduce_edges = dict()       #  edges stored the connection proposed by each local frame
+        reduce_args = dict()        #  store List[Value] a dict containing the most probable dict at each args
+        reduce_weight = dict()     #  store torch.Tensor a dict store current node max weight
+        visited_nodes = set()
+
+        stack = [(qfunc, args, 1.0)] # should this a `dfs` or a `bfs`?
+        while stack:
+            node, args, weight = stack.pop(0) # a tuple of qfunc an arg
+            reduce_nodes.add(node) # add this as visited
+            visited_nodes.add(node)# add this as visited
+            
+            # update the reduce args with the maxium 
+            if node not in reduce_weight: reduce_weight[node] = 0.0
+            if weight > reduce_weight[node]:
+                reduce_args[node] = args
+                reduce_weight[node] = weight
+            from helchriss.utils import stprint
+            #stprint(args)
+            arged_edges = self.arged_edges(node, args)
+            for (qfunc, args, weight) in arged_edges:
+                if not qfunc in visited_nodes: # check if the node is visited
+                    stack.append((qfunc, args, weight))
+
+        """2. weight each reduction by the far-reaching weight"""
+        weights_map: Mapping[str, Any] = self.reduce_weight(qfunc, reduce_nodes, reduce_edges)
+
+
+
+        """3. collect (func, args, weights) tuples as lists of results"""
+        reduced_binds = list()
+        for node in reduce_nodes:
+            reduced_binds.append((node, reduce_args[node], weights_map[node]))
+        # collect the `reduced_binds` as a List[Tuple[str, List[Value], torch.Tensor]]
+
+        return reduced_binds, (reduce_nodes, reduce_edges)
+
+    def reduce_args_legacy(self, func : str, args : List[Value]) -> Tuple[List[Tuple[str, List[Value], Any]], Any]:
         """ gather possible reductions of the function and the corresponding weights (logits)
         Args:
             func : as the name of the function in a str
