@@ -144,11 +144,6 @@ class MetaLearner(nn.Module):
         self.name = model_config["name"]
         return self
 
-    
-    def freeze_word(self,word):
-        for entry in self.parser.word_weights:
-            if word in entry:
-                self.parser.word_weights[entry]._requires_grad = False
 
     @property
     def domains(self):
@@ -167,26 +162,31 @@ class MetaLearner(nn.Module):
             }
         return bind
     
-    def filter_types(self, domain : Union[str, List[str]]):
-        return
-
-    @property
-    def types(self):
+    def filter_types(self, domains : Union[str, List[str]]):
+        if isinstance(domains, str): domains = [domains]
         domain_types = {}
         for domain in self.domains:
-            for tp in domain.types:
-                domain_types[self.gather_format(tp, domain.domain_name)] =  domain.types[tp].replace("'","")
+            domain_name = domain.domain_name
+            if "Any" in domains or domain_name in domains:
+                for tp in domain.types:
+                    domain_types[self.gather_format(tp, domain.domain_name)] =  domain.types[tp].replace("'","")
         return domain_types
 
     @property
-    def functions(self):
+    def types(self): return self.filter_types("Any")
+
+    def filter_functions(self, domains : Union[str, List[str]]):
+        if isinstance(domains, str): domains = [domains]
         domain_functions = {}
         for domain in self.domains:
             domain_name = domain.domain_name
-            for func in domain.functions:
-                domain_functions[self.gather_format(func, domain_name)] =  self.collect_funcs(domain.functions[func], domain_name)
+            if "Any" in domains or domain_name in domains:
+                for func in domain.functions:
+                    domain_functions[self.gather_format(func, domain_name)] =  self.collect_funcs(domain.functions[func], domain_name)
         return domain_functions
 
+    @property
+    def functions(self): return self.filter_functions("Any")
 
     def group_lexicon_entries(self, moduledict : List[nn.Module]):
         grouped = {}
@@ -205,11 +205,22 @@ class MetaLearner(nn.Module):
                 raise ValueError(f"Key '{key}' does not match expected pattern 'word_idx'")
 
         return grouped
-
-    def entries_setup(self, related_vocab : List[str] = None,depth = 1):
-        if related_vocab is None: related_vocab = self.vocab
     
-        entries = enumerate_search(self.types, self.functions, max_depth = depth)
+    def add_word_lexicon(self):
+        return
+    
+    def delete_word_lexicon(self):
+        return
+    
+    def purge_word_lexicon(self):
+        return 
+
+    def entries_setup(self, related_vocab : List[str] = None, domains : Union[str,List[str]] = "Any" ,depth = 1):
+        if related_vocab is None: related_vocab = self.vocab
+
+        related_types = self.filter_types(domains)
+        related_funcs = self.filter_functions(domains)
+        entries = enumerate_search(related_types, related_funcs, max_depth = depth)
     
         lexicon_entries = dict()
         for word in related_vocab:
@@ -220,24 +231,11 @@ class MetaLearner(nn.Module):
 
         grouped_lexicon = self.group_lexicon_entries(lexicon_entries)    
         self.parser = ChartParser(grouped_lexicon)
-
         return 0
-    def entries_setup_legacy(self, related_vocab : List[str] = None,depth = 1):
-        if related_vocab is None: related_vocab = self.vocab
-    
-        entries = enumerate_search(self.types, self.functions, max_depth = depth)
-    
-        lexicon_entries = dict()
-        for word in related_vocab:
-            for idx, (syn_type, program) in enumerate(entries):
-                lexicon_entries[f"{word}_{idx}"] = LexiconEntry(
-                        word, syn_type, program, weight = torch.randn(1).item() - 0.0
-                    )
 
-        grouped_lexicon = self.group_lexicon_entries(lexicon_entries)    
-        self.parser = ChartParser(grouped_lexicon)
-
-        return 0
+    #TODO: need the actual learned vocab by minimize the entropy or not converge
+    @property
+    def learned_vocab(self):return self.vocab
 
     def add_vocab(self, add_vocab: List[str]):
         """this method add a new set of vocab and related domains that could associate it with """
@@ -291,13 +289,10 @@ class MetaLearner(nn.Module):
                 results, probs, programs = self(query, grounding)
                 if not results: print(f"no parsing found for query:{query}")
                 for i,result in enumerate(results):
-
                     measure_conf = torch.exp(probs[i])
                     if result is not None: # filter make sense progams
                         assert isinstance(result, Value), f"{programs[i]} result is :{result} and not a Value type"
-
                         if answer.vtype in result.vtype.alias:
-
                             if answer.vtype == "boolean":
                                 measure_loss =  torch.nn.functional.binary_cross_entropy_with_logits(
                                     result.value , torch.tensor(answer.value))
@@ -306,17 +301,8 @@ class MetaLearner(nn.Module):
 
                             loss += measure_conf * measure_loss
                         else:
-                            #loss += 0.0
                             lex_loss = 100.
                             loss += measure_conf * lex_loss # suppress type-not-match outputs
-
-                        if 0:
-                            from torchviz import make_dot
-                            dot = make_dot(loss, params=dict(self.named_parameters()))
-                            dot.render("computation_graph", format="png")  # Saves to computation_graph.png
-                            dot.view()
-                            dot.render("graph", format="png")
-
 
                     else: loss += measure_conf # suppress the non-sense outputs
             optim.zero_grad()
@@ -326,7 +312,7 @@ class MetaLearner(nn.Module):
             avg_loss = loss / len(dataset) if len(dataset) > 0 else 0
             epoch_bar.set_postfix({"avg_loss": f"{avg_loss.item():.4f}"})
 
-        return self
+        return {"loss" : avg_loss}
 
     def parse_display(self, sentence):
         parses = self.parser.parse(sentence)

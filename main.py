@@ -85,6 +85,7 @@ def process_command(command):
     if regex.match("train_mcl", command):
         main_logger.info("start training the metaphorical concept learner")
         from core.model import MetaLearner
+        from core.learn import AutoLearnSchedule
 
         with open(config.dataset_config, 'r') as file:
             dataset_config = yaml.safe_load(file)
@@ -101,12 +102,15 @@ def process_command(command):
         exec(f"from {dataset_path} import {dataset_getter}")
         train_dataset = eval(f"{dataset_getter}()")
 
-        model.train(train_dataset, epochs = train_epochs, lr = train_lr)
+        cues = None
+
+        learn_schedule = AutoLearnSchedule(train_dataset, cues)
+
+        #learn_schedule.train(model, epochs = train_epochs, lr = train_lr)
+        learn_schedule.procedual_train(model, eps = 0.001)
 
         save_name = config.save_model
         model.save_ckpt(f"outputs/checkpoints/{save_name}")
-
-
 
     if regex.match("interact_*", command):
         import tornado

@@ -67,6 +67,7 @@ class ProcessHandler(tornado.web.RequestHandler):
             items.append(f"{programs[i]} -> {values[i].value}-{values[i].vtype} P:{weights[i]:.2f} ")
 
         # Generate graph data after processing
+        print(self.model.eval_graph())
         graph_data = json.loads(json.dumps(self.model.eval_graph()))
 
         # Return results as JSON

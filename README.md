@@ -56,12 +56,18 @@ https://sites.google.com/view/virtualtoolsgame
 ## Framework Details
 
 ### Parser and CCG
-In this work we use the categorical-combinatoric-grammar to perform the parsing the model [G2L2](https://proceedings.neurips.cc/paper_files/paper/2021/file/4158f6d19559955bae372bb00f6204e4-Paper.pdf)
+In this work we use the categorical-combinatoric-grammar to perform the parsing the model [G2L2](https://proceedings.neurips.cc/paper_files/paper/2021/file/4158f6d19559955bae372bb00f6204e4-Paper.pdf).
 
 
 ### Related Works
 **Neuro-Symbolic Concept Learner**
 
-[NS-CL](https://arxiv.org/pdf/1904.12584) : the inital work of neuro-symbolic concept learner, joint learning with natural supervision 
+[NS-CL](https://arxiv.org/pdf/1904.12584) The Neuro-Symbolic Concept Learner: Interpreting Scenes, Words and Sentences from Natural Supervision : the inital work of neuro-symbolic concept learner, joint learning with natural supervision 
 
 [G2L2](https://proceedings.neurips.cc/paper_files/paper/2021/file/4158f6d19559955bae372bb00f6204e4-Paper.pdf) : associate word with CCG lexicon entries with natural supervision 
+
+[FALCON](https://arxiv.org/pdf/2203.16639) : fast visual concept learning by integrating images, linguistic descriptions and conceptual relations. It provides a meta-learning framework that can fast learning new visual concepts with just one or few examples guided by mulitple naturally occuring data streams.
+
+[Mechanisms](https://arxiv.org/pdf/2311.03293): Learining Reusable Planning Stratagies. A specific strategy is specified by the contact mode. Parameters of each stratagey is grounded by self-replay.
+
+[DCL](https://arxiv.org/pdf/2103.16564) Grounded Physical Concepts of Objects and Events Through Dynamic Visual Reasoning: learning to ground visual concepts and dynamic concepts. This framework provides a useful DSL for the learining of dyanmic concepts.

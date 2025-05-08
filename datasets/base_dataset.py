@@ -52,3 +52,5 @@ class SceneGroundingDataset(ListDataset):
         if groundings is None: groundings = [{} for _ in range(query_size)]
         data = [{"query":queries[i], "answer":answers[i], "grounding": groundings[i]} for i in range(query_size)]
         super().__init__(data)
+
+
