@@ -7,7 +7,7 @@ Efficient continual learning of new concept and flexible representation using na
 this section is about the prerequisites
 
 ```
-conda create -n nscl anaconda
+conda create -n prototype anaconda
 conda install pytorch torchvision -c pytorch
 ```
 
@@ -52,3 +52,16 @@ scripts under the dir `scripts/` will load the specified model
 
 Fun Fun Fun
 https://sites.google.com/view/virtualtoolsgame
+
+## Framework Details
+
+### Parser and CCG
+In this work we use the categorical-combinatoric-grammar to perform the parsing the model [G2L2](https://proceedings.neurips.cc/paper_files/paper/2021/file/4158f6d19559955bae372bb00f6204e4-Paper.pdf)
+
+
+### Related Works
+**Neuro-Symbolic Concept Learner**
+
+[NS-CL](https://arxiv.org/pdf/1904.12584) : the inital work of neuro-symbolic concept learner, joint learning with natural supervision 
+
+[G2L2](https://proceedings.neurips.cc/paper_files/paper/2021/file/4158f6d19559955bae372bb00f6204e4-Paper.pdf) : associate word with CCG lexicon entries with natural supervision 
