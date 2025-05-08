@@ -100,8 +100,7 @@ def enumerate_search(type_dict, function_dict, max_depth=3):
                             # Create the partial program with lambda variables for unfilled parameters
                             partial_program = SemProgram(func_key, partial_args, lambda_vars)
                             results.append(partial_program)
-        
-        # Save results to memoization cache
+
         memo[cache_key] = results
         return results
     

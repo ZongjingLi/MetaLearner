@@ -133,7 +133,7 @@ def process_command(command):
         
         from helchriss.knowledge.symbolic import Expression
         expr = Expression.parse_program_string("smaller:Integers(inf:Order(), sup:Order())")
-        model.infer_metaphor_expressions([expr])
+        #model.infer_metaphor_expressions([expr])
 
         model.save_ckpt("outputs/checkpoints/prototype")
         main_logger.info(f"created model {model_name} and saved successfully.")

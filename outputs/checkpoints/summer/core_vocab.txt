@@ -2,13 +2,17 @@
 <START>
 <END>
 <UNK>
+bigger
 destruct
 is
 malganis
+not
 one
 plus
 red
 self
+smaller
+than
 the
 three
 two

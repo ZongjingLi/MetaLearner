@@ -167,6 +167,9 @@ class MetaLearner(nn.Module):
             }
         return bind
     
+    def filter_types(self, domain : Union[str, List[str]]):
+        return
+
     @property
     def types(self):
         domain_types = {}
@@ -203,11 +206,29 @@ class MetaLearner(nn.Module):
 
         return grouped
 
-    def entries_setup(self, depth = 1):
+    def entries_setup(self, related_vocab : List[str] = None,depth = 1):
+        if related_vocab is None: related_vocab = self.vocab
+    
         entries = enumerate_search(self.types, self.functions, max_depth = depth)
     
         lexicon_entries = dict()
-        for word in self.vocab:
+        for word in related_vocab:
+            for idx, (syn_type, program) in enumerate(entries):
+                lexicon_entries[f"{word}_{idx}"] = LexiconEntry(
+                        word, syn_type, program, weight = torch.randn(1).item() - 0.0
+                    )
+
+        grouped_lexicon = self.group_lexicon_entries(lexicon_entries)    
+        self.parser = ChartParser(grouped_lexicon)
+
+        return 0
+    def entries_setup_legacy(self, related_vocab : List[str] = None,depth = 1):
+        if related_vocab is None: related_vocab = self.vocab
+    
+        entries = enumerate_search(self.types, self.functions, max_depth = depth)
+    
+        lexicon_entries = dict()
+        for word in related_vocab:
             for idx, (syn_type, program) in enumerate(entries):
                 lexicon_entries[f"{word}_{idx}"] = LexiconEntry(
                         word, syn_type, program, weight = torch.randn(1).item() - 0.0
@@ -218,9 +239,9 @@ class MetaLearner(nn.Module):
 
         return 0
 
-    def add_vocab(self, vocab: List[str], domains : List[str]):
+    def add_vocab(self, add_vocab: List[str]):
         """this method add a new set of vocab and related domains that could associate it with """
-        return -1
+        self.vocab.extend(add_vocab)
 
     def forward(self, sentence, grounding = None, topK = None, plot : bool = False):
 
@@ -253,6 +274,7 @@ class MetaLearner(nn.Module):
             infers = self.executor.infer_reductions(meta_expr)
             self.executor.add_metaphors(infers)
 
+
     def train(self, dataset : SceneGroundingDataset,  epochs : int = 1000, lr = 1e-2, topK = None):
         import tqdm.gui as tqdmgui
         optim = torch.optim.Adam(self.parameters(), lr = lr)
@@ -275,9 +297,11 @@ class MetaLearner(nn.Module):
                         assert isinstance(result, Value), f"{programs[i]} result is :{result} and not a Value type"
 
                         if answer.vtype in result.vtype.alias:
+
                             if answer.vtype == "boolean":
-                                measure_loss =  torch.nn.functional.binary_cross_entropy_with_logits(result.value - answer.value)
-                            if answer.vtype == "int" or answer.type == "float":
+                                measure_loss =  torch.nn.functional.binary_cross_entropy_with_logits(
+                                    result.value , torch.tensor(answer.value))
+                            if answer.vtype == "int" or answer.vtype == "float":
                                 measure_loss = torch.abs(result.value - answer.value)
 
                             loss += measure_conf * measure_loss

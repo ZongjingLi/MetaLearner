@@ -1,3 +1,6 @@
 IntSum:
     path: "datasets.numbers_dataset"
     getter: "get_dataset"
+IntSize:
+    path: "datasets.intsize_dataset"
+    getter: "get_dataset"
