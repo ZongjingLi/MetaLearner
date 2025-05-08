@@ -24,16 +24,21 @@ this section is about training and testing of the model.
 All the model checkpoints are saved under the directory `outputs/checkpoints`. A model checkpoint with $\texttt{name}$ will have a folder of same name under the previous directory. This stores the the domain learneable parameters under the `domains` directory and reductions under the `frames` directory.
 ```
 Model
+├── config.yaml
+├── core_vocab.txt
+├── lexicon_entries.pth
+├── lexicon_weights.pth
+|
 ├── domains
-│   ├── Interger.pth
+│   ├── Color.pth
 │   ├── Order.pth
 │   ├── Scene.pth
+|   └── Integer.pth
 |
 └── frames
     ├── images
     ├── questions.json
     ├── scenes-raw.json
-    └── scenes.json
     └── vocab.json
 ```
 ### Dataset and environment config
