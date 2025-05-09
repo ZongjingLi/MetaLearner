@@ -7,6 +7,7 @@ from helchriss.logger import get_logger
 from datasets.base_dataset import SceneGroundingDataset
 from .model import MetaLearner
 from helchriss.utils.data import ListDataset
+from helchriss.knowledge.symbolic import Expression
 
 from typing import Mapping, List, Tuple, Any
 import itertools
@@ -62,13 +63,10 @@ def optimal_schedule(dataset : SceneGroundingDataset, learned_vocab : List[str])
                 best_words_to_add = words_combo_set
                 improvement_found = True
         
-        # If we found an improvement at this k, no need to try larger k
+        # If found an improvement at this k, no need to try larger k
         if improvement_found:
             break
-        
-        # Try with one more word
         k += 1
-    
     return list(best_words_to_add), max_new_learnable_entries
 
 class AutoLearnSchedule:
@@ -82,13 +80,12 @@ class AutoLearnSchedule:
         return model.train(self.dataset, epochs = epochs, lr = lr)
     
     def procedual_train(self, model : MetaLearner, eps = 0.001):
-        base_vocab = model.learned_vocab
+        base_vocab = []#model.learned_vocab
         base_data  = []
         base_dataset = ListDataset(base_data)
         step_epochs = 100
 
         new_words, _ = optimal_schedule(self.dataset, base_vocab)
-
         while new_words:
             new_words, slice_data = optimal_schedule(self.dataset, base_vocab)
             base_vocab.extend(new_words)
@@ -108,3 +105,14 @@ class AutoLearnSchedule:
             avg_loss = info["loss"]
             if avg_loss < eps: done = True
         return model, {"loss" : avg_loss}
+    
+    #TODO: metaphorical expression infer
+
+    def infer_metaphors(self, model : MetaLearner, slice_dataset, topK = 2):
+        for data in slice_dataset:
+            sentence = data["query"]
+            maximal_parse = model.maximal_parse(sentence)
+            for parse in maximal_parse[:topK]:
+                expr = Expression.parse(str(parse[0].sem_program))
+                model.infer_metaphor_expressions(expr)
+        return model

@@ -167,6 +167,7 @@ class ExecutorGroup(FunctionExecutor):
     def function_output_type(self, func_name, domain = None):
         if domain is None: func_name, domain = func_name.split(":")
         for executor in self.executors_group:
+
             if executor.domain.domain_name == domain:
                 return self.output_type[self.format(func_name, domain)]
         assert 0, f"didn't find type {func_name} in the domain {domain}"
@@ -253,7 +254,7 @@ class ReductiveExecutor(FunctionExecutor):
         self.node_inputs = []
         self.record = 1
     
-    def infer_reductions(self, expr : Expression, verbose = 0) -> List[Tuple[str, List[TypeBase], List[TypeBase]]]:
+    def infer_reductions(self, expr : Expression, reducer = None, verbose = 0) -> List[Tuple[str, List[TypeBase], List[TypeBase]]]:
         """given an expression, use the unifer to infer if there exist casting of types or change in the local frames"""
         metaphor_exprs = []
         def dfs(expr : Expression):
@@ -261,21 +262,23 @@ class ReductiveExecutor(FunctionExecutor):
                 func_name = expr.func.name
                 output_type = self.base_executor.function_output_type(func_name)
 
-                source_arg_types = [dfs(arg)[0] for arg in expr.args] # A List of Types
-                target_arg_types = self.function_input_type(func_name)
+                source_arg_types : List[TypeBase] = [dfs(arg)[0] for arg in expr.args] # A List of Types
+                target_arg_types : List[TypeBase] = self.function_input_type(func_name)
 
                 for i,tp in enumerate(target_arg_types):
-                    if source_arg_types[i].alias != target_arg_types[i].alias:
-                        metaphor_exprs.append([func_name, target_arg_types, source_arg_types])
-                        break
+                    if reducer is None:
+                        if source_arg_types[i].alias != target_arg_types[i].alias:
+                            metaphor_exprs.append([func_name, target_arg_types, source_arg_types])
+                            break
+                    else:  #TODO: use the path search to check type consistencey
+                        pass
                 return [output_type, target_arg_types]
 
             elif isinstance(expr, ConstantExpression):
                 """TODO: add the return type for constants"""
                 assert isinstance(expr.const, Value)
                 return expr.const
-            
-            print(expr)
+    
             return [None,None]
         dfs(expr)
         if verbose:
@@ -293,7 +296,7 @@ class ReductiveExecutor(FunctionExecutor):
 
             """create the local frame that gathers other `source` functions to the `target` function"""
             if caster is None: caster = infer_caster(input_type, expect_type)
-            cast_frame : LocalFrame = LocalFrame(target_func, expect_type, output_type, caster)
+            cast_frame : LocalFrame = LocalFrame(target_func, expect_type, output_type, input_type, caster)
             
             reduce_hypothesis = self.gather_functions(source_types)
             for reduce_func in reduce_hypothesis:
@@ -362,8 +365,8 @@ class ReductiveExecutor(FunctionExecutor):
             label = f"{float(G.nodes[node]['weight']):.2f}"
             d = G.nodes[node]
             node_color = G.nodes[node]["text_color"] if 'text_color' in G.nodes[node]  else "white"
-            if isinstance(d['output'].vtype, TypeBase): out_label = f"V:{float(d['output'].value):.2f}\nTp: {d['output'].vtype.alias.split(':')[0]}"
-            else: out_label = f"V:{float(d['output'].value):.2f}\nTp: {d['output'].vtype}"
+            if isinstance(d['output'].vtype, TypeBase): out_label = f"V:{(d['output'].value)}\nTp: {d['output'].vtype.alias.split(':')[0]}"
+            else: out_label = f"V:{(d['output'].value)}\nTp: {d['output'].vtype}"
             plt.text(x + -3., y + 4.95, label, fontsize=8, color='white', va='center' )
             plt.text(x + -3., y - 5.95, out_label, fontsize=5, color=node_color, va='center' )
             plt.text(x + -3., y, node, fontsize=9, color=node_color, va='center' )
@@ -390,7 +393,7 @@ class ReductiveExecutor(FunctionExecutor):
         ax.tick_params(left=False, right=False, labelleft=False, labelbottom=False, bottom=False)
         if fname is not None:
             plt.savefig(f"{fname}.png")
-        #plt.show()
+        plt.show()
         return
 
     def evaluate(self, expression, grounding):
@@ -421,23 +424,33 @@ class ReductiveExecutor(FunctionExecutor):
         if isinstance(expr, FunctionApplicationExpression):
             func_name = expr.func.name
 
+
             if func_name not in self.node_count: self.node_count[func_name] = 0
             else: self.node_count[func_name] += 1
             node_count = self.node_count[func_name]
             count_func_name = f"{func_name.split(':')[0]}_{node_count}"
             self.eval_graph.add_node(count_func_name, weight = 1.0, color = "#3a5f7d")
 
-            output_type = self.base_executor.function_output_type(func_name)
-            args = []
+            output_type : TypeBase       = self.base_executor.function_output_type(func_name)
+            expect_type : List[TypeBase] = self.base_executor.function_input_type(func_name)
+
+            # recusive call self.evaluate(arg) to evaluate the args in the subtree
+            args : List[Value] = []
             for arg in expr.args:
                 arg_value, arg_name = self._evaluate(arg) # A List of Values
                 args.append(arg_value)
                 self.eval_graph.add_edge(arg_name, count_func_name, output = arg_value, color = "#0d0d0d")
+            
+            # cast the input args to the expected type (traverse the cast DAG)
+            cast_args, weight, cast_info = self.reduce_unifier.type_cast(args, expect_type)
 
-            reduce_funcs, reduce_graph = self.reduce_unifier.reduce_args(func_name,args)#List[Tuple[str, List[Value], Any]]
+
+            # collect the (f,t) reductions as they are a pair of natual type
+            reduce_funcs, reduce_graph = self.reduce_unifier.reduce_args(func_name, cast_args)
 
             """handle the visualization of the reduction graph"""
             reduce_nodes, reduce_edges = reduce_graph
+
             for node in reduce_nodes:
                 if node != func_name:
                     for reduce_func in reduce_funcs:
@@ -451,21 +464,22 @@ class ReductiveExecutor(FunctionExecutor):
                     self.eval_graph.nodes[count_func_name]["weight"] = node_weight
 
             for edge in reduce_edges:
+        
                 src_node = f"{edge[0].split(':')[0]}_{node_count}"
                 tgt_node = f"{edge[1].split(':')[0]}_{node_count}"
+
                 if src_node != func_name:
                     self.eval_graph.add_edge(f"{src_node}", tgt_node, weight = float(edge[2].detach()[0]), color = "#048393")
 
             expect_output = 0.0
             for reduce_func in reduce_funcs:
                 rfunc_name, reduce_args, weight = reduce_func
+
                 measure : Value = self.base_executor.execute(rfunc_name, reduce_args)
                 expect_output += measure.value * weight
 
-                if func_name != rfunc_name:
-                    self.eval_graph.nodes[f"{rfunc_name.split(':')[0]}_{node_count}"]["output"] = measure
-                else:
-                    self.eval_graph.nodes[count_func_name]["output"] = measure                    
+                if func_name != rfunc_name: self.eval_graph.nodes[f"{rfunc_name.split(':')[0]}_{node_count}"]["output"] = measure
+                else: self.eval_graph.nodes[count_func_name]["output"] = measure                    
 
 
             return Value(output_type, expect_output), count_func_name
@@ -518,7 +532,7 @@ def convert_graph_to_visualization_data(G):
         
         nodes.append(node)
     
-    # Process edges
+    # process edges
     for source, target, edge_data in G.edges(data=True):
         # Create edge entry
         edge = {
@@ -539,8 +553,12 @@ def convert_graph_to_visualization_data(G):
         
         edges.append(edge)
     
-    # Return the combined data
+    import matplotlib.pyplot as plt
+    #nx.draw(G)
+    #plt.show()
+
     return {
         "nodes": nodes,
-        "edges": edges
+        "edges": edges,
+   
     }

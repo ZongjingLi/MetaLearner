@@ -58,7 +58,8 @@ ROOM : "ordinary", lit, (1,5), (left, bottom), (5,5) {
 
 RANDOM_CORRIDORS
 """
-des_file = rooms_des
+#des_file = rooms_des
+
 
 
 
@@ -83,7 +84,6 @@ def make_env():
     max_episode_steps = 1000
     )
     return env
-
 
 env = make_env()
 

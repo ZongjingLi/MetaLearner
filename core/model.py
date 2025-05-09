@@ -264,10 +264,10 @@ class MetaLearner(nn.Module):
                 results.append(None)
                 probs.append(parse_prob)
 
-
         return results, probs, programs
 
-    def infer_metaphor_expressions(self, meta_exprs: List[Expression]):
+    def infer_metaphor_expressions(self, meta_exprs: Union[Expression,List[Expression]]):
+        if isinstance(meta_exprs, Expression): meta_exprs = [meta_exprs]
         for meta_expr in meta_exprs:
             infers = self.executor.infer_reductions(meta_expr)
             self.executor.add_metaphors(infers)
@@ -313,15 +313,19 @@ class MetaLearner(nn.Module):
             epoch_bar.set_postfix({"avg_loss": f"{avg_loss.item():.4f}"})
 
         return {"loss" : avg_loss}
-
-    def parse_display(self, sentence):
+    
+    def maximal_parse(self, sentence):
         parses = self.parser.parse(sentence)
         distrs = self.parser.get_parse_probability(parses)
         parse_with_prob = list(zip(parses, distrs))
         sorted_parses = sorted(parse_with_prob, key=lambda x: x[1], reverse=True)
-        for i, parse in enumerate(sorted_parses[:4]):
+        return sorted_parses
+
+    def parse_display(self, sentence, topK = 4):
+        sorted_parses = self.maximal_parse(sentence)
+        for i, parse in enumerate(sorted_parses[:topK]):
             print(f"{parse[0].sem_program}, {float(parse[1].exp()):.2f}")
-        print("")
+        print("\n")
 
     
     def verbose_call(self, sentence, grounding = {}, plot = True, K = 4):
@@ -337,10 +341,8 @@ class MetaLearner(nn.Module):
             values.append(value)
             programs.append(str(parse[0].sem_program))
             weights.append(float(parse[1].exp()))
-            #print(f"{parse[0].sem_program}, {float(parse[1].exp()):.2f}", value)
 
-        for i, parse in enumerate(sorted_parses[:1]):
-            value = self.executor.evaluate(str(parse[0].sem_program), grounding)
+        for i, parse in enumerate(sorted_parses[:1]): value = self.executor.evaluate(str(parse[0].sem_program), grounding)
         return values, weights, programs
     
     def eval_graph(self):

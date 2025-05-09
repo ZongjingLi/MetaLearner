@@ -101,8 +101,7 @@ def infer_caster(input_type : List[TypeBase], output_type : TypeBase):
     if input_pure_vector and output_pure_vector:
         input_dims = [sum(list(shape)) for shape in in_shapes]
         output_dims = [sum(list(shape)) for shape in out_shapes]
-        """TODO: ignore the individual arg separation"""
+
         return MLPCaster(input_dims, output_dims)
-        return LinearCaster(input_dims, output_dims)
 
     return -1
