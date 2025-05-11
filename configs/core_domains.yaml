@@ -2,7 +2,7 @@ name: "prototype"
 domains:
     intergers:
       name: "integers_executor"
-      path: "domains.numbers.integers_domain"
+      path: "domains.math.integers_domain"
     order:
       name: "order_executor"
       path: "domains.structure.order_domain"

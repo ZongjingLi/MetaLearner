@@ -1,10 +1,13 @@
+import copy
 import math
-from typing import Dict, List, Tuple, Set, Optional, Any, Union
-import numpy as np
 import torch
+import tabulate
+import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
 from .lexicon import CCGSyntacticType, SemProgram, LexiconEntry
+from typing import Dict, List, Tuple, Set, Optional, Any, Union
+
 class CCGRule:
     """Abstract base class for CCG combinatory rules"""
     @staticmethod
@@ -20,26 +23,20 @@ class CCGRule:
 class ForwardApplication(CCGRule):
     """Forward application rule: X/Y Y => X"""
     @staticmethod
-    def can_apply(left_type, right_type):
+    def can_apply(left_type : CCGSyntacticType, right_type : CCGSyntacticType):
         return (not left_type.is_primitive and 
                 left_type.direction == '/' and 
                 left_type.arg_type == right_type)
     
     @staticmethod
-    def can_forced_apply(left_type, right_type):
+    def can_forced_apply(left_type : CCGSyntacticType, right_type : CCGSyntacticType):
         return (not left_type.is_primitive and
-                left_type.direction == "/" and
-                1 # this means the type does not need to match
-                )
+                left_type.direction == "/")
     
     @staticmethod
-    def apply(left_entry, right_entry):
-        # Create a new lexicon entry with the result type and computed program
+    def apply(left_entry : LexiconEntry, right_entry : LexiconEntry):
         result_type = left_entry.syn_type.result_type
-        
-        # For lambda functions, apply the argument to the function
         if left_entry.sem_program.lambda_vars:
-            # This is a simplified application - in reality would be more complex
             new_args = left_entry.sem_program.args.copy()
             new_args.append(right_entry.sem_program)
             new_program = SemProgram(
@@ -48,32 +45,27 @@ class ForwardApplication(CCGRule):
                 left_entry.sem_program.lambda_vars[1:] if len(left_entry.sem_program.lambda_vars) > 1 else []
             )
         else:
-            # Simple function application
             new_args = left_entry.sem_program.args.copy()
             new_args.append(right_entry.sem_program)
             new_program = SemProgram(left_entry.sem_program.func_name, new_args)
-        
-        # Create a new lexicon entry with combined weight
-        # The weight is the sum of the two entries' weights (maintaining the gradient graph)
         combined_weight = left_entry.weight + right_entry.weight
-        
         return LexiconEntry(f"{left_entry.word} {right_entry.word}", result_type, new_program, combined_weight)
 
 class BackwardApplication(CCGRule):
     """Backward application rule: Y X\Y => X"""
     @staticmethod
-    def can_apply(left_type, right_type):
+    def can_apply(left_type : CCGSyntacticType, right_type : CCGSyntacticType):
         return (not right_type.is_primitive and 
                 right_type.direction == '\\' and 
                 right_type.arg_type == left_type)
 
     @staticmethod
-    def can_forced_apply(left_type, right_type):
+    def can_forced_apply(left_type : CCGSyntacticType, right_type : CCGSyntacticType):
         return (not right_type.is_primitive and 
                 right_type.direction == '\\')
 
     @staticmethod
-    def apply(left_entry, right_entry):
+    def apply(left_entry : LexiconEntry, right_entry : LexiconEntry):
         # Similar to forward application but with different direction
         result_type = right_entry.syn_type.result_type
         
@@ -89,10 +81,8 @@ class BackwardApplication(CCGRule):
             new_args = right_entry.sem_program.args.copy()
             new_args.append(left_entry.sem_program)
             new_program = SemProgram(right_entry.sem_program.func_name, new_args)
-        
-        # The weight is the sum of the two entries' weights (maintaining the gradient graph)
+
         combined_weight = left_entry.weight + right_entry.weight
-        
         return LexiconEntry(f"{left_entry.word} {right_entry.word}", result_type, new_program, combined_weight)
     
 class ChartParser(nn.Module):
@@ -109,12 +99,9 @@ class ChartParser(nn.Module):
         weight_dict = {}
         
         for word_key, entries in lexicon.items():
-            # Store entries without their weights
             module_list = []
             for idx, entry in enumerate(entries):
-                # Create unique parameter key for each word-type combination
                 weight_key = f"{word_key}_{idx}"
-                # Store the initial weight value
                 if isinstance(entry.weight, nn.Parameter):
                     weight_dict[weight_key] = entry.weight
                 else:
@@ -167,6 +154,103 @@ class ChartParser(nn.Module):
                 if weight_key in self.lexicon_weight:
                     entry.weight = self.lexicon_weight[weight_key]
 
+    def purge_entry(self, word: str, p: float, abs: bool = False):
+        """only keep the word entries with weight greater than or equal to threshold p
+        Args:
+            word: The word to purge entries from
+            p: The threshold value for purging
+            abs: If True, use absolute threshold; if False, normalize weights with softmax first
+        """
+        if word not in self.lexicon: return
+    
+        # gather all weights for query word
+        weights = []
+        for idx in range(len(self.lexicon[word])):
+            weight_key = f"{word}_{idx}"
+            weights.append(self.lexicon_weight[weight_key].detach().clone())
+    
+
+        weights_tensor = torch.stack(weights)
+        if not abs: normalized_weights = torch.nn.functional.softmax(weights_tensor, dim=0)
+        else: normalized_weights = torch.sigmoid(weights_tensor)
+    
+
+        keep_indices = []
+        for idx, norm_weight in enumerate(normalized_weights):
+            if norm_weight.item() >= p:
+                keep_indices.append(idx)
+    
+        # If no entries are kept, remove the word entirely
+        if not keep_indices:
+            del self.lexicon[word]
+            # Remove all weights for this word
+            keys_to_remove = [k for k in self.lexicon_weight.keys() if k.startswith(f"{word}_")]
+            for key in keys_to_remove:
+                del self.lexicon_weight[key]
+            return
+    
+        # Create new entries list with only the kept entries
+        new_entries = [self.lexicon[word][i] for i in keep_indices]
+    
+        # Store the old weights we want to keep
+        old_weights = {}
+        for idx in keep_indices:
+            old_key = f"{word}_{idx}"
+            old_weights[old_key] = self.lexicon_weight[old_key]
+    
+        # Update lexicon with filtered entries
+        self.lexicon[word] = new_entries
+    
+        # Remove all old weights for this word
+        keys_to_remove = [k for k in self.lexicon_weight.keys() if k.startswith(f"{word}_")]
+        for key in keys_to_remove: del self.lexicon_weight[key]
+    
+        # Add back the weights we want to keep with new indices
+        for new_idx, old_idx in enumerate(keep_indices):
+            old_key = f"{word}_{old_idx}"
+            new_key = f"{word}_{new_idx}"
+            self.lexicon_weight[new_key] = old_weights[old_key]
+    
+    def add_word_entries(self, word : str, entries : List[LexiconEntry]):
+        if word in self.lexicon: existing_entries = list(self.lexicon[word])
+        else: existing_entries = []
+        start_idx = len(existing_entries)
+    
+        for i, entry in enumerate(entries):
+            idx = start_idx + i
+            weight_key = f"{word}_{idx}"
+        
+        if hasattr(entry, 'weight'):
+            if isinstance(entry.weight, nn.Parameter): self.lexicon_weight[weight_key] = entry.weight
+            else: self.lexicon_weight[weight_key] = nn.Parameter(entry.weight)
+        else: self.lexicon_weight[weight_key] = nn.Parameter(torch.tensor(0.0))
+        self.lexicon[word] = existing_entries + entries
+    
+    def gather_word_entries(self, word : str) -> List[LexiconEntry]:
+        if word not in self.lexicon: return []
+        entries = []
+        for idx, entry in enumerate(self.lexicon[word]):
+            weight_key = f"{word}_{idx}"
+            weight = self.lexicon_weight[weight_key]
+        
+            # Create a copy of the entry with the current weight
+            entry_copy = copy.deepcopy(entry)
+            entry_copy.weight = weight
+            entries.append(entry_copy)
+        return entries
+
+    def display_word_entries(self, word : str, verbose = True):
+        entries = self.gather_word_entries(word)
+        headers = ["word", "type", "program", "weight"]
+        data = sorted(
+            [(word, str(entry.syn_type), entry.sem_program, entry.weight) for entry in entries],
+            key=lambda x: x[3],  # weight is the 4th element (index 3)
+            reverse=True         # descending order
+            )
+        table = tabulate.tabulate(data, headers = headers, tablefmt = "grid")
+        if verbose: print(table)
+        return table
+
     def get_entry_weight(self, word: str, idx: int) -> torch.Tensor:
         """Get weight for a lexicon entry from the centralized parameter dictionary"""
         weight_key = f"{word}_{idx}"
@@ -174,21 +258,20 @@ class ChartParser(nn.Module):
     
     def get_likely_entries(self, word: str, K: int = 3) -> List:
         """Get top K lexicon entries for a word based on their weights"""
-        if word not in self.lexicon: 
-            return []
+        if word not in self.lexicon:  return []
         
-        # Get entries and their weights
+        # get entries and their weights
         entries = self.lexicon[word]
         weights = [self.get_entry_weight(word, idx) for idx in range(len(entries))]
         
-        # Sort by weights (descending)
+        # sort by weights (descending)
         entry_weights = list(zip(entries, weights))
         sorted_entries = sorted(entry_weights, key=lambda x: x[1], reverse=True)[:K]
         
-        # Create new LexiconEntry objects with proper weights
+
         result = []
-        for entry, weight in sorted_entries:
-            # Create a new entry with the weight from our parameter dict
+        for entry , weight in sorted_entries:
+            assert isinstance(entry, LexiconEntry)
             new_entry = LexiconEntry(
                 entry.word,
                 entry.syn_type,
@@ -264,19 +347,3 @@ class ChartParser(nn.Module):
 
         
         return log_probs
-    
-    def compute_loss(self, parses, target_idx=0):
-        """Compute negative log likelihood loss for training"""
-        if not parses:
-            return torch.tensor(0.0, requires_grad=True)
-            
-        log_probs = self.get_parse_probability(parses)
-        
-        # Use negative log likelihood of the target parse as loss
-        if target_idx < len(log_probs):
-            loss = -log_probs[target_idx]
-        else:
-            # If target_idx is out of bounds, use the most likely parse
-            loss = -log_probs[0]
-            
-        return loss

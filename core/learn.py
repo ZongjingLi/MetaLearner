@@ -88,6 +88,7 @@ class AutoLearnSchedule:
         new_words, _ = optimal_schedule(self.dataset, base_vocab)
         while new_words:
             new_words, slice_data = optimal_schedule(self.dataset, base_vocab)
+            #for word in base_vocab:model.parser.purge_entry(word, 0.01, abs = 0)
             base_vocab.extend(new_words)
             base_data.extend(slice_data)
             self.logger.info(f"start to learn the words {new_words}, add corpus size {len(slice_data)}")
@@ -95,7 +96,11 @@ class AutoLearnSchedule:
 
             model, info = self.train_phase(model, base_dataset, epochs = step_epochs, eps = eps)
             avg_loss = info["loss"]
+            
             self.logger.info(f"learned words : {new_words} avg_loss:{avg_loss}")
+        for word in base_vocab:
+            model.parser.purge_entry(word, 0.001, abs = 0)
+            model.parser.display_word_entries(word)
         self.logger.info(f"complete the learning of words {base_vocab}")
 
     def train_phase(self, model : MetaLearner, slice_dataset, epochs : int = 100, eps : float = 0.01):

@@ -16,15 +16,15 @@ model.infer_metaphor_expressions(expr)
 
 expr = Expression.parse_program_string("bigger:Integers(one:Integers(), two:Integers())")
 
-model.executor.init_graph()
+
 outputs = model.executor.evaluate(expr, {})
 graph = model.eval_graph()
-model.executor.display()
+#model.executor.display()
 
 print(outputs)
 
-#import networkx as nx
-#import matplotlib.pyplot as plt
-#nx.draw(graph["graph"])
-#plt.show()
-
+model_name = "sizer"
+word = "two"
+model = model.load_ckpt(f"outputs/checkpoints/{model_name}")
+model.parser.purge_entry(word, 0.01, abs = 0)
+model.parser.display_word_entries(word)

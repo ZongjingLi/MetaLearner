@@ -6,6 +6,10 @@ bigger
 destruct
 is
 malganis
+minus
+n_one
+negative
+next
 not
 one
 plus
@@ -17,3 +21,4 @@ the
 three
 two
 word
+zero

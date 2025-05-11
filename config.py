@@ -22,7 +22,7 @@ parser.add_argument("--generic_dim",      default = 256,       help = "the dim o
 """training commmand epochs"""
 parser.add_argument("--epochs",           default = 1000,      type = int, help = "number of epochs for the training")
 parser.add_argument("--batch_size",       default = 10,        help = "the batch size")
-parser.add_argument("--lr",               default = 1e-2,      type = float, help = "learning rate")
+parser.add_argument("--lr",               default = 1e-1,      type = float, help = "learning rate")
 parser.add_argument("--ckpt_epochs",	  default = 10,        help = "for the epochs to save the checkpoints")
 parser.add_argument("--ckpt_dir",		  default = "outputs/checkpoints")
 parser.add_argument("--ckpt_name",		  default = "mifafa")
