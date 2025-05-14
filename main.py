@@ -107,7 +107,7 @@ def process_command(command):
         learn_schedule = AutoLearnSchedule(train_dataset, cues)
 
         #learn_schedule.train(model, epochs = train_epochs, lr = train_lr)
-        learn_schedule.procedual_train(model, eps = 0.001)
+        learn_schedule.procedual_train(model, eps = 0.0005)
 
         save_name = config.save_model
         model.save_ckpt(f"outputs/checkpoints/{save_name}")

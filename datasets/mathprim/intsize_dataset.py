@@ -5,7 +5,7 @@
 # @Last Modified time: 2025-05-03 19:49:31
 from helchriss.dsl.dsl_values import Value
 from typing import List
-from .base_dataset import SceneGroundingDataset
+from datasets.base_dataset import SceneGroundingDataset
 
 __all__ = ["get_dataset"]
 

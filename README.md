@@ -59,6 +59,20 @@ https://sites.google.com/view/virtualtoolsgame
 In this work we use the categorical-combinatoric-grammar to perform the parsing the model [G2L2](https://proceedings.neurips.cc/paper_files/paper/2021/file/4158f6d19559955bae372bb00f6204e4-Paper.pdf).
 
 
+## Experiment Results
+| Method | Acc | Center | 2x2Grid | 3x3Grid | L-R | U-D | O-IC | O-IG |
+|--------|-----|--------|---------|---------|-----|-----|------|------|
+| LSTM | 13.07% | 13.19% | 14.13% | 13.69% | 12.84% | 12.35% | 12.15% | 12.99% |
+| WReN | 14.69% | 13.09% | 28.62% | 28.27% | 7.49% | 6.34% | 8.38% | 10.56% |
+| CNN | 36.97% | 33.58% | 30.30% | 33.53% | 39.43% | 41.26% | 43.20% | 37.54% |
+| ResNet | 53.43% | 52.82% | 41.86% | 44.29% | 58.77% | 60.16% | 63.19% | 53.12% |
+| LSTM+DRT | 13.96% | 14.29% | 15.08% | 14.09% | 13.79% | 13.24% | 13.99% | 13.29% |
+| WReN+DRT | 15.02% | 15.38% | 23.26% | 29.51% | 6.99% | 8.43% | 8.93% | 12.35% |
+| CNN+DRT | 39.42% | 37.30% | 30.06% | 34.57% | 45.49% | 45.54% | 45.93% | 37.54% |
+| ResNet+DRT | 59.56% | 58.08% | 46.53% | 50.40% | 65.82% | 67.11% | 69.09% | 60.11% |
+| Human | 84.41% | 95.45% | 81.82% | 79.55% | 86.36% | 81.81% | 86.36% | 81.81% |
+| Solver | 100% | 100% | 100% | 100% | 100% | 100% | 100% | 100% |
+
 ### Related Works
 **Neuro-Symbolic Concept Learner**
 
