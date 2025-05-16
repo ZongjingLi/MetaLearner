@@ -1,7 +1,13 @@
 domains:
+  circle:
+    name: circle_executor
+    path: domains.spatial.circle_domain
   intergers:
     name: integers_executor
     path: domains.math.integers_domain
+  misc:
+    name: misc_executor
+    path: domains.misc_domain
 name: prototype
 vocab:
   path: core_vocab.txt

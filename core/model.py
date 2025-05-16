@@ -241,7 +241,7 @@ class MetaLearner(nn.Module):
         """this method add a new set of vocab and related domains that could associate it with """
         self.vocab.extend(add_vocab)
 
-    def forward(self, sentence, grounding = None, topK = None, plot : bool = False):
+    def forward(self, sentence : str, grounding = None, topK = None, plot : bool = False):
 
         parses = self.parser.parse(sentence,  topK = topK)
         log_distrs = self.parser.get_parse_probability(parses)
@@ -259,6 +259,7 @@ class MetaLearner(nn.Module):
                 result = self.executor.evaluate(expr, grounding)
                 results.append(result)
                 probs.append(parse_prob)
+                programs.append(program)
 
             else:
                 results.append(None)
@@ -292,6 +293,7 @@ class MetaLearner(nn.Module):
                     measure_conf = torch.exp(probs[i])
                     if result is not None: # filter make sense progams
                         assert isinstance(result, Value), f"{programs[i]} result is :{result} and not a Value type"
+                        #print(answer, answer.vtype, result, result.vtype)
                         if answer.vtype in result.vtype.alias:
                             if answer.vtype == "boolean":
                                 measure_loss =  torch.nn.functional.binary_cross_entropy_with_logits(

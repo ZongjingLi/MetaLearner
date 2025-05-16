@@ -101,7 +101,6 @@ class ReductiveUnifier(nn.Module):
             - Info dictionary containing leaf nodes and their probabilities
         """
         info = {"leaf_nodes": {}}
-        
 
         if all(value.vtype == vtype for value, vtype in zip(values, vtypes)):
             info["leaf_nodes"] = {tuple(v.vtype.alias for v in values): 1.0}
@@ -117,7 +116,7 @@ class ReductiveUnifier(nn.Module):
             current_values, current_prob = queue.pop(0)
             
             # Check if current values match target types
-            if all(value.vtype == vtype for value, vtype in zip(current_values, vtypes)):
+            if all(TypeBase.downcast_compatible(value.vtype,vtype) for value, vtype in zip(current_values, vtypes)):
                 type_key = tuple(value.vtype.alias for value in current_values)
                 info["leaf_nodes"][type_key] = current_prob
                 return current_values, current_prob, info

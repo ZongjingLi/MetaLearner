@@ -3,8 +3,11 @@ domains:
     intergers:
       name: "integers_executor"
       path: "domains.math.integers_domain"
-    order:
-      name: "order_executor"
-      path: "domains.structure.order_domain"
+    circle:
+      name: "circle_executor"
+      path: "domains.spatial.circle_domain"
+    misc:
+      name: "misc_executor"
+      path: "domains.misc_domain"
 vocab:
     path: "data/core_vocab.txt"

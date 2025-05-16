@@ -88,6 +88,6 @@ class LexiconEntry:
     
     
     def __str__(self):
-        weight_value = self._weight.item()
+        weight_value = self.weight.item()
         return f"{self.word} : {self.syn_type} : {self.sem_program} : {weight_value:.3f}"
     

@@ -17,14 +17,21 @@ model.infer_metaphor_expressions(expr)
 expr = Expression.parse_program_string("bigger:Integers(one:Integers(), two:Integers())")
 
 
-outputs = model.executor.evaluate(expr, {})
-graph = model.eval_graph()
-#model.executor.display()
-
-print(outputs)
 
 model_name = "sizer"
-word = "smaller"
+word = "bigger"
 model = model.load_ckpt(f"outputs/checkpoints/{model_name}")
 model.parser.purge_entry(word, 0.01, abs = 0)
 model.parser.display_word_entries(word)
+
+query = "one plus two bigger two plus three plus one"
+
+
+print(model.maximal_parse(query)[0][0])
+
+outputs = model.forward(query, {})
+model.executor.display()
+
+
+#print(outputs[0])
+print(len(outputs[0]))

@@ -15,6 +15,7 @@ from helchriss.knowledge.symbolic import LogicalAndExpression, LogicalNotExpress
 from helchriss.knowledge.symbolic import TensorState, concat_states
 from helchriss.dsl.dsl_values import Value
 from helchriss.domain import Domain
+from helchriss.dsl.dsl_types import AnyType
 from .unification import ReductiveUnifier, LocalFrame
 
 
@@ -23,6 +24,7 @@ from .types import *
 from dataclasses import dataclass
 import contextlib
 import networkx as nx
+
 
 
 class UnificationFailure(Exception):
@@ -409,6 +411,32 @@ class ReductiveExecutor(FunctionExecutor):
             self.eval_graph.add_edge(out_name, "outputs", output = outputs, color = "#0d0d0d")
             
             return outputs
+    
+    @property
+    def reserved(self): return ["Id"]
+    
+    def process_reserved(self, func_name): 
+        if func_name not in self.node_count: self.node_count[func_name] = 0
+        else: self.node_count[func_name] += 1
+        node_count = self.node_count[func_name]
+        count_func_name = f"{func_name.split(':')[0]}_{node_count}"
+        self.eval_graph.add_node(count_func_name, weight = 1.0, color = "#3a5f7d")
+
+        if func_name.split(":")[0] in self.reserved:
+            output_type : TypeBase =  AnyType#self.base_executor.function_input_type(func_name)
+            expect_type : List[TypeBase] = [AnyType]
+        else:
+            output_type : TypeBase       = self.base_executor.function_output_type(func_name)
+            expect_type : List[TypeBase] = self.base_executor.function_input_type(func_name)
+
+        return expect_type, output_type, count_func_name ,node_count
+    
+    def process_measure(self, func_name : str, args : List[Value]) -> Value:
+        if 0 and func_name.split(":")[0] in self.reserved:
+            return args
+        else:
+            measure : Value = self.base_executor.execute(func_name, args)
+        return measure
 
     def _evaluate(self, expr : Expression):
         """Internal implementation of the executor. This method will be called by the public method :meth:`execute`.
@@ -423,16 +451,7 @@ class ReductiveExecutor(FunctionExecutor):
 
         if isinstance(expr, FunctionApplicationExpression):
             func_name = expr.func.name
-
-
-            if func_name not in self.node_count: self.node_count[func_name] = 0
-            else: self.node_count[func_name] += 1
-            node_count = self.node_count[func_name]
-            count_func_name = f"{func_name.split(':')[0]}_{node_count}"
-            self.eval_graph.add_node(count_func_name, weight = 1.0, color = "#3a5f7d")
-
-            output_type : TypeBase       = self.base_executor.function_output_type(func_name)
-            expect_type : List[TypeBase] = self.base_executor.function_input_type(func_name)
+            expect_type, output_type, count_func_name ,node_count = self.process_reserved(func_name)
 
             # recusive call self.evaluate(arg) to evaluate the args in the subtree
             args : List[Value] = []
@@ -441,7 +460,10 @@ class ReductiveExecutor(FunctionExecutor):
                 args.append(arg_value)
                 self.eval_graph.add_edge(arg_name, count_func_name, output = arg_value, color = "#0d0d0d")
             
+
+            
             # cast the input args to the expected type (traverse the cast DAG)
+            print(func_name, args)
             cast_args, weight, cast_info = self.reduce_unifier.type_cast(args, expect_type)
 
 
@@ -464,18 +486,25 @@ class ReductiveExecutor(FunctionExecutor):
                     self.eval_graph.nodes[count_func_name]["weight"] = node_weight
 
             for edge in reduce_edges:
-        
+    
                 src_node = f"{edge[0].split(':')[0]}_{node_count}"
                 tgt_node = f"{edge[1].split(':')[0]}_{node_count}"
 
                 if src_node != func_name:
                     self.eval_graph.add_edge(f"{src_node}", tgt_node, weight = float(edge[2].detach()[0]), color = "#048393")
 
+            # for the identity part, just don't calculate the expecation over
+
+            if func_name.split(":")[0] in self.reserved:
+                output_type = cast_args[0]
+
+                return Value(output_type, args), count_func_name
+            
             expect_output = 0.0
             for reduce_func in reduce_funcs:
                 rfunc_name, reduce_args, weight = reduce_func
+                measure = self.process_measure(rfunc_name, reduce_args)
 
-                measure : Value = self.base_executor.execute(rfunc_name, reduce_args)
                 expect_output += measure.value * weight
 
                 if func_name != rfunc_name: self.eval_graph.nodes[f"{rfunc_name.split(':')[0]}_{node_count}"]["output"] = measure
