@@ -61,8 +61,6 @@ RANDOM_CORRIDORS
 #des_file = rooms_des
 
 
-
-
 from nle import nethack
 compass_actions = tuple(nethack.CompassDirection)
 operate_actions = (
@@ -74,8 +72,15 @@ operate_actions = (
 
 action_space = compass_actions + operate_actions
 
+import gym
+import nle
+from nle_language_wrapper import NLELanguageWrapper
+env = NLELanguageWrapper(gym.make("NetHackChallenge-v0"))
+obsv = env.reset()
+obsv, reward, done, info = env.step("wait")
 
 def make_env():
+
     env = gym.make(
     "MiniHack-Navigation-Custom-v0",
     des_file = des_file,

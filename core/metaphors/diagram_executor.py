@@ -463,7 +463,7 @@ class ReductiveExecutor(FunctionExecutor):
 
             
             # cast the input args to the expected type (traverse the cast DAG)
-            print(func_name, args)
+            #print(func_name, args)
             cast_args, weight, cast_info = self.reduce_unifier.type_cast(args, expect_type)
 
 

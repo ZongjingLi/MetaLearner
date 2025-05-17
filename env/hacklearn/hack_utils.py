@@ -8,6 +8,10 @@ matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import minihack
 
+import nle
+
+
+
 def init_render(name = 'Naxx'):
     fig = plt.figure(name, figsize=(10, 3))
     fig.canvas.manager.window.wm_geometry("+300+200")
@@ -52,4 +56,5 @@ class DummyPolicy:
 	def sample(self, obs):
 		return self.env.action_space.sample()
       
+
 

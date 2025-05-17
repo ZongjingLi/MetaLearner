@@ -27,7 +27,9 @@ model.parser.display_word_entries(word)
 query = "one plus two bigger two plus three plus one"
 
 
-print(model.maximal_parse(query)[0][0])
+parse = str(model.maximal_parse(query)[0][0].sem_program)
+print(parse)
+print(model.parser.generate_sentences_for_program(parse))
 
 outputs = model.forward(query, {})
 model.executor.display()

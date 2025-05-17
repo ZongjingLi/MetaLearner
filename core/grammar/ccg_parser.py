@@ -154,6 +154,84 @@ class ChartParser(nn.Module):
                 if weight_key in self.lexicon_weight:
                     entry.weight = self.lexicon_weight[weight_key]
 
+    def string_to_program(self, program : str):
+        from helchriss.knowledge.symbolic import Expression, FunctionApplicationExpression, ConstantExpression, VariableExpression
+        expr = Expression.parse_program_string(program)
+        def convert(expr: Expression) -> SemProgram:
+            if isinstance(expr, FunctionApplicationExpression):
+                func_name = expr.func.name
+                args = [convert(arg) for arg in expr.args]
+                return SemProgram(func_name, args)
+
+            elif isinstance(expr, ConstantExpression): return SemProgram(str(expr.const), [])
+            elif isinstance(expr, VariableExpression): return SemProgram(str(expr.name), [])
+            else:
+                raise TypeError(f"Unsupported expression type: {type(expr)}")
+
+        return convert(expr)
+
+    def generate_sentences_for_program(self, target_program: str, max_depth: int = 10) -> List[str]:
+        """
+        Given a target SemProgram, generate possible surface-level sentences 
+        that parse to it using the lexicon and CCG rules.
+
+        Args:
+            target_program (SemProgram): The semantic program tree to match.
+            max_depth (int): Maximum depth of recursive search to avoid infinite loops.
+
+        Returns:
+            List[str]: List of possible surface sentences.
+        """
+        memo = {}
+        target_program : SemProgram = self.string_to_program(target_program)
+
+        def match_program(prog: SemProgram, depth: int) -> List[List[LexiconEntry]]:
+            if depth > max_depth: return []
+
+            key = (prog.func_name, tuple(str(arg) for arg in prog.args), tuple(prog.lambda_vars))
+            if key in memo: return memo[key]
+
+            matches = []
+
+            # Try direct matches from lexicon entries
+            for word, entries in self.lexicon.items():
+                for idx, entry in enumerate(entries):
+                    lex_prog = entry.sem_program
+                    if lex_prog == prog:
+                        matches.append([self.gather_word_entries(word)[idx]])
+
+            # Try to decompose into argument + function applications
+            for rule in self.rules:
+                if not prog.args:
+                    continue  # Can't apply rules to a nullary program
+            
+                # Try matching function and arguments recursively
+                func_prog = SemProgram(prog.func_name, prog.args[:-1], prog.lambda_vars[1:] if prog.lambda_vars else [])
+                arg_prog = prog.args[-1]
+
+                left_options = match_program(func_prog, depth + 1)
+                right_options = match_program(arg_prog, depth + 1)
+
+                for left in left_options:
+                    for right in right_options:
+                        left_entry = left[-1]
+                        right_entry = right[-1]
+                        if rule.can_apply(left_entry.syn_type, right_entry.syn_type):
+                            combined = rule.apply(left_entry, right_entry)
+                            if combined and combined.sem_program == prog:
+                                matches.append(left + right)
+
+            memo[key] = matches
+            return matches
+
+        candidate_derivations = match_program(target_program, 0)
+
+        # Convert LexiconEntry sequences into surface sentences
+        sentences = [" ".join(entry.word for entry in derivation) for derivation in candidate_derivations]
+    
+        return sorted(set(sentences))
+
+
     def purge_entry(self, word: str, p: float, abs: bool = False):
         """only keep the word entries with weight greater than or equal to threshold p
         Args:
