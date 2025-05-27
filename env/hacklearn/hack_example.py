@@ -69,15 +69,8 @@ operate_actions = (
     nethack.Command.CLOSE,
 )
 
-
 action_space = compass_actions + operate_actions
 
-import gym
-import nle
-from nle_language_wrapper import NLELanguageWrapper
-env = NLELanguageWrapper(gym.make("NetHackChallenge-v0"))
-obsv = env.reset()
-obsv, reward, done, info = env.step("wait")
 
 def make_env():
 

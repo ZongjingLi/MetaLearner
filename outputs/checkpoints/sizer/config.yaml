@@ -5,9 +5,6 @@ domains:
   intergers:
     name: integers_executor
     path: domains.math.integers_domain
-  misc:
-    name: misc_executor
-    path: domains.misc_domain
 name: prototype
 vocab:
   path: core_vocab.txt

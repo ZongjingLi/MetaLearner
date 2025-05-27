@@ -101,7 +101,6 @@ class ReductiveUnifier(nn.Module):
             - Info dictionary containing leaf nodes and their probabilities
         """
         info = {"leaf_nodes": {}}
-
         if all(value.vtype == vtype for value, vtype in zip(values, vtypes)):
             info["leaf_nodes"] = {tuple(v.vtype.alias for v in values): 1.0}
             return values, 1.0, info

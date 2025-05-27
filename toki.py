@@ -21,11 +21,12 @@ expr = Expression.parse_program_string("bigger:Integers(one:Integers(), two:Inte
 model_name = "sizer"
 word = "bigger"
 model = model.load_ckpt(f"outputs/checkpoints/{model_name}")
-model.parser.purge_entry(word, 0.01, abs = 0)
+#model.parser.purge_entry(word, 0.01, abs = 0)
 model.parser.display_word_entries(word)
 
 query = "one plus two bigger two plus three plus one"
 
+results = model.parser.parse(query, forced = True)
 
 parse = str(model.maximal_parse(query)[0][0].sem_program)
 print(parse)

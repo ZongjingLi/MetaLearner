@@ -6,8 +6,6 @@ domains:
     circle:
       name: "circle_executor"
       path: "domains.spatial.circle_domain"
-    misc:
-      name: "misc_executor"
-      path: "domains.misc_domain"
+
 vocab:
     path: "data/core_vocab.txt"

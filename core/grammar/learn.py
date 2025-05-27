@@ -22,12 +22,10 @@ def is_subtype_of(subtype, supertype, type_hierarchy=None):
         True if subtype is a subtype of supertype, False otherwise
     """
     # Base case: types are identical
-    if subtype == supertype:
-        return True
+    if subtype == supertype: return True
         
     # Any type is the universal supertype
-    if supertype == "Any":
-        return True
+    if supertype == "Any": return True
         
     # If a type hierarchy is provided, check it
     if type_hierarchy and subtype in type_hierarchy:
@@ -56,7 +54,7 @@ def enumerate_search(type_dict, function_dict, max_depth=3, type_hierarchy=None)
         List of tuples (CCGSyntacticType, SemProgram) representing all valid programs and partial programs
     """
     # Add the identity function to the function dictionary if it doesn't exist already
-    if "Id:Misc" not in function_dict:
+    if 0 and "Id:Misc" not in function_dict:
         function_dict["Id:Misc"] = {
             'type': "Any",  # Output type is Any
             'parameters': ["Any"]  # Input type is Any
@@ -140,6 +138,7 @@ def enumerate_search(type_dict, function_dict, max_depth=3, type_hierarchy=None)
         # Special handling for Id:Misc when target_type is not "Any"
         # We want to generate Id:Misc applications with the specific target type
         if target_type != "Any" and "Id:Misc" in function_dict:
+
             # For each program of this type, generate its Id:Misc application
             for prog in get_programs_for_type(target_type, current_depth + 1):
                 results.append(SemProgram("Id:Misc", [prog]))
@@ -429,7 +428,7 @@ def enumerate_search(type_dict, function_dict, max_depth=3, type_hierarchy=None)
                 )
                 id_programs.append((id_type, id_lambda))
         
-        return id_programs
+        return []#id_programs
     
     def generate_complete_function_types(func_key, result_type, param_types):
         """

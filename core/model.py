@@ -252,6 +252,7 @@ class MetaLearner(nn.Module):
         for i,parse in enumerate(parses):
             parse_prob = log_distrs[i]
             program = parse.sem_program
+
             output_type = self.functions[program.func_name]["type"]
 
             if len(program.lambda_vars) == 0:
