@@ -3,7 +3,7 @@ from helchriss.knowledge.symbolic import Expression
 from datasets.mathprim.numbers_dataset import get_dataset
 from core.model import MetaLearner
 from domains.spatial.direction_domain import direction_executor
-from domains.math.integers_domain import integers_executor
+from domains.math.integer_domain import integers_executor
 
 model_name = "prototype"
 model : MetaLearner = MetaLearner([direction_executor, integers_executor], [])
@@ -24,7 +24,7 @@ model = model.load_ckpt(f"outputs/checkpoints/{model_name}")
 #model.parser.purge_entry(word, 0.01, abs = 0)
 model.parser.display_word_entries(word)
 
-query = "one plus two bigger two plus three plus one"
+query = "one plus two plus three"
 
 results = model.parser.parse(query, forced = True)
 

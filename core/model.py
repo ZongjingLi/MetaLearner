@@ -13,7 +13,7 @@ from typing import List, Union, Any
 from helchriss.domain import load_domain_string
 from helchriss.knowledge.symbolic import Expression
 from helchriss.knowledge.executor import CentralExecutor
-from core.metaphors.diagram_executor import ReductiveExecutor, ExecutorGroup
+from core.metaphors.executor import RewriteExecutor, ExecutorGroup
 from core.grammar.ccg_parser import ChartParser
 from core.grammar.lexicon import CCGSyntacticType, LexiconEntry, SemProgram
 from core.grammar.learn import enumerate_search
@@ -34,7 +34,7 @@ class MetaLearner(nn.Module):
         self.name = "prototype"
         self._domain :List[Union[CentralExecutor]]  = domains
         self.domain_infos = {}
-        self.executor : CentralExecutor = ReductiveExecutor(ExecutorGroup(domains))
+        self.executor : CentralExecutor = RewriteExecutor(ExecutorGroup(domains))
         
         self.vocab = vocab
         self.lexicon_entries = {}#nn.ModuleDict({})
@@ -110,7 +110,7 @@ class MetaLearner(nn.Module):
             domain_executors.append(eval(name))
         
         self._domain = domain_executors
-        self.executor = ReductiveExecutor(ExecutorGroup(domain_executors))
+        self.executor = RewriteExecutor(ExecutorGroup(domain_executors))
         self.executor.load_ckpt(ckpt_path)
 
         # load the vocabulary
@@ -206,14 +206,6 @@ class MetaLearner(nn.Module):
 
         return grouped
     
-    def add_word_lexicon(self):
-        return
-    
-    def delete_word_lexicon(self):
-        return
-    
-    def purge_word_lexicon(self):
-        return 
 
     def entries_setup(self, related_vocab : List[str] = None, domains : Union[str,List[str]] = "Any" ,depth = 1):
         if related_vocab is None: related_vocab = self.vocab
@@ -240,6 +232,8 @@ class MetaLearner(nn.Module):
     def add_vocab(self, add_vocab: List[str]):
         """this method add a new set of vocab and related domains that could associate it with """
         self.vocab.extend(add_vocab)
+
+    
 
     def forward(self, sentence : str, grounding = None, topK = None, plot : bool = False):
 
@@ -349,5 +343,5 @@ class MetaLearner(nn.Module):
         return values, weights, programs
     
     def eval_graph(self):
-        from core.metaphors.diagram_executor import convert_graph_to_visualization_data
+        from core.metaphors.executor import convert_graph_to_visualization_data
         return convert_graph_to_visualization_data(self.executor.eval_graph)

@@ -1,11 +1,12 @@
 from abc import abstractmethod
 from helchriss.dsl.dsl_types import TypeBase
 from helchriss.dsl.dsl_values import Value
-import re
-from typing import List, Tuple, Any
+from typing import List, Tuple,Union, Any
 import torch
 import torch.nn as nn
+import re
 
+__all__ = ["type_dim", "fill_hole", "infer_caster"]
 
 def parse_type_declaration(type_str):
     """
@@ -42,7 +43,7 @@ class BaseCaster(nn.Module):
         return self.cast(tensor_args)
 
     @abstractmethod
-    def cast(self, input):
+    def cast(self, input) -> List[Tuple[Any, torch.Tensor]]:
         raise NotImplementedError()
 
 
@@ -83,7 +84,8 @@ class MLPCaster(BaseCaster):
             torch.log(torch.sigmoid(self.cast_units[i](arg).flatten()))
         ) for i, arg in enumerate(args)]
 
-def infer_caster(input_type : List[TypeBase], output_type : TypeBase):
+
+def infer_caster(input_type : List[TypeBase], output_type : List[TypeBase]):
     in_prefix, in_shapes = list(), list()
     for arg in input_type:
         prefix, shape = parse_type_declaration(arg.typename)
@@ -104,4 +106,46 @@ def infer_caster(input_type : List[TypeBase], output_type : TypeBase):
 
         return MLPCaster(input_dims, output_dims)
 
-    return -1
+    raise NotImplementedError("failed to infer the caster type")
+
+
+class MLPFiller(nn.Module):
+    def __init__(self, input_types : List[TypeBase], out_type : Union[TypeBase, List[TypeBase]], net : nn.Module):
+        super().__init__()
+        self.input_types = input_types
+        self.out_types = out_type
+        self.net = net
+    
+    @property
+    def singular(self): return len(self.out_types) == 1
+
+    def forward(self, *args):
+        neural_args = []
+        for arg in args:
+            if isinstance(arg, torch.Tensor): neural_args.append(arg)
+            else: neural_args.append(torch.tensor(arg))
+        cat_args = torch.cat([arg.reshape([1,-1]) for arg in neural_args], dim = -1)
+        output = self.net(cat_args).reshape([-1])
+        return Value(self.out_types, output)
+
+def type_dim(tp : TypeBase):
+    if tp.typename in ["int", "float", "boolean", "bool"]: return 1
+    if "vector" in tp.typename:
+        dim = 1        
+        for d in [int(x) for x in re.findall(r'\d+', tp.typename)]: dim *= d
+        return dim
+    raise NotImplementedError(f"dim of type {tp} cannot be inferred")
+
+def fill_hole(arg_types : List[TypeBase], out_type : TypeBase) -> nn.Module:
+    in_dim = sum([type_dim(tp) for tp in arg_types])
+    out_dim = type_dim(out_type)
+    net = nn.Sequential(
+        nn.Linear(in_dim, 64),
+        nn.ReLU(),
+        nn.Linear(64, 64),
+        nn.ReLU(),
+        nn.Linear(64, out_dim)
+        )
+    filler = MLPFiller(arg_types, out_type, net)
+    return filler
+

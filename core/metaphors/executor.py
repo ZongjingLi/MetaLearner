@@ -14,18 +14,21 @@ from helchriss.knowledge.symbolic import Expression,FunctionApplicationExpressio
 from helchriss.knowledge.symbolic import LogicalAndExpression, LogicalNotExpression,LogicalOrExpression
 from helchriss.knowledge.symbolic import TensorState, concat_states
 from helchriss.dsl.dsl_values import Value
+from helchriss.dsl.dsl_types import TypeBase, AnyType
 from helchriss.domain import Domain
-from helchriss.dsl.dsl_types import AnyType
-from .unification import ReductiveUnifier, LocalFrame
-
+from .rewrite import NeuralRewriter, LocalFrame
+from .types import fill_hole
 
 # this is the for type space, basically a wrapper class
-from .types import *
+from .types import infer_caster, fill_hole
 from dataclasses import dataclass
 import contextlib
 import networkx as nx
 
+__all__ = ["ExecutorGroup", "RewriteExecutor"]
 
+def clamp_list(values, min_val=0.3, max_val=1.0):
+    return [max(min(v, max_val), min_val) for v in values]
 
 class UnificationFailure(Exception):
     """
@@ -102,6 +105,7 @@ class ExecutorGroup(FunctionExecutor):
     """keeps tracks a list of CentralExecutors and can call a function by name and domain name"""
     def __init__(self, domains : List[Union[CentralExecutor, Domain]], concept_dim = 128):
         super().__init__(None)
+        
         self._gather_format = "{}:{}"
 
         self._type_registry = {}
@@ -145,20 +149,18 @@ class ExecutorGroup(FunctionExecutor):
             self.update_type_registry(domain_executor)
             #self.update_function_registry(domain_executor)
 
+
     def save_ckpt(self, ckpt_path):
         if not os.path.exists(f"{ckpt_path}/frames"): os.makedirs(f"{ckpt_path}/domains")
         for executor in self.executors_group:
-
             torch.save(executor.state_dict(), f"{ckpt_path}/domains/{executor.domain.domain_name}.pth")
-        return 0
+
 
     def load_ckpt(self, ckpt_path):
         for executor in self.executors_group:
-            try:
-                executor.load_state_dict(torch.load(f"{ckpt_path}/domains/{executor.domain.domain_name}.pth"))
-            except:
-                pass
-        return 0
+            try: executor.load_state_dict(torch.load(f"{ckpt_path}/domains/{executor.domain.domain_name}.pth"))
+            except: pass
+    
 
     @property
     def gather_format(self): return self._gather_format
@@ -169,10 +171,9 @@ class ExecutorGroup(FunctionExecutor):
     def function_output_type(self, func_name, domain = None):
         if domain is None: func_name, domain = func_name.split(":")
         for executor in self.executors_group:
-
             if executor.domain.domain_name == domain:
                 return self.output_type[self.format(func_name, domain)]
-        assert 0, f"didn't find type {func_name} in the domain {domain}"
+        raise ModuleNotFoundError(f"didn't find type {func_name} in the domain {domain}")
     
     def function_input_type(self, func_name, domain = None):
         if domain is None: func_name, domain = func_name.split(":")
@@ -181,7 +182,7 @@ class ExecutorGroup(FunctionExecutor):
 
             if executor.domain.domain_name == domain:
                 return self.input_types[self.format(func_name, domain)]
-        assert 0, f"didn't find type {func_name}"
+        raise ModuleNotFoundError(f"didn't find type {func_name}")
 
     def format(self, name : str, domain : str) -> str: return self._gather_format.format(name, domain)
 
@@ -190,15 +191,9 @@ class ExecutorGroup(FunctionExecutor):
         for type, vtype in executor.types.items():
             self._type_registry[self.format(type, domain_name)] = vtype.replace("'","")
 
-    def infer_type(self, type_name):
-        """use to infer if a type does not need the domain as the postfix"""
-        return
-    
-    def infer_domain(self, func_name):
-        """infer the domain"""
-        for executor in self.executors_group:
+    def infer_domain(self, func_name : str) -> str:
+        for executor in self.executors_group: 
             if func_name in executor._function_registry: return executor.domain.domain_name
-        return False
 
     def execute(self, func : str, args : List[Value], domain = None) -> Value:
         if ":" in func: # handle the case for the reference of domain is ambiguous
@@ -216,16 +211,12 @@ class ExecutorGroup(FunctionExecutor):
         assert False, "cannot found the function implementation"
 
 
-
-def clamp_list(values, min_val=0.3, max_val=1.0):
-    return [max(min(v, max_val), min_val) for v in values]
-
-class ReductiveExecutor(FunctionExecutor):
+class RewriteExecutor(FunctionExecutor):
     """this is some kind of wrap out of an executor, equipped with a reductive graph"""
     def __init__(self, executor):
         super().__init__(None)
         self.base_executor : FunctionExecutor = executor
-        self.reduce_unifier : ReductiveUnifier = ReductiveUnifier() # use this structur to store the caster and hierarchies
+        self.rewriter : NeuralRewriter = NeuralRewriter() # use this structur to store the caster and hierarchies
         self._gather_format = "{}:{}"
 
         """maintain the evaluation graph just to visualize and sanity check"""
@@ -235,28 +226,25 @@ class ReductiveExecutor(FunctionExecutor):
         self.node_inputs = []
         self.record = 1
 
-
-    def save_ckpt(self, ckpt_path = "tmp.ckpt"):
-        self.base_executor.save_ckpt(ckpt_path)
-        self.reduce_unifier.save_ckpt(ckpt_path)
-        return 0
-
-    def load_ckpt(self, ckpt_path = "tmp.ckpt"):
-        self.base_executor.load_ckpt(ckpt_path)
-        self.reduce_unifier.load_ckpt(ckpt_path)
-        return self
-
-    def gather_format(self, name, domain):
-        return self._gather_format.format(name, domain)
-
     def init_graph(self):
         self.eval_graph = nx.DiGraph()
         self.node_count = {}
         self.node_outputs = []
         self.node_inputs = []
         self.record = 1
+
+    def save_ckpt(self, ckpt_path = "tmp.ckpt"):
+        self.base_executor.save_ckpt(ckpt_path)
+        self.rewriter.save_ckpt(ckpt_path)
+
+    def load_ckpt(self, ckpt_path = "tmp.ckpt"):
+        self.base_executor.load_ckpt(ckpt_path)
+        self.rewriter.load_ckpt(ckpt_path)
+        return self
+
+    def gather_format(self, name, domain): return self._gather_format.format(name, domain)
     
-    def infer_reductions(self, expr : Expression, reducer = None, verbose = 0) -> List[Tuple[str, List[TypeBase], List[TypeBase]]]:
+    def infer_rewrite_expr(self, expr : Expression, reducer = None) -> List[Tuple[str, List[TypeBase], List[TypeBase]]]:
         """given an expression, use the unifer to infer if there exist casting of types or change in the local frames"""
         metaphor_exprs = []
         def dfs(expr : Expression):
@@ -275,42 +263,38 @@ class ReductiveExecutor(FunctionExecutor):
                     else:  #TODO: use the path search to check type consistencey
                         pass
                 return [output_type, target_arg_types]
-
-            elif isinstance(expr, ConstantExpression):
-                """TODO: add the return type for constants"""
-                assert isinstance(expr.const, Value)
-                return expr.const
-    
-            return [None,None]
+            
+            else: raise NotImplementedError(f"did not write how to infer from {expr}")
         dfs(expr)
-        if verbose:
-            from helchriss.utils import stprint
-            stprint(metaphor_exprs)
+
         return metaphor_exprs
     
     def add_metaphors(self, metaphors : List[Tuple[str, List[TypeBase], List[TypeBase]]], caster = None):
+        if not isinstance(metaphors, List) : metaphors = [metaphors]
         for metaphor in metaphors:
             target_func, target_types, source_types = metaphor
 
-            input_type = source_types #self.function_input_type(*reduce_func.split(":"))      # actual input type for the function
-            expect_type = self.function_input_type(*target_func.split(":"))     # expect input type for the function
-            output_type = self.function_input_type(*target_func.split(":"))     # the output type for the target function
+            input_type = source_types #(y)self.function_input_type(*reduce_func.split(":"))      # actual input type for the function
+            expect_type = self.function_input_type(*target_func.split(":"))     #(x) expect input type for the function
+            output_type = self.function_output_type(*target_func.split(":"))     #(o) the output type for the target function
+
+            """create the type casting rewrite rule and add a NeuralNet to fill the hole"""
+
+            filler = fill_hole(input_type, output_type)
+            add_function(filler)
 
             """create the local frame that gathers other `source` functions to the `target` function"""
             if caster is None: caster = infer_caster(input_type, expect_type)
-            cast_frame : LocalFrame = LocalFrame(target_func, expect_type, output_type, input_type, caster)
+            cast_frame : LocalFrame = LocalFrame(target_func, expect_type, input_type, caster)
             
             reduce_hypothesis = self.gather_functions(source_types)
             for reduce_func in reduce_hypothesis:
                 cast_frame.add_source_caster(reduce_func, 0.0) # init the reduction `g`->`f` weight logits 0.0
 
-            frame_name = target_func + str(hash((tuple(input_type) + tuple(expect_type) + tuple(output_type))))
-            
+            frame_name = target_func + str(hash((tuple(input_type) + tuple(expect_type))))
+    
+            self.rewriter.add_frame(frame_name, cast_frame) # multiple frame lead to the same procedure
 
-
-            self.reduce_unifier.add_function_frame(frame_name, cast_frame) # multiple frame lead to the same procedure
-
-        return 1
     
     def gather_functions(self, input_type : List[TypeBase], output_type : TypeBase = None) -> List[str]:
         output_funcs = []
@@ -338,6 +322,9 @@ class ReductiveExecutor(FunctionExecutor):
     def function_input_type(self, func_name, domain = None):
         if domain is None: func_name, domain = func_name.split(":")
         return self.base_executor.function_input_type(func_name, domain)
+    
+    def resolve(func, args):
+        return
     
     def display(self, fname = None):
         G = self.eval_graph
@@ -431,17 +418,10 @@ class ReductiveExecutor(FunctionExecutor):
 
         return expect_type, output_type, count_func_name ,node_count
     
-    def process_measure(self, func_name : str, args : List[Value]) -> Value:
-        if 0 and func_name.split(":")[0] in self.reserved:
-            return args
-        else:
-            measure : Value = self.base_executor.execute(func_name, args)
-        return measure
 
     def _evaluate(self, expr : Expression):
         """Internal implementation of the executor. This method will be called by the public method :meth:`execute`.
         This function basically implements a depth-first search on the expression tree.
-
         Args:
             expr: the expression to execute.
 
@@ -452,64 +432,21 @@ class ReductiveExecutor(FunctionExecutor):
         if isinstance(expr, FunctionApplicationExpression):
             func_name = expr.func.name
             expect_type, output_type, count_func_name ,node_count = self.process_reserved(func_name)
-
+    
             # recusive call self.evaluate(arg) to evaluate the args in the subtree
             args : List[Value] = []
-            for arg in expr.args:
+            for arg in expr.args: 
                 arg_value, arg_name = self._evaluate(arg) # A List of Values
                 args.append(arg_value)
-                self.eval_graph.add_edge(arg_name, count_func_name, output = arg_value, color = "#0d0d0d")
+
+            # weight of each rewrite is a basic-rewrite
+            rewrite_distr = self.rewriter.rewrite_distr(func_name, args)
             
-
-            
-            # cast the input args to the expected type (traverse the cast DAG)
-            #print(func_name, args)
-            cast_args, weight, cast_info = self.reduce_unifier.type_cast(args, expect_type)
-
-
-            # collect the (f,t) reductions as they are a pair of natual type
-            reduce_funcs, reduce_graph = self.reduce_unifier.reduce_args(func_name, cast_args)
-
-            """handle the visualization of the reduction graph"""
-            reduce_nodes, reduce_edges = reduce_graph
-
-            for node in reduce_nodes:
-                if node != func_name:
-                    for reduce_func in reduce_funcs:
-                        if reduce_func[0] == node:
-                            node_weight = reduce_func[2]
-                    self.eval_graph.add_node(f"{node.split(':')[0]}_{node_count}", weight = node_weight, color = "#048393", text_color = '#0d0d0d')
-                else:
-                    for reduce_func in reduce_funcs:
-                        if reduce_func[0] == node:
-                            node_weight = reduce_func[2]
-                    self.eval_graph.nodes[count_func_name]["weight"] = node_weight
-
-            for edge in reduce_edges:
-    
-                src_node = f"{edge[0].split(':')[0]}_{node_count}"
-                tgt_node = f"{edge[1].split(':')[0]}_{node_count}"
-
-                if src_node != func_name:
-                    self.eval_graph.add_edge(f"{src_node}", tgt_node, weight = float(edge[2].detach()[0]), color = "#048393")
-
-            # for the identity part, just don't calculate the expecation over
-
-            if func_name.split(":")[0] in self.reserved:
-                output_type = cast_args[0]
-
-                return Value(output_type, args), count_func_name
-            
-            expect_output = 0.0
-            for reduce_func in reduce_funcs:
-                rfunc_name, reduce_args, weight = reduce_func
-                measure = self.process_measure(rfunc_name, reduce_args)
-
-                expect_output += measure.value * weight
-
-                if func_name != rfunc_name: self.eval_graph.nodes[f"{rfunc_name.split(':')[0]}_{node_count}"]["output"] = measure
-                else: self.eval_graph.nodes[count_func_name]["output"] = measure                    
-
+            # expected execution over all basic-rewrites
+            expect_output = 0.
+            for (t_f, t_args, weight) in rewrite_distr:
+                measure : Value = self.base_executor.execute(t_f, t_args)
+                expect_output += weight * measure.value
 
             return Value(output_type, expect_output), count_func_name
 
@@ -517,12 +454,12 @@ class ReductiveExecutor(FunctionExecutor):
             assert isinstance(expr.const, Value)
             return expr.const
         elif isinstance(expr, VariableExpression):
-
             assert isinstance(expr.name, Value)
             return expr.const
         else:
             raise NotImplementedError(f'Unknown expression type: {type(expr)}')
-        
+
+
 import json
 import networkx as nx
 
