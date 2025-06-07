@@ -137,7 +137,7 @@ class ChartParser(nn.Module):
         Args:
             load_path: Path to load the weights from
         """
-        weight_dict = torch.load(load_path)
+        weight_dict = torch.load(load_path, weights_only=True)
         
         # Create new ParameterDict
         new_weight_dict = nn.ParameterDict()

@@ -23,10 +23,14 @@ from helchriss.dsl.dsl_values import Value
 from tqdm import tqdm
 from datasets.base_dataset import SceneGroundingDataset
 
+__all__ = ["MetaLearner"]
+
+
 def write_vocab(vocab, vocab_file = "core_vocab.txt"):
     with open(vocab_file, 'w', encoding='utf-8') as f:
         for word in vocab:
             f.write(word + '\n')
+
 
 class MetaLearner(nn.Module):
     def __init__(self, domains : List[Union[CentralExecutor]], vocab : List[str] = []):
@@ -288,11 +292,11 @@ class MetaLearner(nn.Module):
                     measure_conf = torch.exp(probs[i])
                     if result is not None: # filter make sense progams
                         assert isinstance(result, Value), f"{programs[i]} result is :{result} and not a Value type"
-                        #print(answer, answer.vtype, result, result.vtype)
+                        #print(str(programs[i]),answer, answer.vtype, result, result.vtype)
                         if answer.vtype in result.vtype.alias:
                             if answer.vtype == "boolean":
                                 measure_loss =  torch.nn.functional.binary_cross_entropy_with_logits(
-                                    result.value , torch.tensor(answer.value))
+                                    result.value.reshape([-1]) , torch.tensor(answer.value).reshape([-1]))
                             if answer.vtype == "int" or answer.vtype == "float":
                                 measure_loss = torch.abs(result.value - answer.value)
 

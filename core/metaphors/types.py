@@ -59,7 +59,7 @@ class LinearCaster(BaseCaster):
     def cast(self, args):
         return [(
             self.linear_units[i](arg).flatten(),
-            torch.log(torch.sigmoid(self.cast_units[i](arg).flatten()))) for i,arg in enumerate(args)]
+            self.cast_units[i](arg).flatten()) for i,arg in enumerate(args)]
 
 class MLPCaster(BaseCaster):
     def __init__(self, in_dims, out_dims):
@@ -81,32 +81,18 @@ class MLPCaster(BaseCaster):
     def cast(self, args):
         return [(
             self.mlp_units[i](arg).flatten(),
-            torch.log(torch.sigmoid(self.cast_units[i](arg).flatten()))
+            self.cast_units[i](arg).flatten()
         ) for i, arg in enumerate(args)]
 
 
-def infer_caster(input_type : List[TypeBase], output_type : List[TypeBase]):
-    in_prefix, in_shapes = list(), list()
-    for arg in input_type:
-        prefix, shape = parse_type_declaration(arg.typename)
-        in_prefix.append(prefix)
-        in_shapes.append(shape)
-    
-    out_prefix, out_shapes = list(), list()
-    for arg in output_type:
-        prefix, shape = parse_type_declaration(arg.typename)
-        out_prefix.append(prefix)
-        out_shapes.append(shape)
+def infer_caster(input_type : List[TypeBase], output_types : List[TypeBase]):
 
-    input_pure_vector = sum([prefix != "vector" for prefix in in_prefix]) == 0
-    output_pure_vector = sum([prefix != "vector" for prefix in out_prefix]) == 0
-    if input_pure_vector and output_pure_vector:
-        input_dims = [sum(list(shape)) for shape in in_shapes]
-        output_dims = [sum(list(shape)) for shape in out_shapes]
+    input_dims = [type_dim(tp) for tp in input_type]
+    output_dims = [type_dim(tp) for tp in output_types]
 
-        return MLPCaster(input_dims, output_dims)
+    return MLPCaster(input_dims, output_dims)
 
-    raise NotImplementedError("failed to infer the caster type")
+    #raise NotImplementedError("failed to infer the caster type")
 
 
 class MLPFiller(nn.Module):

@@ -142,8 +142,6 @@ def process_command(command):
         model.save_ckpt("outputs/checkpoints/prototype")
         main_logger.info(f"created model {model_name} and saved successfully.")
 
-
-
 if __name__ == "__main__":
     from config import config
 

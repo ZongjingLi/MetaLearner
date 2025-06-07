@@ -3,8 +3,8 @@ domains:
     name: circle_executor
     path: domains.spatial.circle_domain
   intergers:
-    name: integers_executor
-    path: domains.math.integers_domain
+    name: integer_executor
+    path: domains.math.integer_domain
 name: prototype
 vocab:
   path: core_vocab.txt

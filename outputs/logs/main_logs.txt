@@ -20320,3 +20320,997 @@
 [27 03:56:58 94@learn.py:AutoSchedule] start to learn the words [], add corpus size 0
 [27 03:57:59 100@learn.py:AutoSchedule] learned words : [] avg_loss:0.0001642459974391386
 [27 03:57:59 104@learn.py:AutoSchedule] complete the learning of words ['one', 'plus', 'three', 'two', 'bigger', 'smaller', 'red']
+[04 13:44:40 86@main.py:Main] start training the metaphorical concept learner
+[04 13:44:40 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[04 13:44:40 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[04 13:44:40 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function unit_circle automatically registered.
+[04 13:44:40 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function area automatically registered.
+[04 13:44:40 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function disconnected automatically registered.
+[04 13:44:40 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function externally_connected automatically registered.
+[04 13:44:40 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function partial_overlap automatically registered.
+[04 13:44:40 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[04 13:44:40 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part automatically registered.
+[04 13:44:40 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part automatically registered.
+[04 13:44:40 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part_inverse automatically registered.
+[04 13:44:40 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part_inverse automatically registered.
+[04 13:44:43 86@main.py:Main] start training the metaphorical concept learner
+[04 13:44:43 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[04 13:44:43 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[04 13:44:43 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function unit_circle automatically registered.
+[04 13:44:43 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function area automatically registered.
+[04 13:44:43 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function disconnected automatically registered.
+[04 13:44:43 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function externally_connected automatically registered.
+[04 13:44:43 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function partial_overlap automatically registered.
+[04 13:44:43 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[04 13:44:43 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part automatically registered.
+[04 13:44:43 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part automatically registered.
+[04 13:44:43 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part_inverse automatically registered.
+[04 13:44:43 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part_inverse automatically registered.
+[04 13:45:03 86@main.py:Main] start training the metaphorical concept learner
+[04 13:45:03 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[04 13:45:03 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[04 13:45:03 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function unit_circle automatically registered.
+[04 13:45:03 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function area automatically registered.
+[04 13:45:03 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function disconnected automatically registered.
+[04 13:45:03 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function externally_connected automatically registered.
+[04 13:45:03 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function partial_overlap automatically registered.
+[04 13:45:03 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[04 13:45:03 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part automatically registered.
+[04 13:45:03 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part automatically registered.
+[04 13:45:03 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part_inverse automatically registered.
+[04 13:45:03 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part_inverse automatically registered.
+[04 13:45:11 86@main.py:Main] start training the metaphorical concept learner
+[04 13:45:11 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[04 13:45:11 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[04 13:45:11 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function unit_circle automatically registered.
+[04 13:45:11 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function area automatically registered.
+[04 13:45:11 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function disconnected automatically registered.
+[04 13:45:11 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function externally_connected automatically registered.
+[04 13:45:11 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function partial_overlap automatically registered.
+[04 13:45:11 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[04 13:45:11 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part automatically registered.
+[04 13:45:11 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part automatically registered.
+[04 13:45:11 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part_inverse automatically registered.
+[04 13:45:11 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part_inverse automatically registered.
+[04 13:45:17 24@main.py:Main] using the core knowledge stored in configs/core_domains.yaml to create prototype
+[04 13:45:17 26@main.py:Main] loading the checkpoint parameters in prototype
+[04 13:45:17 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[04 13:45:17 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[04 13:45:17 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[04 13:45:17 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[04 13:45:17 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[04 13:45:17 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[04 13:45:17 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[04 13:45:17 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[04 13:45:17 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function subset automatically registered.
+[04 13:45:35 24@main.py:Main] using the core knowledge stored in configs/core_domains.yaml to create prototype
+[04 13:45:35 26@main.py:Main] loading the checkpoint parameters in prototype
+[04 13:45:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[04 13:45:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[04 13:45:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[04 13:45:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[04 13:45:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[04 13:45:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[04 13:45:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[04 13:45:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[04 13:45:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function subset automatically registered.
+[04 13:45:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function unit_circle automatically registered.
+[04 13:45:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function area automatically registered.
+[04 13:45:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function disconnected automatically registered.
+[04 13:45:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function externally_connected automatically registered.
+[04 13:45:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function partial_overlap automatically registered.
+[04 13:45:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[04 13:45:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part automatically registered.
+[04 13:45:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part automatically registered.
+[04 13:45:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part_inverse automatically registered.
+[04 13:45:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part_inverse automatically registered.
+[04 13:45:35 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[04 13:45:35 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 01:02:23 24@main.py:Main] using the core knowledge stored in configs/core_domains.yaml to create prototype
+[06 01:02:23 26@main.py:Main] loading the checkpoint parameters in prototype
+[06 01:02:23 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[06 01:02:23 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[06 01:02:23 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[06 01:02:23 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[06 01:02:23 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[06 01:02:23 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[06 01:02:23 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[06 01:02:23 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[06 01:02:23 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function subset automatically registered.
+[06 01:02:23 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function unit_circle automatically registered.
+[06 01:02:23 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function area automatically registered.
+[06 01:02:23 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function disconnected automatically registered.
+[06 01:02:23 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function externally_connected automatically registered.
+[06 01:02:23 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function partial_overlap automatically registered.
+[06 01:02:23 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[06 01:02:23 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part automatically registered.
+[06 01:02:23 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part automatically registered.
+[06 01:02:23 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part_inverse automatically registered.
+[06 01:02:23 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part_inverse automatically registered.
+[06 01:02:23 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 01:02:23 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 01:02:23 143@main.py:Main] created model prototype and saved successfully.
+[06 01:02:31 86@main.py:Main] start training the metaphorical concept learner
+[06 01:02:31 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 01:02:31 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 01:02:31 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function unit_circle automatically registered.
+[06 01:02:31 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function area automatically registered.
+[06 01:02:31 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function disconnected automatically registered.
+[06 01:02:31 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function externally_connected automatically registered.
+[06 01:02:31 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function partial_overlap automatically registered.
+[06 01:02:31 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[06 01:02:31 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part automatically registered.
+[06 01:02:31 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part automatically registered.
+[06 01:02:31 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part_inverse automatically registered.
+[06 01:02:31 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part_inverse automatically registered.
+[06 01:02:31 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[06 01:02:31 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[06 01:02:31 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[06 01:02:31 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[06 01:02:31 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[06 01:02:31 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[06 01:02:31 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[06 01:02:31 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[06 01:02:31 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function subset automatically registered.
+[06 01:02:31 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 01:02:31 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 01:02:31 94@learn.py:AutoSchedule] start to learn the words ['three', 'plus'], add corpus size 1
+[06 01:03:26 100@learn.py:AutoSchedule] learned words : ['three', 'plus'] avg_loss:0.0002509467594791204
+[06 01:03:26 94@learn.py:AutoSchedule] start to learn the words ['one'], add corpus size 2
+[06 01:04:08 24@main.py:Main] using the core knowledge stored in configs/core_domains.yaml to create prototype
+[06 01:04:08 26@main.py:Main] loading the checkpoint parameters in prototype
+[06 01:04:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[06 01:04:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[06 01:04:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[06 01:04:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[06 01:04:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[06 01:04:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[06 01:04:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[06 01:04:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[06 01:04:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function subset automatically registered.
+[06 01:04:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function unit_circle automatically registered.
+[06 01:04:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function area automatically registered.
+[06 01:04:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function disconnected automatically registered.
+[06 01:04:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function externally_connected automatically registered.
+[06 01:04:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function partial_overlap automatically registered.
+[06 01:04:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[06 01:04:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part automatically registered.
+[06 01:04:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part automatically registered.
+[06 01:04:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part_inverse automatically registered.
+[06 01:04:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part_inverse automatically registered.
+[06 01:04:08 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 01:04:08 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 01:04:08 143@main.py:Main] created model prototype and saved successfully.
+[06 01:04:22 24@main.py:Main] using the core knowledge stored in configs/core_domains.yaml to create prototype
+[06 01:04:22 26@main.py:Main] loading the checkpoint parameters in prototype
+[06 01:04:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[06 01:04:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[06 01:04:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[06 01:04:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[06 01:04:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[06 01:04:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[06 01:04:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[06 01:04:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[06 01:04:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function subset automatically registered.
+[06 01:04:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function unit_circle automatically registered.
+[06 01:04:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function area automatically registered.
+[06 01:04:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function disconnected automatically registered.
+[06 01:04:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function externally_connected automatically registered.
+[06 01:04:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function partial_overlap automatically registered.
+[06 01:04:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[06 01:04:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part automatically registered.
+[06 01:04:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part automatically registered.
+[06 01:04:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part_inverse automatically registered.
+[06 01:04:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part_inverse automatically registered.
+[06 01:04:22 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 01:04:22 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 01:04:22 143@main.py:Main] created model prototype and saved successfully.
+[06 01:04:27 86@main.py:Main] start training the metaphorical concept learner
+[06 01:04:27 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 01:04:27 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 01:04:27 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function unit_circle automatically registered.
+[06 01:04:27 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function area automatically registered.
+[06 01:04:27 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function disconnected automatically registered.
+[06 01:04:27 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function externally_connected automatically registered.
+[06 01:04:27 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function partial_overlap automatically registered.
+[06 01:04:27 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[06 01:04:27 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part automatically registered.
+[06 01:04:27 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part automatically registered.
+[06 01:04:27 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part_inverse automatically registered.
+[06 01:04:27 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part_inverse automatically registered.
+[06 01:04:27 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[06 01:04:27 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[06 01:04:27 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[06 01:04:27 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[06 01:04:27 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[06 01:04:27 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[06 01:04:27 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[06 01:04:27 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[06 01:04:27 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function subset automatically registered.
+[06 01:04:27 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 01:04:27 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 01:04:27 94@learn.py:AutoSchedule] start to learn the words ['plus', 'one'], add corpus size 1
+[06 01:04:51 24@main.py:Main] using the core knowledge stored in configs/core_domains.yaml to create prototype
+[06 01:04:51 26@main.py:Main] loading the checkpoint parameters in prototype
+[06 01:04:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[06 01:04:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[06 01:04:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[06 01:04:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[06 01:04:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[06 01:04:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[06 01:04:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[06 01:04:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[06 01:04:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function subset automatically registered.
+[06 01:04:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function unit_circle automatically registered.
+[06 01:04:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function area automatically registered.
+[06 01:04:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function disconnected automatically registered.
+[06 01:04:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function externally_connected automatically registered.
+[06 01:04:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function partial_overlap automatically registered.
+[06 01:04:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[06 01:04:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part automatically registered.
+[06 01:04:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part automatically registered.
+[06 01:04:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part_inverse automatically registered.
+[06 01:04:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part_inverse automatically registered.
+[06 01:04:51 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 01:04:51 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 01:04:51 143@main.py:Main] created model prototype and saved successfully.
+[06 01:04:54 86@main.py:Main] start training the metaphorical concept learner
+[06 01:04:54 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 01:04:54 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 01:04:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function unit_circle automatically registered.
+[06 01:04:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function area automatically registered.
+[06 01:04:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function disconnected automatically registered.
+[06 01:04:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function externally_connected automatically registered.
+[06 01:04:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function partial_overlap automatically registered.
+[06 01:04:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[06 01:04:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part automatically registered.
+[06 01:04:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part automatically registered.
+[06 01:04:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part_inverse automatically registered.
+[06 01:04:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part_inverse automatically registered.
+[06 01:04:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[06 01:04:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[06 01:04:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[06 01:04:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[06 01:04:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[06 01:04:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[06 01:04:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[06 01:04:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[06 01:04:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function subset automatically registered.
+[06 01:04:54 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 01:04:54 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 01:04:54 94@learn.py:AutoSchedule] start to learn the words ['plus', 'three'], add corpus size 1
+[06 01:05:53 100@learn.py:AutoSchedule] learned words : ['plus', 'three'] avg_loss:0.0002427548897685483
+[06 01:05:53 94@learn.py:AutoSchedule] start to learn the words ['two'], add corpus size 2
+[06 01:08:09 100@learn.py:AutoSchedule] learned words : ['two'] avg_loss:0.0004682466387748718
+[06 01:08:09 94@learn.py:AutoSchedule] start to learn the words ['one'], add corpus size 3
+[06 01:11:21 100@learn.py:AutoSchedule] learned words : ['one'] avg_loss:0.0004206970043014735
+[06 01:11:21 94@learn.py:AutoSchedule] start to learn the words ['red'], add corpus size 1
+[06 01:14:23 100@learn.py:AutoSchedule] learned words : ['red'] avg_loss:0.0008730925619602203
+[06 01:14:23 94@learn.py:AutoSchedule] start to learn the words [], add corpus size 0
+[06 01:15:08 100@learn.py:AutoSchedule] learned words : [] avg_loss:0.0001999311352847144
+[06 01:15:08 104@learn.py:AutoSchedule] complete the learning of words ['plus', 'three', 'two', 'one', 'red']
+[06 01:16:09 86@main.py:Main] start training the metaphorical concept learner
+[06 01:16:09 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 01:16:09 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 01:16:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function unit_circle automatically registered.
+[06 01:16:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function area automatically registered.
+[06 01:16:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function disconnected automatically registered.
+[06 01:16:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function externally_connected automatically registered.
+[06 01:16:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function partial_overlap automatically registered.
+[06 01:16:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[06 01:16:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part automatically registered.
+[06 01:16:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part automatically registered.
+[06 01:16:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part_inverse automatically registered.
+[06 01:16:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part_inverse automatically registered.
+[06 01:16:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[06 01:16:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[06 01:16:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[06 01:16:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[06 01:16:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[06 01:16:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[06 01:16:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[06 01:16:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[06 01:16:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function subset automatically registered.
+[06 01:16:09 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 01:16:09 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 01:16:09 94@learn.py:AutoSchedule] start to learn the words ['three', 'plus'], add corpus size 1
+[06 01:27:28 24@main.py:Main] using the core knowledge stored in configs/core_domains.yaml to create prototype
+[06 01:27:28 26@main.py:Main] loading the checkpoint parameters in prototype
+[06 01:27:28 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[06 01:27:28 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[06 01:27:28 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[06 01:27:28 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[06 01:27:28 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[06 01:27:28 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[06 01:27:28 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[06 01:27:28 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[06 01:27:28 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function subset automatically registered.
+[06 01:27:28 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function unit_circle automatically registered.
+[06 01:27:28 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function area automatically registered.
+[06 01:27:28 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function disconnected automatically registered.
+[06 01:27:28 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function externally_connected automatically registered.
+[06 01:27:28 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function partial_overlap automatically registered.
+[06 01:27:28 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[06 01:27:28 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part automatically registered.
+[06 01:27:28 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part automatically registered.
+[06 01:27:28 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part_inverse automatically registered.
+[06 01:27:28 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part_inverse automatically registered.
+[06 01:27:28 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 01:27:28 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 01:27:28 143@main.py:Main] created model prototype and saved successfully.
+[06 01:58:14 24@main.py:Main] using the core knowledge stored in configs/core_domains.yaml to create prototype
+[06 01:58:14 26@main.py:Main] loading the checkpoint parameters in prototype
+[06 01:58:14 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[06 01:58:14 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[06 01:58:14 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[06 01:58:14 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[06 01:58:14 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[06 01:58:14 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[06 01:58:14 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[06 01:58:14 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[06 01:58:14 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function subset automatically registered.
+[06 01:58:15 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function unit_circle automatically registered.
+[06 01:58:15 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function area automatically registered.
+[06 01:58:15 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function disconnected automatically registered.
+[06 01:58:15 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function externally_connected automatically registered.
+[06 01:58:15 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function partial_overlap automatically registered.
+[06 01:58:15 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[06 01:58:15 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part automatically registered.
+[06 01:58:15 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part automatically registered.
+[06 01:58:15 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part_inverse automatically registered.
+[06 01:58:15 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part_inverse automatically registered.
+[06 01:58:15 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 01:58:15 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 01:58:15 143@main.py:Main] created model prototype and saved successfully.
+[06 01:58:32 86@main.py:Main] start training the metaphorical concept learner
+[06 01:58:32 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 01:58:32 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 01:58:53 86@main.py:Main] start training the metaphorical concept learner
+[06 01:58:53 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 01:58:53 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 01:58:53 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function unit_circle automatically registered.
+[06 01:58:53 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function area automatically registered.
+[06 01:58:53 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function disconnected automatically registered.
+[06 01:58:53 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function externally_connected automatically registered.
+[06 01:58:53 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function partial_overlap automatically registered.
+[06 01:58:53 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[06 01:58:53 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part automatically registered.
+[06 01:58:53 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part automatically registered.
+[06 01:58:53 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part_inverse automatically registered.
+[06 01:58:53 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part_inverse automatically registered.
+[06 01:58:53 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[06 01:58:53 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[06 01:58:53 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[06 01:58:53 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[06 01:58:53 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[06 01:58:53 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[06 01:58:53 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[06 01:58:53 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[06 01:58:53 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function subset automatically registered.
+[06 01:58:53 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 01:58:53 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 01:58:53 94@learn.py:AutoSchedule] start to learn the words ['plus', 'three'], add corpus size 1
+[06 01:59:46 100@learn.py:AutoSchedule] learned words : ['plus', 'three'] avg_loss:0.0007676869863644242
+[06 01:59:46 94@learn.py:AutoSchedule] start to learn the words ['two'], add corpus size 2
+[06 02:01:45 100@learn.py:AutoSchedule] learned words : ['two'] avg_loss:0.0009795564692467451
+[06 02:01:45 94@learn.py:AutoSchedule] start to learn the words ['one'], add corpus size 3
+[06 02:05:03 100@learn.py:AutoSchedule] learned words : ['one'] avg_loss:0.0008889046148397028
+[06 02:05:03 94@learn.py:AutoSchedule] start to learn the words ['red'], add corpus size 1
+[06 02:08:10 100@learn.py:AutoSchedule] learned words : ['red'] avg_loss:0.00048310690908692777
+[06 02:08:10 94@learn.py:AutoSchedule] start to learn the words [], add corpus size 0
+[06 02:08:57 100@learn.py:AutoSchedule] learned words : [] avg_loss:0.00011057222582167014
+[06 02:08:57 104@learn.py:AutoSchedule] complete the learning of words ['plus', 'three', 'two', 'one', 'red']
+[06 09:05:36 24@main.py:Main] using the core knowledge stored in configs/core_domains.yaml to create prototype
+[06 09:05:36 26@main.py:Main] loading the checkpoint parameters in prototype
+[06 09:05:36 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[06 09:05:36 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[06 09:05:36 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[06 09:05:36 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[06 09:05:36 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[06 09:05:36 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[06 09:05:36 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[06 09:05:36 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[06 09:05:36 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function subset automatically registered.
+[06 09:05:36 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function unit_circle automatically registered.
+[06 09:05:36 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function area automatically registered.
+[06 09:05:36 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function disconnected automatically registered.
+[06 09:05:36 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function externally_connected automatically registered.
+[06 09:05:36 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function partial_overlap automatically registered.
+[06 09:05:36 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[06 09:05:36 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part automatically registered.
+[06 09:05:36 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part automatically registered.
+[06 09:05:36 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part_inverse automatically registered.
+[06 09:05:36 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part_inverse automatically registered.
+[06 09:05:36 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:05:36 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:05:36 143@main.py:Main] created model prototype and saved successfully.
+[06 09:05:44 86@main.py:Main] start training the metaphorical concept learner
+[06 09:05:44 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:05:44 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:05:44 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function unit_circle automatically registered.
+[06 09:05:44 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function area automatically registered.
+[06 09:05:44 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function disconnected automatically registered.
+[06 09:05:44 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function externally_connected automatically registered.
+[06 09:05:44 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function partial_overlap automatically registered.
+[06 09:05:44 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[06 09:05:44 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part automatically registered.
+[06 09:05:44 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part automatically registered.
+[06 09:05:44 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part_inverse automatically registered.
+[06 09:05:44 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part_inverse automatically registered.
+[06 09:05:45 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[06 09:05:45 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[06 09:05:45 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[06 09:05:45 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[06 09:05:45 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[06 09:05:45 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[06 09:05:45 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[06 09:05:45 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[06 09:05:45 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function subset automatically registered.
+[06 09:05:45 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:05:45 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:05:45 94@learn.py:AutoSchedule] start to learn the words ['one', 'plus'], add corpus size 1
+[06 09:05:45 100@learn.py:AutoSchedule] learned words : ['one', 'plus'] avg_loss:0.0
+[06 09:05:45 94@learn.py:AutoSchedule] start to learn the words ['three'], add corpus size 2
+[06 09:05:45 100@learn.py:AutoSchedule] learned words : ['three'] avg_loss:0.0
+[06 09:05:45 94@learn.py:AutoSchedule] start to learn the words ['two'], add corpus size 3
+[06 09:05:45 100@learn.py:AutoSchedule] learned words : ['two'] avg_loss:0.0
+[06 09:05:45 94@learn.py:AutoSchedule] start to learn the words ['red'], add corpus size 1
+[06 09:05:45 100@learn.py:AutoSchedule] learned words : ['red'] avg_loss:0.0
+[06 09:05:45 94@learn.py:AutoSchedule] start to learn the words [], add corpus size 0
+[06 09:05:46 100@learn.py:AutoSchedule] learned words : [] avg_loss:0.0
+[06 09:05:46 104@learn.py:AutoSchedule] complete the learning of words ['one', 'plus', 'three', 'two', 'red']
+[06 09:06:26 86@main.py:Main] start training the metaphorical concept learner
+[06 09:06:26 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:06:26 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:06:26 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function unit_circle automatically registered.
+[06 09:06:26 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function area automatically registered.
+[06 09:06:26 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function disconnected automatically registered.
+[06 09:06:26 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function externally_connected automatically registered.
+[06 09:06:26 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function partial_overlap automatically registered.
+[06 09:06:26 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[06 09:06:26 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part automatically registered.
+[06 09:06:26 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part automatically registered.
+[06 09:06:26 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part_inverse automatically registered.
+[06 09:06:26 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part_inverse automatically registered.
+[06 09:06:26 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[06 09:06:26 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[06 09:06:26 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[06 09:06:26 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[06 09:06:26 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[06 09:06:26 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[06 09:06:26 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[06 09:06:26 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[06 09:06:26 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function subset automatically registered.
+[06 09:06:26 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:06:26 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:06:51 86@main.py:Main] start training the metaphorical concept learner
+[06 09:06:51 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:06:51 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:06:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function unit_circle automatically registered.
+[06 09:06:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function area automatically registered.
+[06 09:06:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function disconnected automatically registered.
+[06 09:06:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function externally_connected automatically registered.
+[06 09:06:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function partial_overlap automatically registered.
+[06 09:06:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[06 09:06:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part automatically registered.
+[06 09:06:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part automatically registered.
+[06 09:06:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part_inverse automatically registered.
+[06 09:06:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part_inverse automatically registered.
+[06 09:06:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[06 09:06:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[06 09:06:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[06 09:06:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[06 09:06:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[06 09:06:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[06 09:06:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[06 09:06:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[06 09:06:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function subset automatically registered.
+[06 09:06:51 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:06:51 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:08:22 86@main.py:Main] start training the metaphorical concept learner
+[06 09:08:22 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:08:22 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:08:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function unit_circle automatically registered.
+[06 09:08:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function area automatically registered.
+[06 09:08:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function disconnected automatically registered.
+[06 09:08:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function externally_connected automatically registered.
+[06 09:08:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function partial_overlap automatically registered.
+[06 09:08:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[06 09:08:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part automatically registered.
+[06 09:08:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part automatically registered.
+[06 09:08:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part_inverse automatically registered.
+[06 09:08:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part_inverse automatically registered.
+[06 09:08:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[06 09:08:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[06 09:08:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[06 09:08:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[06 09:08:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[06 09:08:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[06 09:08:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[06 09:08:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[06 09:08:22 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function subset automatically registered.
+[06 09:08:22 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:08:22 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:09:32 86@main.py:Main] start training the metaphorical concept learner
+[06 09:09:32 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:09:32 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:09:32 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function unit_circle automatically registered.
+[06 09:09:32 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function area automatically registered.
+[06 09:09:32 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function disconnected automatically registered.
+[06 09:09:32 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function externally_connected automatically registered.
+[06 09:09:32 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function partial_overlap automatically registered.
+[06 09:09:32 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[06 09:09:32 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part automatically registered.
+[06 09:09:32 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part automatically registered.
+[06 09:09:32 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part_inverse automatically registered.
+[06 09:09:32 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part_inverse automatically registered.
+[06 09:09:32 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[06 09:09:32 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[06 09:09:32 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[06 09:09:32 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[06 09:09:32 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[06 09:09:32 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[06 09:09:32 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[06 09:09:32 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[06 09:09:32 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function subset automatically registered.
+[06 09:09:32 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:09:32 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:09:48 86@main.py:Main] start training the metaphorical concept learner
+[06 09:09:48 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:09:48 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:09:48 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function unit_circle automatically registered.
+[06 09:09:48 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function area automatically registered.
+[06 09:09:48 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function disconnected automatically registered.
+[06 09:09:48 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function externally_connected automatically registered.
+[06 09:09:48 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function partial_overlap automatically registered.
+[06 09:09:48 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[06 09:09:48 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part automatically registered.
+[06 09:09:48 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part automatically registered.
+[06 09:09:48 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part_inverse automatically registered.
+[06 09:09:48 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part_inverse automatically registered.
+[06 09:09:49 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[06 09:09:49 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[06 09:09:49 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[06 09:09:49 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[06 09:09:49 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[06 09:09:49 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[06 09:09:49 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[06 09:09:49 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[06 09:09:49 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function subset automatically registered.
+[06 09:09:49 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:09:49 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:10:06 86@main.py:Main] start training the metaphorical concept learner
+[06 09:10:06 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:10:06 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:10:06 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function unit_circle automatically registered.
+[06 09:10:06 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function area automatically registered.
+[06 09:10:06 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function disconnected automatically registered.
+[06 09:10:06 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function externally_connected automatically registered.
+[06 09:10:06 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function partial_overlap automatically registered.
+[06 09:10:06 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[06 09:10:06 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part automatically registered.
+[06 09:10:06 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part automatically registered.
+[06 09:10:06 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part_inverse automatically registered.
+[06 09:10:06 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part_inverse automatically registered.
+[06 09:10:06 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[06 09:10:06 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[06 09:10:06 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[06 09:10:06 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[06 09:10:06 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[06 09:10:06 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[06 09:10:06 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[06 09:10:06 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[06 09:10:06 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function subset automatically registered.
+[06 09:10:06 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:10:06 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:10:27 86@main.py:Main] start training the metaphorical concept learner
+[06 09:10:27 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:10:27 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:10:27 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function unit_circle automatically registered.
+[06 09:10:27 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function area automatically registered.
+[06 09:10:27 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function disconnected automatically registered.
+[06 09:10:27 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function externally_connected automatically registered.
+[06 09:10:27 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function partial_overlap automatically registered.
+[06 09:10:27 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[06 09:10:27 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part automatically registered.
+[06 09:10:27 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part automatically registered.
+[06 09:10:27 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part_inverse automatically registered.
+[06 09:10:27 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part_inverse automatically registered.
+[06 09:10:27 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[06 09:10:27 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[06 09:10:27 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[06 09:10:27 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[06 09:10:27 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[06 09:10:27 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[06 09:10:27 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[06 09:10:27 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[06 09:10:27 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function subset automatically registered.
+[06 09:10:27 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:10:27 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:11:09 24@main.py:Main] using the core knowledge stored in configs/core_domains.yaml to create prototype
+[06 09:11:09 26@main.py:Main] loading the checkpoint parameters in prototype
+[06 09:11:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[06 09:11:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[06 09:11:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[06 09:11:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[06 09:11:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[06 09:11:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[06 09:11:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[06 09:11:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[06 09:11:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function subset automatically registered.
+[06 09:11:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function unit_circle automatically registered.
+[06 09:11:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function area automatically registered.
+[06 09:11:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function disconnected automatically registered.
+[06 09:11:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function externally_connected automatically registered.
+[06 09:11:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function partial_overlap automatically registered.
+[06 09:11:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[06 09:11:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part automatically registered.
+[06 09:11:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part automatically registered.
+[06 09:11:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part_inverse automatically registered.
+[06 09:11:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part_inverse automatically registered.
+[06 09:11:09 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:11:09 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:16:51 24@main.py:Main] using the core knowledge stored in configs/core_domains.yaml to create prototype
+[06 09:16:51 26@main.py:Main] loading the checkpoint parameters in prototype
+[06 09:16:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[06 09:16:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[06 09:16:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[06 09:16:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[06 09:16:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[06 09:16:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[06 09:16:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[06 09:16:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[06 09:16:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function subset automatically registered.
+[06 09:16:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function unit_circle automatically registered.
+[06 09:16:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function area automatically registered.
+[06 09:16:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function disconnected automatically registered.
+[06 09:16:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function externally_connected automatically registered.
+[06 09:16:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function partial_overlap automatically registered.
+[06 09:16:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[06 09:16:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part automatically registered.
+[06 09:16:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part automatically registered.
+[06 09:16:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part_inverse automatically registered.
+[06 09:16:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part_inverse automatically registered.
+[06 09:16:51 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:16:51 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:17:12 24@main.py:Main] using the core knowledge stored in configs/core_domains.yaml to create prototype
+[06 09:17:12 26@main.py:Main] loading the checkpoint parameters in prototype
+[06 09:17:12 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[06 09:17:12 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[06 09:17:12 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[06 09:17:12 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[06 09:17:12 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[06 09:17:12 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[06 09:17:12 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[06 09:17:12 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[06 09:17:12 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function subset automatically registered.
+[06 09:17:12 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function unit_circle automatically registered.
+[06 09:17:12 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function area automatically registered.
+[06 09:17:12 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function disconnected automatically registered.
+[06 09:17:12 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function externally_connected automatically registered.
+[06 09:17:12 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function partial_overlap automatically registered.
+[06 09:17:12 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[06 09:17:12 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part automatically registered.
+[06 09:17:12 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part automatically registered.
+[06 09:17:12 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part_inverse automatically registered.
+[06 09:17:12 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part_inverse automatically registered.
+[06 09:17:12 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:17:12 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:17:12 143@main.py:Main] created model prototype and saved successfully.
+[06 09:17:31 86@main.py:Main] start training the metaphorical concept learner
+[06 09:17:31 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:17:31 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:17:35 24@main.py:Main] using the core knowledge stored in configs/core_domains.yaml to create prototype
+[06 09:17:35 26@main.py:Main] loading the checkpoint parameters in prototype
+[06 09:17:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[06 09:17:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[06 09:17:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[06 09:17:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[06 09:17:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[06 09:17:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[06 09:17:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[06 09:17:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[06 09:17:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function subset automatically registered.
+[06 09:17:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function unit_circle automatically registered.
+[06 09:17:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function area automatically registered.
+[06 09:17:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function disconnected automatically registered.
+[06 09:17:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function externally_connected automatically registered.
+[06 09:17:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function partial_overlap automatically registered.
+[06 09:17:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[06 09:17:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part automatically registered.
+[06 09:17:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part automatically registered.
+[06 09:17:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part_inverse automatically registered.
+[06 09:17:35 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part_inverse automatically registered.
+[06 09:17:35 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:17:35 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:17:35 143@main.py:Main] created model prototype and saved successfully.
+[06 09:17:57 86@main.py:Main] start training the metaphorical concept learner
+[06 09:17:57 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:17:57 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:17:57 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function unit_circle automatically registered.
+[06 09:17:57 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function area automatically registered.
+[06 09:17:57 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function disconnected automatically registered.
+[06 09:17:57 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function externally_connected automatically registered.
+[06 09:17:57 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function partial_overlap automatically registered.
+[06 09:17:57 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[06 09:17:57 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part automatically registered.
+[06 09:17:57 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part automatically registered.
+[06 09:17:57 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part_inverse automatically registered.
+[06 09:17:57 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part_inverse automatically registered.
+[06 09:17:57 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[06 09:17:57 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[06 09:17:57 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[06 09:17:57 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[06 09:17:57 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[06 09:17:57 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[06 09:17:57 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[06 09:17:57 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[06 09:17:57 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function subset automatically registered.
+[06 09:17:57 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:17:57 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:18:55 24@main.py:Main] using the core knowledge stored in configs/core_domains.yaml to create prototype
+[06 09:18:55 26@main.py:Main] loading the checkpoint parameters in prototype
+[06 09:18:55 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[06 09:18:55 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[06 09:18:55 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[06 09:18:55 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[06 09:18:55 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[06 09:18:55 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[06 09:18:55 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[06 09:18:55 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[06 09:18:55 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function subset automatically registered.
+[06 09:18:55 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function unit_circle automatically registered.
+[06 09:18:55 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function area automatically registered.
+[06 09:18:55 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function disconnected automatically registered.
+[06 09:18:55 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function externally_connected automatically registered.
+[06 09:18:55 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function partial_overlap automatically registered.
+[06 09:18:55 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[06 09:18:55 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part automatically registered.
+[06 09:18:55 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part automatically registered.
+[06 09:18:55 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part_inverse automatically registered.
+[06 09:18:55 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part_inverse automatically registered.
+[06 09:18:55 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:18:55 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:18:55 143@main.py:Main] created model prototype and saved successfully.
+[06 09:18:57 86@main.py:Main] start training the metaphorical concept learner
+[06 09:18:57 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:18:57 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:19:08 86@main.py:Main] start training the metaphorical concept learner
+[06 09:19:08 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:19:08 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:19:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function unit_circle automatically registered.
+[06 09:19:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function area automatically registered.
+[06 09:19:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function disconnected automatically registered.
+[06 09:19:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function externally_connected automatically registered.
+[06 09:19:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function partial_overlap automatically registered.
+[06 09:19:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[06 09:19:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part automatically registered.
+[06 09:19:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part automatically registered.
+[06 09:19:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part_inverse automatically registered.
+[06 09:19:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part_inverse automatically registered.
+[06 09:19:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[06 09:19:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[06 09:19:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[06 09:19:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[06 09:19:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[06 09:19:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[06 09:19:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[06 09:19:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[06 09:19:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function subset automatically registered.
+[06 09:19:08 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:19:08 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 09:19:08 94@learn.py:AutoSchedule] start to learn the words ['plus', 'one'], add corpus size 1
+[06 09:20:05 100@learn.py:AutoSchedule] learned words : ['plus', 'one'] avg_loss:0.00074058398604393
+[06 09:20:05 94@learn.py:AutoSchedule] start to learn the words ['three'], add corpus size 2
+[06 09:21:58 100@learn.py:AutoSchedule] learned words : ['three'] avg_loss:0.0002874014026019722
+[06 09:21:58 94@learn.py:AutoSchedule] start to learn the words ['two'], add corpus size 3
+[06 09:25:07 100@learn.py:AutoSchedule] learned words : ['two'] avg_loss:0.0007444245857186615
+[06 09:25:07 94@learn.py:AutoSchedule] start to learn the words ['red'], add corpus size 1
+[06 09:28:49 100@learn.py:AutoSchedule] learned words : ['red'] avg_loss:0.0007906458340585232
+[06 09:28:49 94@learn.py:AutoSchedule] start to learn the words [], add corpus size 0
+[06 09:29:33 100@learn.py:AutoSchedule] learned words : [] avg_loss:0.0001810968096833676
+[06 09:29:33 104@learn.py:AutoSchedule] complete the learning of words ['plus', 'one', 'three', 'two', 'red']
+[06 10:59:59 86@main.py:Main] start training the metaphorical concept learner
+[06 10:59:59 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 10:59:59 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 10:59:59 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function unit_circle automatically registered.
+[06 10:59:59 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function area automatically registered.
+[06 10:59:59 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function disconnected automatically registered.
+[06 10:59:59 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function externally_connected automatically registered.
+[06 10:59:59 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function partial_overlap automatically registered.
+[06 10:59:59 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[06 10:59:59 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part automatically registered.
+[06 10:59:59 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part automatically registered.
+[06 10:59:59 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part_inverse automatically registered.
+[06 10:59:59 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part_inverse automatically registered.
+[06 10:59:59 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[06 10:59:59 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[06 10:59:59 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[06 10:59:59 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[06 10:59:59 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[06 10:59:59 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[06 10:59:59 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[06 10:59:59 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[06 10:59:59 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function subset automatically registered.
+[06 10:59:59 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 10:59:59 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 10:59:59 94@learn.py:AutoSchedule] start to learn the words ['plus', 'three'], add corpus size 1
+[06 11:00:00 100@learn.py:AutoSchedule] learned words : ['plus', 'three'] avg_loss:0.0
+[06 11:00:00 94@learn.py:AutoSchedule] start to learn the words ['two'], add corpus size 2
+[06 11:00:00 100@learn.py:AutoSchedule] learned words : ['two'] avg_loss:0.0
+[06 11:00:00 94@learn.py:AutoSchedule] start to learn the words ['one'], add corpus size 3
+[06 11:00:00 100@learn.py:AutoSchedule] learned words : ['one'] avg_loss:0.0
+[06 11:00:00 94@learn.py:AutoSchedule] start to learn the words ['red'], add corpus size 1
+[06 11:00:01 100@learn.py:AutoSchedule] learned words : ['red'] avg_loss:0.0
+[06 11:00:01 94@learn.py:AutoSchedule] start to learn the words [], add corpus size 0
+[06 11:00:01 100@learn.py:AutoSchedule] learned words : [] avg_loss:0.0
+[06 11:00:01 104@learn.py:AutoSchedule] complete the learning of words ['plus', 'three', 'two', 'one', 'red']
+[06 21:25:43 86@main.py:Main] start training the metaphorical concept learner
+[06 21:25:43 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 21:25:43 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 21:25:43 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function unit_circle automatically registered.
+[06 21:25:43 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function area automatically registered.
+[06 21:25:43 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function disconnected automatically registered.
+[06 21:25:43 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function externally_connected automatically registered.
+[06 21:25:43 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function partial_overlap automatically registered.
+[06 21:25:43 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[06 21:25:43 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part automatically registered.
+[06 21:25:43 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part automatically registered.
+[06 21:25:43 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part_inverse automatically registered.
+[06 21:25:43 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part_inverse automatically registered.
+[06 21:25:43 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[06 21:25:43 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[06 21:25:43 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[06 21:25:43 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[06 21:25:43 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[06 21:25:43 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[06 21:25:43 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[06 21:25:43 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[06 21:25:43 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function subset automatically registered.
+[06 21:25:43 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 21:25:43 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 21:25:43 94@learn.py:AutoSchedule] start to learn the words ['plus', 'one'], add corpus size 1
+[06 21:25:43 100@learn.py:AutoSchedule] learned words : ['plus', 'one'] avg_loss:0.0
+[06 21:25:43 94@learn.py:AutoSchedule] start to learn the words ['three'], add corpus size 2
+[06 21:25:44 100@learn.py:AutoSchedule] learned words : ['three'] avg_loss:0.0
+[06 21:25:44 94@learn.py:AutoSchedule] start to learn the words ['two'], add corpus size 3
+[06 21:25:56 86@main.py:Main] start training the metaphorical concept learner
+[06 21:25:56 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 21:25:56 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 21:25:56 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function unit_circle automatically registered.
+[06 21:25:56 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function area automatically registered.
+[06 21:25:56 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function disconnected automatically registered.
+[06 21:25:56 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function externally_connected automatically registered.
+[06 21:25:56 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function partial_overlap automatically registered.
+[06 21:25:56 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[06 21:25:56 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part automatically registered.
+[06 21:25:56 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part automatically registered.
+[06 21:25:56 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part_inverse automatically registered.
+[06 21:25:56 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part_inverse automatically registered.
+[06 21:25:56 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[06 21:25:56 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[06 21:25:56 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[06 21:25:56 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[06 21:25:56 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[06 21:25:56 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[06 21:25:56 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[06 21:25:56 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[06 21:25:56 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function subset automatically registered.
+[06 21:25:56 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 21:25:56 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 21:25:56 94@learn.py:AutoSchedule] start to learn the words ['one', 'plus'], add corpus size 1
+[06 21:25:57 100@learn.py:AutoSchedule] learned words : ['one', 'plus'] avg_loss:0.0
+[06 21:25:57 94@learn.py:AutoSchedule] start to learn the words ['three'], add corpus size 2
+[06 21:25:57 100@learn.py:AutoSchedule] learned words : ['three'] avg_loss:0.0
+[06 21:25:57 94@learn.py:AutoSchedule] start to learn the words ['two'], add corpus size 3
+[06 21:25:57 100@learn.py:AutoSchedule] learned words : ['two'] avg_loss:0.0
+[06 21:25:57 94@learn.py:AutoSchedule] start to learn the words ['red'], add corpus size 1
+[06 21:25:58 100@learn.py:AutoSchedule] learned words : ['red'] avg_loss:0.0
+[06 21:25:58 94@learn.py:AutoSchedule] start to learn the words [], add corpus size 0
+[06 21:25:58 100@learn.py:AutoSchedule] learned words : [] avg_loss:0.0
+[06 21:25:58 104@learn.py:AutoSchedule] complete the learning of words ['one', 'plus', 'three', 'two', 'red']
+[06 21:26:09 86@main.py:Main] start training the metaphorical concept learner
+[06 21:26:09 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 21:26:09 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 21:26:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function unit_circle automatically registered.
+[06 21:26:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function area automatically registered.
+[06 21:26:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function disconnected automatically registered.
+[06 21:26:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function externally_connected automatically registered.
+[06 21:26:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function partial_overlap automatically registered.
+[06 21:26:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[06 21:26:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part automatically registered.
+[06 21:26:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part automatically registered.
+[06 21:26:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part_inverse automatically registered.
+[06 21:26:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part_inverse automatically registered.
+[06 21:26:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[06 21:26:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[06 21:26:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[06 21:26:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[06 21:26:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[06 21:26:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[06 21:26:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[06 21:26:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[06 21:26:09 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function subset automatically registered.
+[06 21:26:09 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 21:26:09 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 21:26:09 94@learn.py:AutoSchedule] start to learn the words ['plus', 'one'], add corpus size 1
+[06 21:26:10 100@learn.py:AutoSchedule] learned words : ['plus', 'one'] avg_loss:0.0
+[06 21:26:10 94@learn.py:AutoSchedule] start to learn the words ['three'], add corpus size 2
+[06 21:26:10 100@learn.py:AutoSchedule] learned words : ['three'] avg_loss:0.0
+[06 21:26:10 94@learn.py:AutoSchedule] start to learn the words ['two'], add corpus size 3
+[06 21:26:10 100@learn.py:AutoSchedule] learned words : ['two'] avg_loss:0.0
+[06 21:26:10 94@learn.py:AutoSchedule] start to learn the words ['red'], add corpus size 1
+[06 21:26:11 100@learn.py:AutoSchedule] learned words : ['red'] avg_loss:0.0
+[06 21:26:11 94@learn.py:AutoSchedule] start to learn the words [], add corpus size 0
+[06 21:26:11 100@learn.py:AutoSchedule] learned words : [] avg_loss:0.0
+[06 21:26:11 104@learn.py:AutoSchedule] complete the learning of words ['plus', 'one', 'three', 'two', 'red']
+[06 21:38:28 86@main.py:Main] start training the metaphorical concept learner
+[06 21:38:28 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 21:38:28 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 21:38:28 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function unit_circle automatically registered.
+[06 21:38:28 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function area automatically registered.
+[06 21:38:28 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function disconnected automatically registered.
+[06 21:38:28 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function externally_connected automatically registered.
+[06 21:38:28 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function partial_overlap automatically registered.
+[06 21:38:28 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[06 21:38:28 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part automatically registered.
+[06 21:38:28 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part automatically registered.
+[06 21:38:28 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part_inverse automatically registered.
+[06 21:38:28 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part_inverse automatically registered.
+[06 21:38:28 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[06 21:38:28 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[06 21:38:28 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[06 21:38:28 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[06 21:38:28 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[06 21:38:28 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[06 21:38:28 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[06 21:38:28 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[06 21:38:28 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function subset automatically registered.
+[06 21:38:28 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 21:38:28 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 21:38:28 94@learn.py:AutoSchedule] start to learn the words ['plus', 'three'], add corpus size 1
+[06 21:39:18 100@learn.py:AutoSchedule] learned words : ['plus', 'three'] avg_loss:0.0006570317200385034
+[06 21:39:18 94@learn.py:AutoSchedule] start to learn the words ['one'], add corpus size 2
+[06 21:41:30 100@learn.py:AutoSchedule] learned words : ['one'] avg_loss:0.00046193250454962254
+[06 21:41:30 94@learn.py:AutoSchedule] start to learn the words ['two'], add corpus size 3
+[06 21:44:38 100@learn.py:AutoSchedule] learned words : ['two'] avg_loss:0.0007444280781783164
+[06 21:44:38 94@learn.py:AutoSchedule] start to learn the words ['bigger'], add corpus size 4
+[06 22:23:30 86@main.py:Main] start training the metaphorical concept learner
+[06 22:23:30 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 22:23:30 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 22:23:30 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function unit_circle automatically registered.
+[06 22:23:30 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function area automatically registered.
+[06 22:23:30 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function disconnected automatically registered.
+[06 22:23:30 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function externally_connected automatically registered.
+[06 22:23:30 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function partial_overlap automatically registered.
+[06 22:23:30 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[06 22:23:30 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part automatically registered.
+[06 22:23:30 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part automatically registered.
+[06 22:23:30 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part_inverse automatically registered.
+[06 22:23:30 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part_inverse automatically registered.
+[06 22:23:30 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[06 22:23:30 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[06 22:23:30 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[06 22:23:30 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[06 22:23:30 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[06 22:23:30 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[06 22:23:30 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[06 22:23:30 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[06 22:23:30 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function subset automatically registered.
+[06 22:23:30 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 22:23:30 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[06 22:23:30 94@learn.py:AutoSchedule] start to learn the words ['three', 'plus'], add corpus size 1
+[06 22:24:21 100@learn.py:AutoSchedule] learned words : ['three', 'plus'] avg_loss:0.0006570317200385034
+[06 22:24:21 94@learn.py:AutoSchedule] start to learn the words ['two'], add corpus size 2
+[06 22:25:56 100@learn.py:AutoSchedule] learned words : ['two'] avg_loss:0.0009904420003294945
+[06 22:25:56 94@learn.py:AutoSchedule] start to learn the words ['one'], add corpus size 3
+[06 22:30:20 100@learn.py:AutoSchedule] learned words : ['one'] avg_loss:0.0003043464676011354
+[06 22:30:20 94@learn.py:AutoSchedule] start to learn the words ['bigger'], add corpus size 4
+[06 22:38:52 100@learn.py:AutoSchedule] learned words : ['bigger'] avg_loss:0.0003106525691691786
+[06 22:38:52 94@learn.py:AutoSchedule] start to learn the words ['smaller'], add corpus size 3
+[06 22:47:20 100@learn.py:AutoSchedule] learned words : ['smaller'] avg_loss:0.0008639394072815776
+[06 22:47:20 94@learn.py:AutoSchedule] start to learn the words ['red'], add corpus size 1
+[06 22:55:11 100@learn.py:AutoSchedule] learned words : ['red'] avg_loss:0.0005054197390563786
+[06 22:55:11 94@learn.py:AutoSchedule] start to learn the words [], add corpus size 0
+[06 22:56:45 100@learn.py:AutoSchedule] learned words : [] avg_loss:0.0002004784473683685
+[06 22:56:45 104@learn.py:AutoSchedule] complete the learning of words ['three', 'plus', 'two', 'one', 'bigger', 'smaller', 'red']

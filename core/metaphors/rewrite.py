@@ -72,7 +72,7 @@ class LocalFrame(nn.Module):
 
     def rewrite_rules(self) -> List[RewriteRule]:
         rules : List[RewriteRule] = []
-        print(self.func_mappers)
+
         for src in self.func_mappers:
             local_rule = RewriteRule(
                 left_func   =    src,
@@ -87,9 +87,9 @@ class LocalFrame(nn.Module):
         return rules
 
 def type_suffix(args : List[Value]):
-    arg_types = [str(arg.vtype.alias) for arg in args]
-    if len(arg_types) == 0: return ""
-    else: return "->"+"#".join(arg_types)
+    arg_types = [f"{arg.vtype.typename}-{arg.vtype.alias}" for arg in args]
+    if len(arg_types) == 0: return "#"
+    else: return "#"+"->".join(arg_types)
 
 class NeuralRewriter(nn.Module):
     def __init__(self):
@@ -99,7 +99,6 @@ class NeuralRewriter(nn.Module):
     def save_ckpt(self, ckpt_path) -> int:
         if not os.path.exists(f"{ckpt_path}/frames"): os.makedirs(f"{ckpt_path}/frames")
         for frame_name in self.frames: torch.save(self.frames[frame_name], f"{ckpt_path}/frames/{frame_name}.pth")#.save_ckpt(f"{ckpt_path}/frames/{frame_name}")
-        return 0
 
     def load_ckpt(self, ckpt_path) -> int:
         frames_dir = f"{ckpt_path}/frames"
@@ -107,7 +106,6 @@ class NeuralRewriter(nn.Module):
             file_path = os.path.join(frames_dir, filename)
             if os.path.isfile(file_path) and pth_file(filename):
                 self.frames[filename[:-4]] = torch.load(file_path, weights_only = False)
-        return 0
 
     def add_frame(self, name : str, frame : LocalFrame): self.frames[name] = frame
 
@@ -144,34 +142,38 @@ class NeuralRewriter(nn.Module):
             node, args, weight = stack.pop(0) # a tuple of qfunc an arg
 
             suffix_node = node + type_suffix(args)
+            #node = suffix_node
 
 
-            rewrite_nodes.add(node) # add this as visited
+            rewrite_nodes.add(suffix_node) # add this as visited
             visited_nodes.add(suffix_node)# add this as visited
             
             # update the reduce args with the maxium 
-            if node not in reduce_weight: reduce_weight[node] = 0.0
-            if weight > reduce_weight[node]:
-                rewrite_args[node] = args
-                reduce_weight[node] = weight
+            if suffix_node not in reduce_weight: reduce_weight[suffix_node] = -1e9
+            if weight > reduce_weight[suffix_node]:
+                rewrite_args[suffix_node] = args
+                reduce_weight[suffix_node] = weight
 
             arged_edges = self.rewrite_edges(node, args)
+
             for (qfunc, args, weight) in arged_edges:
                 suffix_qfunc = qfunc + type_suffix(args)
                 if not suffix_qfunc in visited_nodes: # check if the node is visited
 
-                    rewrite_edges.append([node, qfunc, weight])
-                    #else: reduce_edges[node] = [(node, qfunc, weight)]
-                    stack.append((qfunc, args, weight))
+                    rewrite_edges.append([suffix_node, suffix_qfunc , weight])
+
+                    stack.append((q_func, args, weight))
         
         return rewrite_nodes, rewrite_edges, rewrite_args
     
     def rewrite_distr(self, q_func : str, args : List[Value]) -> List[Tuple[str, List[Value], Any]]:
         ### 1. here we find the reduce_nodes, reduce_edges"""
         reduce_nodes, reduce_edges, reduce_args  = self.rewrite_graph(q_func, args)
- 
+
         """the distribution over possible rewrirtes over f(x)"""
         ### 2. weight each reduction by the far-reaching weight
+        q_func = q_func + type_suffix(args)
+
         weights_map: Mapping[str, Any] = reduce_weight(q_func, reduce_nodes, reduce_edges)
 
 
@@ -179,9 +181,9 @@ class NeuralRewriter(nn.Module):
         rewrite_distr = list()
         for node in reduce_nodes: rewrite_distr.append((node, reduce_args[node], weights_map[node]))
         # collect the `reduced_binds` as a List[Tuple[str, List[Value], torch.Tensor]]
-        #print(rewrite_distr)
-        print(len(rewrite_distr))
-        return rewrite_distr#, (reduce_nodes, reduce_edges)
+
+
+        return rewrite_distr, (reduce_nodes, reduce_edges)
 
     def _display_dot_graph(self, rules: List[RewriteRule]) -> str:
         """Display graph in DOT format for Graphviz"""
@@ -238,7 +240,7 @@ def reduce_weight(query : str,  nodes : List[str], edges : List[Tuple[str, str, 
         graph = {}
         for node in nodes: graph[node] = []
 
-        for src, dst, prob in edges: graph[src].append((dst, prob))
+        for src, dst, prob in edges: graph[src].append((dst, torch.sigmoid(prob)))
 
         """1. delete all the backward edges to make it an DAG"""
         visited = set()

@@ -1,8 +1,8 @@
 name: "prototype"
 domains:
     intergers:
-      name: "integers_executor"
-      path: "domains.math.integers_domain"
+      name: "integer_executor"
+      path: "domains.math.integer_domain"
     circle:
       name: "circle_executor"
       path: "domains.spatial.circle_domain"

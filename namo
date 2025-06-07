@@ -1,4 +1,0 @@
-digraph RewriteRules {
-    rankdir=LR;
-    node [shape=box, style=rounded];
-}
