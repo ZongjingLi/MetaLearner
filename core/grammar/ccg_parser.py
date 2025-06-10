@@ -113,7 +113,7 @@ class ChartParser(nn.Module):
             
             module_dict[word_key] = (module_list)
         
-        self.lexicon = module_dict#nn.ModuleDict(module_dict)
+        self.lexicon : Dict = module_dict
         self.lexicon_weight = nn.ParameterDict(weight_dict)
         self.rules = [ForwardApplication, BackwardApplication] if rules is None else rules
 

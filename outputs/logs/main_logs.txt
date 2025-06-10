@@ -21314,3 +21314,120 @@
 [06 22:55:11 94@learn.py:AutoSchedule] start to learn the words [], add corpus size 0
 [06 22:56:45 100@learn.py:AutoSchedule] learned words : [] avg_loss:0.0002004784473683685
 [06 22:56:45 104@learn.py:AutoSchedule] complete the learning of words ['three', 'plus', 'two', 'one', 'bigger', 'smaller', 'red']
+[07 11:56:50 86@main.py:Main] start training the metaphorical concept learner
+[07 11:56:50 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[07 11:56:50 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[07 11:56:50 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function unit_circle automatically registered.
+[07 11:56:50 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function area automatically registered.
+[07 11:56:50 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function disconnected automatically registered.
+[07 11:56:50 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function externally_connected automatically registered.
+[07 11:56:50 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function partial_overlap automatically registered.
+[07 11:56:50 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[07 11:56:50 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part automatically registered.
+[07 11:56:50 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part automatically registered.
+[07 11:56:50 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part_inverse automatically registered.
+[07 11:56:50 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part_inverse automatically registered.
+[07 11:56:50 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[07 11:56:50 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[07 11:56:50 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[07 11:56:50 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[07 11:56:50 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[07 11:56:50 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[07 11:56:50 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[07 11:56:50 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[07 11:56:50 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function subset automatically registered.
+[07 11:56:50 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[07 11:56:50 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[07 11:56:50 94@learn.py:AutoSchedule] start to learn the words ['one', 'plus'], add corpus size 1
+[07 11:56:51 100@learn.py:AutoSchedule] learned words : ['one', 'plus'] avg_loss:0.0
+[07 11:56:51 94@learn.py:AutoSchedule] start to learn the words ['three'], add corpus size 2
+[07 11:56:51 100@learn.py:AutoSchedule] learned words : ['three'] avg_loss:0.0
+[07 11:56:51 94@learn.py:AutoSchedule] start to learn the words ['two'], add corpus size 3
+[07 11:56:51 100@learn.py:AutoSchedule] learned words : ['two'] avg_loss:0.0
+[07 11:56:51 94@learn.py:AutoSchedule] start to learn the words ['bigger'], add corpus size 4
+[07 11:56:52 100@learn.py:AutoSchedule] learned words : ['bigger'] avg_loss:0.00010254633525619283
+[07 11:56:52 94@learn.py:AutoSchedule] start to learn the words ['smaller'], add corpus size 3
+[07 11:56:53 100@learn.py:AutoSchedule] learned words : ['smaller'] avg_loss:0.00011833283497253433
+[07 11:56:53 94@learn.py:AutoSchedule] start to learn the words ['red'], add corpus size 1
+[07 11:56:54 100@learn.py:AutoSchedule] learned words : ['red'] avg_loss:0.0001098804859793745
+[07 11:56:54 94@learn.py:AutoSchedule] start to learn the words [], add corpus size 0
+[07 11:56:55 100@learn.py:AutoSchedule] learned words : [] avg_loss:0.0001098804859793745
+[07 11:56:55 104@learn.py:AutoSchedule] complete the learning of words ['one', 'plus', 'three', 'two', 'bigger', 'smaller', 'red']
+[07 11:57:05 86@main.py:Main] start training the metaphorical concept learner
+[07 11:57:05 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[07 11:57:05 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[07 11:57:05 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function unit_circle automatically registered.
+[07 11:57:05 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function area automatically registered.
+[07 11:57:05 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function disconnected automatically registered.
+[07 11:57:05 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function externally_connected automatically registered.
+[07 11:57:05 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function partial_overlap automatically registered.
+[07 11:57:05 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[07 11:57:05 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part automatically registered.
+[07 11:57:05 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part automatically registered.
+[07 11:57:05 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part_inverse automatically registered.
+[07 11:57:05 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part_inverse automatically registered.
+[07 11:57:05 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[07 11:57:05 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[07 11:57:05 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[07 11:57:05 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[07 11:57:05 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[07 11:57:05 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[07 11:57:05 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[07 11:57:05 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[07 11:57:05 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function subset automatically registered.
+[07 11:57:05 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[07 11:57:05 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[07 11:57:05 94@learn.py:AutoSchedule] start to learn the words ['plus', 'one'], add corpus size 1
+[07 11:57:05 100@learn.py:AutoSchedule] learned words : ['plus', 'one'] avg_loss:0.0
+[07 11:57:05 94@learn.py:AutoSchedule] start to learn the words ['three'], add corpus size 2
+[07 11:57:05 100@learn.py:AutoSchedule] learned words : ['three'] avg_loss:0.0
+[07 11:57:05 94@learn.py:AutoSchedule] start to learn the words ['two'], add corpus size 3
+[07 11:57:06 100@learn.py:AutoSchedule] learned words : ['two'] avg_loss:0.0
+[07 11:57:06 94@learn.py:AutoSchedule] start to learn the words ['bigger'], add corpus size 4
+[07 11:57:06 100@learn.py:AutoSchedule] learned words : ['bigger'] avg_loss:0.00010254633525619283
+[07 11:57:06 94@learn.py:AutoSchedule] start to learn the words ['smaller'], add corpus size 3
+[07 11:57:07 100@learn.py:AutoSchedule] learned words : ['smaller'] avg_loss:0.00011833283497253433
+[07 11:57:07 94@learn.py:AutoSchedule] start to learn the words ['red'], add corpus size 1
+[07 11:57:08 100@learn.py:AutoSchedule] learned words : ['red'] avg_loss:0.0001098804859793745
+[07 11:57:08 94@learn.py:AutoSchedule] start to learn the words [], add corpus size 0
+[07 11:57:09 100@learn.py:AutoSchedule] learned words : [] avg_loss:0.0001098804859793745
+[07 11:57:09 104@learn.py:AutoSchedule] complete the learning of words ['plus', 'one', 'three', 'two', 'bigger', 'smaller', 'red']
+[07 11:57:59 86@main.py:Main] start training the metaphorical concept learner
+[07 11:57:59 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[07 11:57:59 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[07 11:57:59 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function unit_circle automatically registered.
+[07 11:57:59 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function area automatically registered.
+[07 11:57:59 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function disconnected automatically registered.
+[07 11:57:59 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function externally_connected automatically registered.
+[07 11:57:59 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function partial_overlap automatically registered.
+[07 11:57:59 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function equal automatically registered.
+[07 11:57:59 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part automatically registered.
+[07 11:57:59 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part automatically registered.
+[07 11:57:59 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function tangential_proper_part_inverse automatically registered.
+[07 11:57:59 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function non_tangential_proper_part_inverse automatically registered.
+[07 11:57:59 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[07 11:57:59 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[07 11:57:59 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[07 11:57:59 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[07 11:57:59 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[07 11:57:59 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[07 11:57:59 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[07 11:57:59 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[07 11:57:59 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function subset automatically registered.
+[07 11:57:59 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[07 11:57:59 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[07 11:57:59 94@learn.py:AutoSchedule] start to learn the words ['one', 'plus'], add corpus size 1
+[07 11:57:59 100@learn.py:AutoSchedule] learned words : ['one', 'plus'] avg_loss:0.0
+[07 11:57:59 94@learn.py:AutoSchedule] start to learn the words ['three'], add corpus size 2
+[07 11:57:59 100@learn.py:AutoSchedule] learned words : ['three'] avg_loss:0.0
+[07 11:57:59 94@learn.py:AutoSchedule] start to learn the words ['two'], add corpus size 3
+[07 11:58:00 100@learn.py:AutoSchedule] learned words : ['two'] avg_loss:0.0
+[07 11:58:00 94@learn.py:AutoSchedule] start to learn the words ['bigger'], add corpus size 4
+[07 11:58:00 100@learn.py:AutoSchedule] learned words : ['bigger'] avg_loss:0.00010254633525619283
+[07 11:58:00 94@learn.py:AutoSchedule] start to learn the words ['smaller'], add corpus size 3
+[07 11:58:01 100@learn.py:AutoSchedule] learned words : ['smaller'] avg_loss:0.00011833283497253433
+[07 11:58:01 94@learn.py:AutoSchedule] start to learn the words ['red'], add corpus size 1
+[07 11:58:02 100@learn.py:AutoSchedule] learned words : ['red'] avg_loss:0.0001098804859793745
+[07 11:58:02 94@learn.py:AutoSchedule] start to learn the words [], add corpus size 0
+[07 11:58:03 100@learn.py:AutoSchedule] learned words : [] avg_loss:0.0001098804859793745
+[07 11:58:03 104@learn.py:AutoSchedule] complete the learning of words ['one', 'plus', 'three', 'two', 'bigger', 'smaller', 'red']
