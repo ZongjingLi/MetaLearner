@@ -359,6 +359,9 @@ class ChartParser(nn.Module):
             result.append(new_entry)
         
         return result
+    
+    def type_downcast(self, tp1 : str, tp2 : str) -> bool:
+        return tp1 == tp2 or tp1 == 'AnyType' or tp2 == 'AnyType'
 
     def parse(self, sentence: str, topK = None, forced = False):
         words = sentence.split()
