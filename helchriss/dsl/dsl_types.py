@@ -1,5 +1,6 @@
 from dataclasses import dataclass
-from typing import Optional, Tuple, Sequence, Iterable
+from typing import Optional, Tuple, Sequence, Iterable, List, Union, Any, Callable
+import torch
 
 class TypeBase(object):
     """Base class for all types."""
@@ -232,6 +233,8 @@ class ObjectType(TypeBase):
 
         return f'OT[{self.typename}, parent={", ".join(t.typename for t in self.parent_types)}]'
 
+class ParamType:
+    def infer_params(self, value): raise NotImplementedError("infer parameters method not implemented")
 
 
 class SequenceType(TypeBase):
@@ -239,19 +242,6 @@ class SequenceType(TypeBase):
 
     @property
     def is_sequence_type(self) -> bool:
-        return True
-
-
-class TupleType(SequenceType):
-    def __init__(self, element_types: Sequence[TypeBase], alias: Optional[str] = None):
-        super().__init__(f'Tuple[{", ".join(t.typename for t in element_types)}]', alias=alias)
-        self.element_types = tuple(element_types)
-
-    element_types: Tuple[TypeBase, ...]
-    """The element types of the tuple."""
-
-    @property
-    def is_tuple_type(self) -> bool:
         return True
 
 
@@ -280,6 +270,22 @@ class UniformSequenceType(SequenceType):
         return self.element_type.is_value_type
 
 
+class TupleType(SequenceType, ParamType):
+    def __init__(self, element_types: Sequence[TypeBase], alias: Optional[str] = None):
+        super().__init__(f'Tuple[{", ".join(t.typename for t in element_types)}]', alias=alias)
+        self.element_types = tuple(element_types)
+
+    element_types: Tuple[TypeBase, ...]
+    """The element types of the tuple."""
+
+    @property
+    def is_tuple_type(self) -> bool:
+        return True
+
+    def infer_params(self, values):
+        assert isinstance(values, Union[List, Tuple]), f"value : {values} is not a List or a Tuple"
+        return [v.vtype for v in values]
+
 class ListType(UniformSequenceType):
     def __init__(self, element_type: TypeBase, alias: Optional[str] = None):
         typename = f'List[{element_type.typename}]'
@@ -288,6 +294,40 @@ class ListType(UniformSequenceType):
     @property
     def is_list_type(self) -> bool:
         return True
+
+class VectorType(TypeBase, ParamType):
+    def __init__(self, elem_type : TypeBase, dim : int):
+        super().__init__(f"Vector[{elem_type},{dim}]")
+        self.dim = dim
+        self.elem_type = elem_type
+
+    @property
+    def element_type(self): return self.elem_type
+
+    def infer_params(self, value):
+        if isinstance(value, torch.Tensor):
+            assert len(value.shape) == 1, "fnot a vetor tensor with shape [n] but got {value.shape}"
+            return FLOAT,value.shape[0]
+        if isinstance(value, List):
+            if isinstance(value[0], Value) : return len(value), value[0].vtype
+        raise RuntimeError(f"failed to infer parameters fro VectoType on value {value}")
+
+class FixedListType(UniformSequenceType, ParamType):
+    def __init__(self,length : Union[str, int],  element_type: TypeBase, alias: Optional[str] = None):
+        typename = f'List[{length},{element_type.typename}]'
+        super().__init__(typename, element_type, alias=alias)
+
+    @property
+    def is_list_type(self) -> bool: return True
+    
+    def infer_params(self, value):
+        if isinstance(value, torch.Tensor):
+            assert len(value.shape) == 1, "fnot a vetor tensor with shape [n] but got {value.shape}"
+            return value.shape[0], FLOAT
+        if isinstance(value, List):
+            if isinstance(value[0], Value) : return len(value), value[0].vtype
+        raise RuntimeError(f"failed to infer parameters fro VectoType on value {value}")
+
 
 
 class BatchedListType(UniformSequenceType):
@@ -316,9 +356,9 @@ class BatchedListType(UniformSequenceType):
             return self.element_type
         return BatchedListType(self.element_type, index_dtypes=self.index_dtypes[1:])
     
-@dataclass
-class FuncType(TypeBase):
-    def __init__(self, parameters, return_type):
+
+class FunctionType(TypeBase):
+    def __init__(self, parameters : List[TypeBase], return_type : TypeBase):
         self.parameters = parameters
         self.return_type = return_type
 
@@ -361,3 +401,81 @@ class ObjectType(TypeBase):
         return f'OT[{self.typename}, parent={", ".join(t.typename for t in self.parent_types)}]'
     
 
+
+INT = TypeBase("int")
+FLOAT = TypeBase("float")
+BOOL = TypeBase("bool")
+TYPE = TypeBase("Type")
+
+class EmbeddingType(TypeBase):
+    def __init__(self, space_name : str, dim : int):
+        self.space_name = space_name
+        self.dim = dim
+        self._typename = f"Embedding[{self.space_name}, {self.dim}]"
+        self._alias = None
+
+ARROW = "->"
+
+class ArrowType(TypeBase):
+    def __init__(self, first : TypeBase, second : TypeBase):
+        self.first = first
+        self.second = second
+        self._alias = None
+        self._typename = ARROW
+    
+    def __repr__(self):
+        return f"{self.first} {ARROW} {self.second}"
+    
+    def short_str(self) -> str : return f"{self.first} {ARROW} {self.second}"
+
+class _DependentFunctionType(TypeBase):
+    def __init__(self, base_name: str, params: List[TypeBase], element_type: TypeBase):
+        params_str = ", ".join(p.short_str() for p in params)
+        typename = f"{base_name}[{params_str}]"
+        super().__init__(typename, element_type, alias=base_name)
+        self.base_name = base_name
+        self.params = params  # 类型参数（如[float_type, dim_type]）
+
+    def short_str(self) -> str:
+        return self.typename
+
+    def instantiate(self, param_value: Any) -> TypeBase:
+        ret_type = self.ret_type_fn(param_value)
+        assert isinstance(ret_type, TypeBase), "must be a TypeBase"
+        return ret_type
+
+class DependentFunction(TypeBase):
+    def __init__(self,  dep_params, typed_args, ret_type, impl = None):
+        self.dep_params = dep_params
+        self.typed_args = typed_args
+        self.ret_type = ret_type
+        self.impl = impl
+    
+    @property
+    def return_type(self): return self.ret_type
+
+    def short_str(self) -> str :
+
+        dep_params = ", ".join([f"{arg[0]} : {str(arg[1])}" for arg in self.dep_params])
+
+        args = ", ".join([f"{arg[0]} : {str(arg[1])}" for arg in self.typed_args])
+        typ = self.ret_type
+        impl = self.impl
+        if len(dep_params) == 0: return f"({args}) : {typ} := {impl}"
+        else: return f"{{{dep_params}}} ({args}) : {typ} := {impl}"
+    def infer_params(self, args):
+        pass
+        #return f"{{{dep_params}}} ({args}) : {typ} := {impl}"
+    
+class DependentPairType(TupleType):
+    def __init__(self, param_name: str, param_type: TypeBase, ret_type_fn: Callable[[Any], TypeBase]):
+        self.param_name = param_name
+        self.param_type = param_type
+        self.ret_type_fn = ret_type_fn
+        super().__init__(element_types=[param_type, AnyType])
+        self._typename = f"∃{param_name}:{param_type.short_str()}.{ret_type_fn.__name__}"
+
+    def get_second_type(self, first_value: Any) -> TypeBase:
+        second_type = self.ret_type_fn(first_value)
+        assert isinstance(second_type, TypeBase), "second type must be TypeBase"
+        return second_type

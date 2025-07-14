@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 class FCLayer(nn.Module):
-    def __init__(self, in_features, out_features, activation="nn.CELU()"):
+    def __init__(self, in_features, out_features, activation="nn.RELU()"):
         super().__init__()
         self.net = nn.Sequential(
             nn.Linear(in_features, out_features),

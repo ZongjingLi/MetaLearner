@@ -35,12 +35,9 @@ def create_sprite(object_size: int = 32, sprite_type: str = 'number'):
     color_name = g_colors_index_to_name[color_idx]
     
     # Set the color in BGR format
-    if color_idx == 0:
-        color = (0, 0, 200)  # Red (BGR format)
-    elif color_idx == 1:
-        color = (0, 200, 0)  # Green
-    else:
-        color = (200, 0, 0)  # Blue
+    if color_idx == 0: color = (37, 37, 173)  # Red (BGR format)
+    elif color_idx == 1: color = (17, 215, 99)#(61, 156, 55)  # Green
+    else: color = (165, 76, 49)  # Blue
     
     # Font settings for text (used for both types)
     font = cv2.FONT_HERSHEY_SIMPLEX
@@ -140,8 +137,8 @@ def create_mixed_sprites3(object_size: int = 32, sprite_types=None):
     canvas_size = (object_size, object_size * 3)  # h x w
     canvas = np.zeros(canvas_size + (3,), dtype=np.uint8)
     sprites = list()
-    
-    # If sprite_types not specified, randomly choose for each position
+
+    # if sprite_types not specified, randomly choose for each position
     if sprite_types is None:
         sprite_types = [npr.choice(['number', 'shape']) for _ in range(3)]
         
@@ -195,7 +192,7 @@ def _gen_random_question(sprites, arity: int):
             answer = any(sprite['color'] == label_value for sprite in sprites)
             
         # Shorter query format
-        question = f'{label} exists?'
+        question = f'{label} exists'
         program = f'exists(Object, lambda x: {label_value}(x))'
         return question, program, answer
         
@@ -225,7 +222,7 @@ def _gen_random_question(sprites, arity: int):
                     break
 
         # Shorter query format
-        question = f'{label1} {relation} of {label2}?'
+        question = f'{label1} {relation} of {label2}'
         program = f'exists(Object, lambda x: exists(Object, lambda y: {label_value1}(x) and {relation}(x, y) and {label_value2}(y)))'
         return question, program, answer
 
@@ -258,7 +255,7 @@ def _gen_arithmetic_question(sprites):
         # Count all sprites of the specified shape
         count = sum(1 for sprite in sprites if sprite['type'] == 'shape' and sprite['shape'] == shape)
         
-        question = f"{shape} count?"
+        question = f"{shape} count"
         program = f"count(filter(Object, lambda x: {shape}(x)))"
         
         return question, program, count
@@ -268,7 +265,7 @@ def _gen_arithmetic_question(sprites):
         # Count all sprites of the specified color
         count = sum(1 for sprite in sprites if sprite['color'] == color)
         
-        question = f"{color} object count?"
+        question = f"{color} object count"
         program = f"count(filter(Object, lambda x: {color}(x)))"
         
         return question, program, count
@@ -284,7 +281,7 @@ def _gen_arithmetic_question(sprites):
         else:
             answer = 0
             
-        question = f"Sum of {shape} numbers?"
+        question = f"Sum of {shape} numbers"
         program = f"sum(filter(Object, lambda x: {shape}(x)), lambda x: number(x))"
         
         return question, program, answer
@@ -301,7 +298,7 @@ def _gen_arithmetic_question(sprites):
         else:
             answer = 0
             
-        question = f"Sum of {color} numbers?"
+        question = f"Sum of {color} numbers"
         program = f"sum(filter(Object, lambda x: {color}(x)), lambda x: number(x))"
         
         return question, program, answer
@@ -332,7 +329,7 @@ def _gen_arithmetic_question(sprites):
             answer = value
             sprite_number = 0
             
-        question = f"{color} number + {value}?"
+        question = f"{color} number + {value}"
         program = f"add(filter(Object, lambda x: {color}(x))[0].number, {value})"
         
         return question, program, answer
@@ -349,7 +346,7 @@ def _gen_arithmetic_question(sprites):
             # If no sprites of this color, answer is -1 (indicating no such sprite)
             answer = -1
             
-        question = f"Max {color} number?"
+        question = f"Max {color} number"
         program = f"max(filter(Object, lambda x: {color}(x)), lambda x: number(x))"
         
         return question, program, answer
@@ -366,7 +363,7 @@ def _gen_arithmetic_question(sprites):
             # If no sprites of this color, answer is -1 (indicating no such sprite)
             answer = -1
             
-        question = f"Min {color} number?"
+        question = f"Min {color} number"
         program = f"min(filter(Object, lambda x: {color}(x)), lambda x: number(x))"
         
         return question, program, answer
@@ -384,7 +381,7 @@ def _gen_arithmetic_question(sprites):
             # If either color doesn't exist, answer is 0
             answer = 0
             
-        question = f"{color1} number - {color2} number?"
+        question = f"{color1} number - {color2} number"
         program = f"subtract(filter(Object, lambda x: {color1}(x))[0].number, filter(Object, lambda x: {color2}(x))[0].number)"
         
         return question, program, answer
@@ -403,7 +400,7 @@ def _gen_arithmetic_question(sprites):
             # If no sprites of this color, answer is 0
             answer = 0
             
-        question = f"Product of {color} numbers?"
+        question = f"Product of {color} numbers"
         program = f"product(filter(Object, lambda x: {color}(x)), lambda x: number(x))"
         
         return question, program, answer
@@ -422,7 +419,7 @@ def _gen_arithmetic_question(sprites):
             # If no sprites of this color, answer is 0
             answer = 0
             
-        question = f"Avg {color} numbers?"
+        question = f"Avg {color} numbers"
         program = f"average(filter(Object, lambda x: {color}(x)), lambda x: number(x))"
         
         return question, program, answer
@@ -437,7 +434,7 @@ def _gen_arithmetic_question(sprites):
         blue_sum = sum(sprite['number'] for sprite in blue_sprites) if blue_sprites else 0
         answer = red_sum + blue_sum
         
-        question = f"Red + blue numbers?"
+        question = f"Red + blue numbers"
         program = f"sum(filter(Object, lambda x: red(x) or blue(x)), lambda x: number(x))"
         
         return question, program, answer
@@ -455,7 +452,7 @@ def _gen_arithmetic_question(sprites):
             # If no sprites of this shape, answer is -1
             answer = -1
             
-        question = f"Max {shape} number?"
+        question = f"Max {shape} number"
         program = f"max(filter(Object, lambda x: {shape}(x)), lambda x: number(x))"
         
         return question, program, answer
@@ -488,7 +485,7 @@ def _gen_arithmetic_question(sprites):
         # Count all sprites of the specified shape
         count = sum(1 for sprite in sprites if sprite['type'] == 'shape' and sprite['shape'] == shape)
         
-        question = f"How many {shape}s are there?"
+        question = f"How many {shape}s are there"
         program = f"count(filter(Object, lambda x: {shape}(x)))"
         
         return question, program, count
@@ -498,7 +495,7 @@ def _gen_arithmetic_question(sprites):
         # Count all sprites of the specified color
         count = sum(1 for sprite in sprites if sprite['color'] == color)
         
-        question = f"How many {color} objects are there?"
+        question = f"How many {color} objects are there"
         program = f"count(filter(Object, lambda x: {color}(x)))"
         
         return question, program, count
@@ -514,7 +511,7 @@ def _gen_arithmetic_question(sprites):
         else:
             answer = 0
             
-        question = f"What is the sum of {shape} numbers?"
+        question = f"What is the sum of {shape} numbers"
         program = f"sum(filter(Object, lambda x: {shape}(x)), lambda x: number(x))"
         
         return question, program, answer
@@ -531,7 +528,7 @@ def _gen_arithmetic_question(sprites):
         else:
             answer = 0
             
-        question = f"What is the sum of {color} numbers?"
+        question = f"What is the sum of {color} numbers"
         program = f"sum(filter(Object, lambda x: {color}(x)), lambda x: number(x))"
         
         return question, program, answer
@@ -562,7 +559,7 @@ def _gen_arithmetic_question(sprites):
             answer = value
             sprite_number = 0
             
-        question = f"What is the {color} object plus {value}?"
+        question = f"What is the {color} object plus {value}"
         program = f"add(filter(Object, lambda x: {color}(x))[0].number, {value})"
         
         return question, program, answer
@@ -579,7 +576,7 @@ def _gen_arithmetic_question(sprites):
             # If no sprites of this color, answer is -1 (indicating no such sprite)
             answer = -1
             
-        question = f"What is the maximum {color} number?"
+        question = f"What is the maximum {color} number"
         program = f"max(filter(Object, lambda x: {color}(x)), lambda x: number(x))"
         
         return question, program, answer
@@ -596,7 +593,7 @@ def _gen_arithmetic_question(sprites):
             # If no sprites of this color, answer is -1 (indicating no such sprite)
             answer = -1
             
-        question = f"What is the minimum {color} number?"
+        question = f"What is the minimum {color} number"
         program = f"min(filter(Object, lambda x: {color}(x)), lambda x: number(x))"
         
         return question, program, answer
@@ -614,7 +611,7 @@ def _gen_arithmetic_question(sprites):
             # If either color doesn't exist, answer is 0
             answer = 0
             
-        question = f"What is the difference between the {color1} number and the {color2} number?"
+        question = f"difference between the {color1} number and the {color2} number"
         program = f"subtract(filter(Object, lambda x: {color1}(x))[0].number, filter(Object, lambda x: {color2}(x))[0].number)"
         
         return question, program, answer
@@ -633,7 +630,7 @@ def _gen_arithmetic_question(sprites):
             # If no sprites of this color, answer is 0
             answer = 0
             
-        question = f"What is the product of {color} numbers?"
+        question = f"the product of {color} numbers"
         program = f"product(filter(Object, lambda x: {color}(x)), lambda x: number(x))"
         
         return question, program, answer
@@ -652,7 +649,7 @@ def _gen_arithmetic_question(sprites):
             # If no sprites of this color, answer is 0
             answer = 0
             
-        question = f"What is the average of {color} numbers?"
+        question = f"the average of {color} numbers"
         program = f"average(filter(Object, lambda x: {color}(x)), lambda x: number(x))"
         
         return question, program, answer
@@ -667,7 +664,7 @@ def _gen_arithmetic_question(sprites):
         blue_sum = sum(sprite['number'] for sprite in blue_sprites) if blue_sprites else 0
         answer = red_sum + blue_sum
         
-        question = f"What is the sum of red and blue numbers?"
+        question = f"the sum of red and blue numbers"
         program = f"sum(filter(Object, lambda x: red(x) or blue(x)), lambda x: number(x))"
         
         return question, program, answer
@@ -685,7 +682,7 @@ def _gen_arithmetic_question(sprites):
             # If no sprites of this shape, answer is -1
             answer = -1
             
-        question = f"What is the maximum number on a {shape}?"
+        question = f"What is the maximum number on a {shape}"
         program = f"max(filter(Object, lambda x: {shape}(x)), lambda x: number(x))"
         
         return question, program, answer
@@ -741,13 +738,15 @@ def gen_mixed_sprites3_dataset(dataset_size):
 
 class MixedSprites3DatasetUnwrapped(FilterableDatasetUnwrapped):
     def __init__(self, dataset_size):
+        super().__init__()
         self.data = gen_mixed_sprites3_dataset(dataset_size)
 
     def _get_metainfo(self, index):
         return {
-            'question': self.data['questions'][index],
+            'query': self.data['questions'][index],
             'program': self.data['programs'][index],
             'answer': self.data['answers'][index],  # Can be bool or numeric
+            'program' : self.data['programs'][index],
             'question_length': len(self.data['questions'][index].split()),
             'question_type': 'boolean' if isinstance(self.data['answers'][index], bool) else 'arithmetic'
         }
@@ -755,10 +754,11 @@ class MixedSprites3DatasetUnwrapped(FilterableDatasetUnwrapped):
     def __getitem__(self, index):
         return {
             'image': _to_image(self.data['images'][index]),
-            'question': self.data['questions'][index],
+            'query': self.data['questions'][index],
             'program': self.data['programs'][index],
             'answer': self.data['answers'][index],  # Can be bool or numeric
-            'sprites': self.data['sprites'][index]
+            'sprites': self.data['sprites'][index],
+            'grounding' : {"image" : _to_image(self.data['images'][index])}
         }
 
     def __len__(self):
@@ -772,11 +772,10 @@ def _to_image(image):
     image = (image - 0.5) * 2
     return torch.tensor(image)
 
-
 class MixedSprites3DatasetFilterableView(FilterableDatasetView):
     def make_dataloader(self, batch_size: int, shuffle: bool, drop_last: bool, nr_workers: int) -> DataLoader:
         collate_guide = {
-            'question': 'skip',
+            'query': 'skip',
             'program': 'skip',
             'answer': 'skip',
             'sprites': 'skip'

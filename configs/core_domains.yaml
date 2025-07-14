@@ -3,9 +3,9 @@ domains:
     intergers:
       name: "integer_executor"
       path: "domains.math.integer_domain"
-    circle:
-      name: "circle_executor"
-      path: "domains.spatial.circle_domain"
+    objects:
+      name: "objects_executor"
+      path: "domains.scene.objects_domain"
 
 vocab:
     path: "data/core_vocab.txt"

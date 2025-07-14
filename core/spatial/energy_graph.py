@@ -8,6 +8,7 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 from einops import rearrange, repeat
+from typing import Dict, Tuple, List, Union
 
 def pairwise(iterable):
     # pairwise('ABCDEFG') → AB BC CD DE EF FG
@@ -20,9 +21,11 @@ def pairwise(iterable):
 ## Basic functions used by all models
 
 class ModelMixin:
-    def rand_input(self, batchsize):
-        assert hasattr(self, 'input_dims'), 'Model must have "input_dims" attribute!'
-        return torch.randn((batchsize,) + self.input_dims)
+    def rand_input(self, batchsize, input_dims = None):
+        if input_dims is None:
+            assert hasattr(self, 'input_dims'), 'Model must have "input_dims" attribute!'
+            return torch.randn((batchsize,) + self.input_dims)
+        return torch.randn((batchsize,) + input_dims)
 
     # Currently predicts eps, override following methods to predict, for example, x0
     def get_loss(self, x0, sigma, eps, cond=None, loss=nn.MSELoss):
@@ -165,12 +168,11 @@ class TimeInputMLP(nn.Module, ModelMixin):
         # x     shape: b x dim
         # sigma shape: b x 1 or scalar
         sigma_embeds = get_sigma_embeds(x.shape[0], sigma.squeeze()) # shape: b x 2
-        print(sigma_embeds.shape, x.shape)
         nn_input = torch.cat([x, sigma_embeds], dim=1)               # shape: b x (dim + 2)
         return self.net(nn_input)
 
 class TimeInputEnergyMLP(nn.Module, ModelMixin):
-    def __init__(self, dim=2, hidden_dims=(16,128,256,128,16)):
+    def __init__(self, dim=2, attr_dim = 0, hidden_dims=(16,128,256,128,16)):
         super().__init__()
         layers = []
         for in_dim, out_dim in pairwise((dim + 2,) + hidden_dims):
@@ -186,16 +188,15 @@ class TimeInputEnergyMLP(nn.Module, ModelMixin):
         if not energy_only:
             x.requires_grad = True
         sigma_embeds = get_sigma_embeds(x.shape[0], sigma.squeeze()) # shape: b x 2
-        #print(x.shape, sigma_embeds.shape)
-        nn_input = torch.cat([x, sigma_embeds], dim=1)               # shape: b x (dim + 2)
+
+        nn_input = torch.cat([x, sigma_embeds], dim=1).to(next(self.parameters()).device)              # shape: b x (dim + 2)
 
         energy = self.net(nn_input)
         
         if not energy_only:
             grad = torch.autograd.grad(energy.flatten().sum(), x,
-	       retain_graph = True, create_graph=True)[0]
-        else:
-            grad = 0.0
+	        retain_graph = True, create_graph=True)[0]
+        else: grad = 0.0
 
         return {"energy":energy, "gradient":grad}
 
@@ -205,14 +206,21 @@ class GeometricEnergyMLP(nn.Module, ModelMixin):
 
 
 class PointEnergyMLP(nn.Module, ModelMixin):
-    def __init__(self, constraints, dim=2, attr_dim = 0, hidden_dims=(16,128,256,128,16)):
+    def __init__(self, constraints : Dict[str, Union[List[Union[int, Tuple]]]], dim=2, hidden_dims=(16,128,256,128,16)):
         super().__init__()
-        layers = []
         self.energies = nn.ModuleDict({})
         for name in constraints:
-            arity = constraints[name]
-            self.energies[name] = TimeInputEnergyMLP(arity * (dim + attr_dim))
-        self.input_dims = (dim + attr_dim,)
+            arity = len(constraints[name])
+            state_attr_config = constraints[name]
+            input_dim = 0
+            attr_dim  = 0
+            for state_attr in state_attr_config:
+                if isinstance(state_attr, Tuple): input_dim += state_attr[0] + state_attr[1]; attr_dim += state_attr[1]
+                elif isinstance(state_attr, int): input_dim += state_attr
+                else: raise ValueError(state_attr)
+            self.energies[name] = TimeInputEnergyMLP(input_dim, attr_dim = attr_dim)
+            input_dim = int(input_dim / arity)
+        self.input_dims = (input_dim, )
 
     def forward(self, x, sigma, attr = None, cond = None):
 

@@ -171,24 +171,20 @@ def training_loop(loader      : DataLoader,
             conditional = sample["cond"]
             batchsize = x0.shape[0]
 
-            #print(x0.shape)
 
-            #print(conditional)
-            #conditional = {"edges" : [(i,"online") for i in range(batchsize)]}
-            #print("batchsize:",batchsize,x0.shape)
             x0 = x0.unsqueeze(0)
             b, n, d = x0.shape
 
             x0, sigma, eps, cond = generate_train_sample(x0, schedule, conditional)
-            #print(x0.shape, sigma.shape, eps.shape)
-
-            #print(x0.shape, sigma.shape)
-
 
             loss = model.get_loss(x0, sigma, eps, cond=conditional)
             yield SimpleNamespace(**locals()) # For extracting training statistics
+
             accelerator.backward(loss)
+
             optimizer.step()
+
+
         if count % 100 == 0: torch.save(model.state_dict(),"checkpoints/state.pth")
 
 # Generalizes most commonly-used samplers:

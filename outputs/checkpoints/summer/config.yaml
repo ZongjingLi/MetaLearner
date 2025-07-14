@@ -1,10 +1,10 @@
 domains:
-  circle:
-    name: circle_executor
-    path: domains.spatial.circle_domain
   intergers:
     name: integer_executor
     path: domains.math.integer_domain
+  objects:
+    name: objects_executor
+    path: domains.scene.objects_domain
 name: prototype
 vocab:
   path: core_vocab.txt

@@ -148,7 +148,7 @@ class ExecutorGroup(FunctionExecutor):
 
     @staticmethod
     def signature(function : str, types : List[TypeBase]):
-        typenames = [f"{tp.typename}-{tp.alias}" for tp in types]
+        typenames = [f"{tp.typename}" for tp in types]
         type_sign = "->".join(typenames)
         return f"{function}#{type_sign}"
 
@@ -162,14 +162,18 @@ class ExecutorGroup(FunctionExecutor):
     
         type_specs = type_signature.split('->')
         all_types = []
+        
         for type_spec in type_specs:
             type_parts = type_spec.split('-')
-            if len(type_parts) != 2: raise ValueError(f"Invalid type specification: {type_spec}")
+            if len(type_parts) != 1: raise ValueError(f"Invalid type specification: {type_spec}")
         
-            typename, alias = type_parts
-            all_types.append(TypeBase(typename, alias))
+            typename = type_parts[0]
+            all_types.append(TypeBase(typename))
+        # print( all_types[:-1])
     
         input_types = all_types[:-1]
+
+
         output_types = all_types[-1]  # Return as list as requested
         return function_name, input_types, output_types
 
@@ -183,12 +187,17 @@ class ExecutorGroup(FunctionExecutor):
     def functions(self) -> List[Tuple[str, List[TypeBase], TypeBase]]:
         functions = []
         for sign in self.extended_registry:
+
             f_sign, in_types, out_type = self.parse_signature(sign)
             functions.append([f_sign, in_types, out_type])
         for executor in self.executor_group:
             assert isinstance(executor, FunctionExecutor), f"{executor} is not a executor"
             for func_name in executor._function_registry:
-                functions.append([self.format(func_name,executor.domain.domain_name),executor.function_input_types[func_name], executor.function_output_type[func_name]])
+
+                functions.append([
+                    self.format(func_name,executor.domain.domain_name),
+                    executor.function_input_types[func_name],
+                    executor.function_output_type[func_name]])
 
         return functions
 
@@ -203,7 +212,6 @@ class ExecutorGroup(FunctionExecutor):
         funcs = []
         for function in self.functions:
             f_sign, in_types, out_type = function
-
             if in_types == input_types and out_type == output_type:
                 funcs.append(f_sign)
         return funcs
@@ -217,12 +225,12 @@ class ExecutorGroup(FunctionExecutor):
             assert isinstance(executor, FunctionExecutor), "not a function executor"
             if func in executor._function_registry: return executor.domain.domain_name
 
-    def execute(self, func : str, args : List[Value], domain = None) -> Value:
+    def execute(self, func : str, args : List[Value], domain = None, grounding = None) -> Value:
+        self._grounding = grounding
         """a function could be in some domain or in extention registry"""
         arg_types = value_types(args)
         signature = self.signature(func, arg_types)
         func_call = None
-
 
         # 1) check if this is a domain function
         if self.domain_function(func):
@@ -230,6 +238,7 @@ class ExecutorGroup(FunctionExecutor):
             for executor in self.executor_group:
                 assert isinstance(executor, FunctionExecutor), f"{executor} is not a executor"
                 if executor.domain.domain_name == domain_name: # find the correct executor
+                    executor._grounding = grounding
                     func_call = executor._function_registry[func_name]
 
 
@@ -290,22 +299,26 @@ class RewriteExecutor(FunctionExecutor):
                 min_mismatch = len(source_arg_types) + 1
                 best_matched = None # find the best matched function signature
                 assert len(target_signatures) != 0,f"did not find any function {func_name}"
+
                 for hyp_sign in target_signatures:
+
                     arg_types, out_type = hyp_sign
-
-
+                    
                     mismatch_count = 0
                     for i,tp in enumerate(arg_types):
-                        if source_arg_types[i].alias != arg_types[i].alias:
+                        if source_arg_types[i].typename != arg_types[i].typename:
                             mismatch_count += 1
                     if mismatch_count < min_mismatch:
                         min_mismatch = mismatch_count
                         best_matched = hyp_sign
 
+
                 if not min_mismatch == 0:
+    
                     metaphor_exprs.append([func_name, best_matched[0], source_arg_types, best_matched[1]])
                 output_type = best_matched[1]
-
+    
+                #print(output_type.alias, output_type.typename)
                 return [output_type, best_matched[0]]
             
             else: raise NotImplementedError(f"did not write how to infer from {expr}")
@@ -315,31 +328,36 @@ class RewriteExecutor(FunctionExecutor):
     
     def add_metaphors(self, metaphors : List[Tuple[str, List[TypeBase], List[TypeBase]]], caster = None):
         if not isinstance(metaphors, List) : metaphors = [metaphors]
+        output_metaphors = []
         for metaphor in metaphors:
             target_func, target_types, source_types, out_type = metaphor
 
             input_type  = source_types  #(y) self.function_input_type(*reduce_func.split(":"))      # actual input type for the function
             expect_type = target_types  #(x) expect input type for the function
             output_type = out_type      #(o) the output type for the target function
-            
+
             ### 1) create the type casting rewrite rule and add a NeuralNet to fill the hole
+
             filler = fill_hole(input_type, output_type)
             self.base_executor.register_function(target_func, input_type, output_type, filler)
-
+            output_metaphors.append(metaphor) ### add the extention of fill-hole
             
             ### 2) create the local frame that gathers other `source` functions to the `target` function
 
             if caster is None: caster = infer_caster(input_type, expect_type)
             rewrite_frame : LocalFrame = LocalFrame(target_func, expect_type, input_type, caster)
 
-
             reduce_hypothesis = self.base_executor.gather_functions(input_type, output_type)
             for reduce_func in reduce_hypothesis:
+
                 rewrite_frame.add_source_caster(reduce_func, 0.0) # init the reduction `g`->`f` weight logits 0.0
+                output_metaphors.append([reduce_func, target_types, source_types, out_type])
 
             hash_frame = target_func + str(hash((tuple(input_type) + tuple(expect_type))))
+            
             self.rewriter.add_frame(hash_frame, rewrite_frame) # multiple frame lead to the same procedure
 
+        return output_metaphors
     
     @property
     def types(self): return self.base_executor.types
@@ -429,9 +447,6 @@ class RewriteExecutor(FunctionExecutor):
                 linewidths=1,
             )
 
-
-        
-
         nx.draw_networkx_edges(
             G, pos, 
             edge_color=edge_colors, 
@@ -472,8 +487,7 @@ class RewriteExecutor(FunctionExecutor):
             # Output information (bottom)
             if 'output' in data and data['output'] is not None:
                 output = data['output']
-
-                try:
+                if 1:
                     # Handle output value
                     if hasattr(output, 'value'):
                         if hasattr(output.value, 'item'):  # torch tensor
@@ -488,7 +502,7 @@ class RewriteExecutor(FunctionExecutor):
                     # Handle output type
                     if hasattr(output, 'vtype'):
                         if hasattr(output.vtype, 'alias'):
-                            type_str = output.vtype.alias.split(':')[0]
+                            type_str = str(output.vtype)
                         else:
                             type_str = str(output.vtype)
                     else:
@@ -497,8 +511,6 @@ class RewriteExecutor(FunctionExecutor):
                 
                     out_label = f"V: {val_str}\nT: {type_str}"
                     
-                except Exception as e:
-                    out_label = f"Output: {str(output)[:20]}"
                 
                 plt.text(x, y - 0.2, out_label, 
                         fontsize=7, color=node_text_color,
@@ -620,16 +632,16 @@ class RewriteExecutor(FunctionExecutor):
 
             # weight of each rewrite is a basic-rewrite
             rewrite_distr, rewrite_graph = self.rewriter.rewrite_distr(func_name, args)
+
             self.add_rewrite_subgraph(rewrite_distr, rewrite_graph, sign)
             
             # expected execution over all basic-rewrites
             expect_output = 0.
 
             for (t_f, t_args, weight) in rewrite_distr:
+                measure : Value = self.base_executor.execute(t_f.split("#")[0], t_args, grounding = self.grounding)
 
-                measure : Value = self.base_executor.execute(t_f.split("#")[0], t_args)
                 expect_output += weight * measure.value
-                #print(t_f.split("#")[0], weight, t_f.split("#")[-1], measure.value)
 
                 ### add the output value for the evaluation graph
                 func_sign = t_f
@@ -683,7 +695,7 @@ class RewriteExecutor(FunctionExecutor):
             tgt_node = f"{edge[1]}_{self.node_count[edge[1]]}"
 
             if src_node != func_sign:
-                    self.eval_graph.add_edge(tgt_node, src_node, weight = float(edge[2].detach()[0]), color = "#048393")
+                    self.eval_graph.add_edge(tgt_node, src_node, weight = float(edge[2].detach()), color = "#048393")
 
 
 import json

@@ -105,7 +105,7 @@ def process_command(command):
         cues = None
 
         learn_schedule = AutoLearnSchedule(train_dataset, cues)
-
+ 
         #learn_schedule.train(model, epochs = train_epochs, lr = train_lr)
         learn_schedule.procedual_train(model, eps = 0.001)
 

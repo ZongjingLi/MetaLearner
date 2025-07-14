@@ -6,7 +6,6 @@ import torch
 import torch.nn as nn
 import networkx as nx
 import os
-from .types import BaseCaster
 
 __all__ = ["RewriteRule", "LocalFrame", "NeuralRewriter"]
 
@@ -20,7 +19,7 @@ class RewriteRule:
 
     left_type   : List[TypeBase]
     right_type  : List[TypeBase]
-    rewriter    : BaseCaster
+    rewriter    : nn.Module
 
     forced      : bool = False # if the rule exist then must apply and ignore the previous term, used for type casting
     _quantized  : bool = False # if quantized then the rule applied with binary cut
@@ -35,6 +34,7 @@ class RewriteRule:
 
         results = self.rewriter(args)
         right_type = self.right_type
+
         rw_values : List[Value] = [Value(right_type[i],r[0]) for i,r in enumerate(results)]
         rw_weight : torch.Tensor  = sum([r[1] for r in results])
 
@@ -87,7 +87,7 @@ class LocalFrame(nn.Module):
         return rules
 
 def type_suffix(args : List[Value]):
-    arg_types = [f"{arg.vtype.typename}-{arg.vtype.alias}" for arg in args]
+    arg_types = [f"{arg.vtype.typename}" for arg in args]
     if len(arg_types) == 0: return "#"
     else: return "#"+"->".join(arg_types)
 
@@ -124,6 +124,7 @@ class NeuralRewriter(nn.Module):
     def rewrite_edges(self, q_func : str, args : List[Value]) -> List[Tuple[str, List[Value], torch.Tensor]]:
         rules : List[RewriteRule] = self.rewrite_rules()
         edges : List[Tuple[str, List[Value], Union[float, torch.Tensor]]] = []
+
         for rule in rules:
             tfunc, targs, weight = rule.apply(q_func, args)
             if rule.applicable(weight):
@@ -155,6 +156,7 @@ class NeuralRewriter(nn.Module):
                 reduce_weight[suffix_node] = weight
 
             arged_edges = self.rewrite_edges(node, args)
+  
 
             for (qfunc, args, weight) in arged_edges:
                 suffix_qfunc = qfunc + type_suffix(args)

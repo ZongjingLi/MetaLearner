@@ -8,17 +8,16 @@ import re
 import yaml
 import torch
 import torch.nn as nn
-import matplotlib.pyplot as plt
 from typing import List, Union, Any
-from helchriss.domain import load_domain_string
-from helchriss.knowledge.symbolic import Expression
-from helchriss.knowledge.executor import CentralExecutor
 from core.metaphors.executor import RewriteExecutor, ExecutorGroup
 from core.grammar.ccg_parser import ChartParser
-from core.grammar.lexicon import CCGSyntacticType, LexiconEntry, SemProgram
+from core.grammar.lexicon import  LexiconEntry
 from core.grammar.learn import enumerate_search
 from helchriss.knowledge.symbolic import Expression
+from helchriss.knowledge.executor import CentralExecutor
 from helchriss.dsl.dsl_values import Value
+from helchriss.dsl.dsl_types import BOOL, FLOAT, INT
+from anytree import Node, RenderTree
 
 from tqdm import tqdm
 from datasets.base_dataset import SceneGroundingDataset
@@ -32,6 +31,30 @@ def write_vocab(vocab, vocab_file = "core_vocab.txt"):
             f.write(word + '\n')
 
 
+def tree_display(s):
+    def parse(s, i=0):
+        m = re.match(r'([^:()]+)', s[i:])
+        name, i = m.group(1), i + len(m.group(0))
+        if i < len(s) and s[i] == ':': i = re.match(r':[^(]*', s[i:]).end() + i
+        if i < len(s) and s[i] == '(':
+            i, kids = i + 1, []
+            while s[i] != ')':
+                if s[i] == ',': i += 1
+                kid, i = parse(s, i)
+                kids.append(kid)
+            return (name, kids), i + 1
+        return name, i
+    
+    def build(p, parent=None):
+        if isinstance(p, tuple):
+            node = Node(p[0], parent=parent)
+            [build(kid, node) for kid in p[1]]
+            return node
+        return Node(p, parent=parent)
+    
+    return '\n'.join(f"{pre}{node.name}" for pre, _, node in RenderTree(build(parse(s)[0])))
+
+
 class MetaLearner(nn.Module):
     def __init__(self, domains : List[Union[CentralExecutor]], vocab : List[str] = []):
         super().__init__()
@@ -40,8 +63,8 @@ class MetaLearner(nn.Module):
         self.domain_infos = {}
         self.executor : CentralExecutor = RewriteExecutor(ExecutorGroup(domains))
         
-        self.vocab = vocab
-        self.lexicon_entries = {}#nn.ModuleDict({})
+        self._vocab = vocab
+        self.lexicon_entries = {}
         self.parser = ChartParser(self.lexicon_entries)
 
         self.gather_format = self.executor.gather_format
@@ -121,7 +144,7 @@ class MetaLearner(nn.Module):
         vocab_path = model_config["vocab"]["path"]
         with open(f"{ckpt_path}/{vocab_path}", 'r', encoding='utf-8') as f:
             vocab = [line.strip() for line in f]
-        self.vocab = vocab
+        self._vocab = vocab
         
         # load the lexicon entries (structure without weights)
         serialized_lexicon = torch.load(f"{ckpt_path}/lexicon_entries.pth", weights_only=False)
@@ -148,6 +171,12 @@ class MetaLearner(nn.Module):
         self.name = model_config["name"]
         return self
 
+    @property
+    def vocab(self):
+        words = []
+        for word in self._vocab:
+            if word not in ["<NULL>", "<START>", "<END>","<UNK>"]: words.append(word)
+        return words
 
     @property
     def domains(self):
@@ -159,10 +188,11 @@ class MetaLearner(nn.Module):
         return gather_domains
 
     def collect_funcs(self,func_bind, domain):
+        fn, dep_func = func_bind
         bind = {
-            "name" : func_bind["name"],
-            "parameters" : [self.gather_format(param.split("-")[-1], domain)  for param in func_bind["parameters"]],
-            "type" : self.gather_format(func_bind["type"], domain)
+            "name" : fn,
+            "parameters" : [arg[1] for arg in dep_func.typed_args], #[self.gather_format(param.split("-")[-1], domain)  for param in func_bind["parameters"]],
+            "type" : dep_func.return_type
             }
         return bind
     
@@ -172,8 +202,8 @@ class MetaLearner(nn.Module):
         for domain in self.domains:
             domain_name = domain.domain_name
             if "Any" in domains or domain_name in domains:
-                for tp in domain.types:
-                    domain_types[self.gather_format(tp, domain.domain_name)] =  domain.types[tp].replace("'","")
+                for tp in domain.type_aliases:
+                    domain_types[self.gather_format(tp, domain.domain_name)] =  domain.type_aliases[tp][-1]#.replace("'","")
         return domain_types
 
     @property
@@ -186,7 +216,7 @@ class MetaLearner(nn.Module):
             domain_name = domain.domain_name
             if "Any" in domains or domain_name in domains:
                 for func in domain.functions:
-                    domain_functions[self.gather_format(func, domain_name)] =  self.collect_funcs(domain.functions[func], domain_name)
+                    domain_functions[self.gather_format(func, domain_name)] =  self.collect_funcs([func,domain.functions[func]], domain_name)
         return domain_functions
 
     @property
@@ -211,20 +241,31 @@ class MetaLearner(nn.Module):
         return grouped
     
 
-    def entries_setup(self, related_vocab : List[str] = None, domains : Union[str,List[str]] = "Any" ,depth = 1):
+    def entries_setup(self, related_vocab : List[str] = None, domains : Union[str,List[str]] = "Any" ,depth = 2):
         if related_vocab is None: related_vocab = self.vocab
 
-        related_types = self.filter_types(domains)
+        related_types = [str(tp) for (alia, tp) in self.filter_types(domains).items()]
         related_funcs = self.filter_functions(domains)
+        """
+        for tp in related_types:print(tp)
+
+        for tp in related_funcs:
+            print(tp)
+            for param in related_funcs[tp]["parameters"]:
+                print(param)
+            print(related_funcs[tp]["type"])
+            print("\n")
+            #print("tp",tp, related_funcs[tp])
+        """
         entries = enumerate_search(related_types, related_funcs, max_depth = depth)
-    
+
         lexicon_entries = dict()
         for word in related_vocab:
-            for idx, (syn_type, program) in enumerate(entries):
+            for idx, (syn_type, program, _) in enumerate(entries):
                 lexicon_entries[f"{word}_{idx}"] = LexiconEntry(
                         word, syn_type, program, weight = torch.randn(1).item() - 0.0
                     )
-
+        #for entry in entries:print(entry[0], entry[1])
         grouped_lexicon = self.group_lexicon_entries(lexicon_entries)    
         self.parser = ChartParser(grouped_lexicon)
         return 0
@@ -252,7 +293,7 @@ class MetaLearner(nn.Module):
             program = parse.sem_program
 
             output_type = self.functions[program.func_name]["type"]
-
+            
             if len(program.lambda_vars) == 0:
                 expr = Expression.parse_program_string(str(program))
                 result = self.executor.evaluate(expr, grounding)
@@ -260,18 +301,13 @@ class MetaLearner(nn.Module):
                 probs.append(parse_prob)
                 programs.append(program)
 
+
             else:
                 results.append(None)
                 probs.append(parse_prob)
+                programs.append(program)
 
         return results, probs, programs
-
-    def infer_metaphor_expressions(self, meta_exprs: Union[Expression,List[Expression]]):
-        if isinstance(meta_exprs, Expression): meta_exprs = [meta_exprs]
-        for meta_expr in meta_exprs:
-            infers = self.executor.infer_reductions(meta_expr)
-            self.executor.add_metaphors(infers)
-
 
     def train(self, dataset : SceneGroundingDataset,  epochs : int = 1000, lr = 1e-2, topK = None):
         import tqdm.gui as tqdmgui
@@ -288,47 +324,97 @@ class MetaLearner(nn.Module):
                 grounding = sample["grounding"]
                 results, probs, programs = self(query, grounding)
                 if not results: print(f"no parsing found for query:{query}")
+
                 for i,result in enumerate(results):
                     measure_conf = torch.exp(probs[i])
                     if result is not None: # filter make sense progams
                         assert isinstance(result, Value), f"{programs[i]} result is :{result} and not a Value type"
-                        #print(str(programs[i]),answer, answer.vtype, result, result.vtype)
-                        if answer.vtype in result.vtype.alias:
-                            if answer.vtype == "boolean":
+                        if isinstance(answer, bool): answer = Value(BOOL, answer)
+                        if isinstance(answer.vtype, str):
+                            if answer.vtype == "boolean" : answer.vtype = BOOL
+                            if answer.vtype == "float" : answer.vtype = FLOAT
+                            if answer.vtype == "int" : answer.vtype = INT
+
+                        if answer.vtype == result.vtype:
+        
+                            if answer.vtype == BOOL:
                                 measure_loss =  torch.nn.functional.binary_cross_entropy_with_logits(
-                                    result.value.reshape([-1]) , torch.tensor(answer.value).reshape([-1]))
-                            if answer.vtype == "int" or answer.vtype == "float":
+                                    result.value.reshape([-1]) , torch.tensor(float(answer.value)).reshape([-1]))
+
+                            if answer.vtype == FLOAT or answer.vtype == INT:
+
                                 measure_loss = torch.abs(result.value - answer.value)
 
                             loss += measure_conf * measure_loss
+
                         else:
-                            lex_loss = 100.
+                            lex_loss = 0.
                             loss += measure_conf * lex_loss # suppress type-not-match outputs
 
                     else: loss += measure_conf # suppress the non-sense outputs
-            optim.zero_grad()
-            loss.backward()
-            optim.step()
+            try:
+                optim.zero_grad()
+                loss.backward()
+                optim.step()
+            except: raise RuntimeError("No Valid Parse Found.")
 
             avg_loss = loss / len(dataset) if len(dataset) > 0 else 0
             epoch_bar.set_postfix({"avg_loss": f"{avg_loss.item():.4f}"})
 
         return {"loss" : avg_loss}
-    
-    def maximal_parse(self, sentence):
-        parses = self.parser.parse(sentence)
+
+
+    def infer_metaphor_expressions(self, meta_exprs: Union[str, Expression,List[Expression], List[str]]):
+        if isinstance(meta_exprs, Expression) or isinstance(meta_exprs, str): meta_exprs = [meta_exprs]
+        meta_exprs = [Expression.parse_program_string(str(expr)) if not isinstance(expr, Expression) else expr for expr in meta_exprs]
+        metaphors = []
+        for meta_expr in meta_exprs:
+            infers = self.executor.infer_rewrite_expr(meta_expr)
+            fixed_infers = self.executor.add_metaphors(infers)
+            #for inf in fixed_infers:print(inf)
+            #print("\n")
+            metaphors.append(fixed_infers)
+
+        return metaphors
+
+    def maximal_parse(self, sentence, forced = False):
+        ### return a sorted list of tuple [parsed program, logit] of the possible parses
+        parses = self.parser.parse(sentence, forced = forced)
         distrs = self.parser.get_parse_probability(parses)
-        parse_with_prob = list(zip(parses, distrs))
+        parse_with_prob = list(zip([p.sem_program for p in parses], distrs))
         sorted_parses = sorted(parse_with_prob, key=lambda x: x[1], reverse=True)
         return sorted_parses
 
-    def parse_display(self, sentence, topK = 4):
-        sorted_parses = self.maximal_parse(sentence)
+    def parse_display(self, sentence, topK = 4, forced = False):
+        """ display the topK possible parses of the given sentence """
+        sorted_parses = self.maximal_parse(sentence, forced)
         for i, parse in enumerate(sorted_parses[:topK]):
-            print(f"{parse[0].sem_program}, {float(parse[1].exp()):.2f}")
+            print(f"{parse[0]}, {float(parse[1].exp()):.2f}")
         print("\n")
+        return sorted_parses
 
-    
+    def execute_display(self, sentence, grounding = {}, topK = 4, forced = False):
+        """ execute the topK maximal parses """
+        import tabulate
+        data = []
+        sorted_parses = self.maximal_parse(sentence, forced)
+        for i, parse in enumerate(sorted_parses[:topK]):
+            expr = Expression.parse_program_string(str(parse[0]))
+            try: answer = self.executor.evaluate(expr, grounding)
+            except: answer = "Failed To Execute"
+            tree = tree_display(str(parse[0]))
+            data.append([tree, float(parse[1].exp()),answer])
+        
+        headers = ["parse-tree", "weight", "answer"]
+        data = sorted(
+            data,
+            key=lambda x: x[1],  # weight is the 4th element (index 3)
+            reverse=True         # descending order
+            )
+        table = tabulate.tabulate(data, headers = headers, tablefmt = "grid")
+        print(table)
+        return table
+
     def verbose_call(self, sentence, grounding = {}, plot = True, K = 4):
         parses = self.parser.parse(sentence)
         distrs = self.parser.get_parse_probability(parses)

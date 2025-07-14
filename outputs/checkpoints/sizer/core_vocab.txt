@@ -1,7 +1,3 @@
-<NULL>
-<START>
-<END>
-<UNK>
 bigger
 destruct
 is

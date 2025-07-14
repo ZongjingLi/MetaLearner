@@ -14,7 +14,17 @@ class ProbValue(object):
         self.prob = prob
     
     def __repr__(self):
-        return (colored("Value", "cyan", attrs=["bold"]) + 
+        try:
+            return (colored("Value", "cyan", attrs=["bold"]) + 
+                colored(":[", "white") + 
+                colored(f"{self.value:.4f}", "blue") + 
+                colored("]-", "white") + 
+                colored(f"{self.vtype}", "cyan") + " " +
+                colored("P", "cyan", attrs=["bold"]) + 
+                colored(":[", "white") + 
+                colored(f"{self.prob}", "blue") + 
+                colored("]", "white"))
+        except:return (colored("Value", "cyan", attrs=["bold"]) + 
                 colored(":[", "white") + 
                 colored(f"{self.value}", "blue") + 
                 colored("]-", "white") + 

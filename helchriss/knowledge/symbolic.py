@@ -76,7 +76,7 @@ class Expression:
             return Expression()
         
         # Split by 'or' but respect parentheses
-        or_parts = Expression._split_by_operator(expr, "or")
+        or_parts = Expression._split_by_operator(expr, " or ")
         
         if len(or_parts) > 1:
             # We have 'or' operators
@@ -93,7 +93,7 @@ class Expression:
             return Expression()
         
         # Split by 'and' but respect parentheses
-        and_parts = Expression._split_by_operator(expr, "and")
+        and_parts = Expression._split_by_operator(expr, " and ")
         
         if len(and_parts) > 1:
             # We have 'and' operators
@@ -668,6 +668,12 @@ def concat_states(*args: TensorState) -> TensorState:
     return type(state)(**kwargs)
 
 """action precondition and effect parts,"""
+
+class DependentProduct:
+    pass
+
+class DependentSum:
+    pass
 
 class Precondition:
     def __init__(self, bool_expression):
