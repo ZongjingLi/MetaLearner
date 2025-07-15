@@ -160,6 +160,7 @@ class TypeBase(object):
         return self
 
     def __eq__(self, other: 'TypeBase') -> bool:
+        if self.typename == "AnyType": return True
         return self.typename == other.typename
 
     def __ne__(self, other: 'TypeBase') -> bool:

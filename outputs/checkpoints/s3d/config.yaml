@@ -1,7 +1,4 @@
 domains:
-  intergers:
-    name: integer_executor
-    path: domains.math.integer_domain
   objects:
     name: objects_executor
     path: domains.scene.objects_domain

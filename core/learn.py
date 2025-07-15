@@ -103,10 +103,10 @@ class AutoLearnSchedule:
             model.parser.display_word_entries(word)
         self.logger.info(f"complete the learning of words {base_vocab}")
 
-    def train_phase(self, model : MetaLearner, slice_dataset, epochs : int = 100, eps : float = 0.01):
+    def train_phase(self, model : MetaLearner, slice_dataset, epochs : int = 100, lr = 2e-3,eps : float = 0.01):
         done = False
         while not done:
-            info = model.train(slice_dataset, epochs = epochs)
+            info = model.train(slice_dataset, epochs = epochs, lr = lr)
             avg_loss = info["loss"]
             if avg_loss < eps: done = True
         return model, {"loss" : avg_loss}

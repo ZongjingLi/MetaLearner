@@ -38,6 +38,9 @@ class ListDataset(BaseDataset, IterableDatasetMixin):
             data (list[Any]): the list of data.
         """
         self.data = data
+    def shuffle(self):
+        import random
+        random.shuffle(self.data)
 
     def __len__(self): return len(self.data)
 

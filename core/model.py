@@ -16,7 +16,7 @@ from core.grammar.learn import enumerate_search
 from helchriss.knowledge.symbolic import Expression
 from helchriss.knowledge.executor import CentralExecutor
 from helchriss.dsl.dsl_values import Value
-from helchriss.dsl.dsl_types import BOOL, FLOAT, INT
+from helchriss.dsl.dsl_types import BOOL, FLOAT, INT, AnyType
 from anytree import Node, RenderTree
 
 from tqdm import tqdm
@@ -54,6 +54,17 @@ def tree_display(s):
     
     return '\n'.join(f"{pre}{node.name}" for pre, _, node in RenderTree(build(parse(s)[0])))
 
+def check_gradient_flow(submodel):
+    """检查子模型的梯度流动情况"""
+    total_norm = 0
+    has_gradient = False
+    
+    for name, param in submodel.named_parameters():
+        if param.grad is not None:
+            has_gradient = True
+            param_norm = param.grad.data.norm(2)
+            total_norm += param_norm.item() ** 2
+            print(f"参数 {name} 的梯度范数: {param_norm:.6f}")
 
 class MetaLearner(nn.Module):
     def __init__(self, domains : List[Union[CentralExecutor]], vocab : List[str] = []):
@@ -280,88 +291,129 @@ class MetaLearner(nn.Module):
 
     
 
-    def forward(self, sentence : str, grounding = None, topK = None, plot : bool = False):
+    def forward(self, sentence : str, grounding = None, tp = AnyType, topK = None, plot : bool = False, execute : bool = True):
 
-        parses = self.parser.parse(sentence,  topK = topK)
-        log_distrs = self.parser.get_parse_probability(parses)
+        parses      =  self.parser.parse(sentence,  topK = topK)
+        log_distrs  =  self.parser.get_parse_probability(parses)
+        
 
         results = []
-        probs = []
+        raw_logits = []
         programs = []
         for i,parse in enumerate(parses):
             parse_prob = log_distrs[i]
             program = parse.sem_program
 
             output_type = self.functions[program.func_name]["type"]
-            
-            if len(program.lambda_vars) == 0:
-                expr = Expression.parse_program_string(str(program))
-                result = self.executor.evaluate(expr, grounding)
-                results.append(result)
-                probs.append(parse_prob)
-                programs.append(program)
 
+            if len(program.lambda_vars) == 0 and tp == output_type:
+                expr = Expression.parse_program_string(str(program))
+                if execute:
+                    result = self.executor.evaluate(expr, grounding)
+                else:
+                    result = 0.0
+                results.append(result)
+                raw_logits.append(parse_prob)
+                programs.append(program)
 
             else:
                 results.append(None)
-                probs.append(parse_prob)
+                raw_logits.append(parse_prob)
                 programs.append(program)
+        
+        valid_indices  = [i for i, res in enumerate(results) if res is not None]
+        valid_results  = [results[i] for i in valid_indices]
+        valid_programs = [programs[i] for i in valid_indices]
+        valid_parses   = [parses[i] for i in valid_indices]
 
-        return results, probs, programs
+        if valid_indices:
+            valid_logits_tensor = torch.cat([raw_logits[i].reshape([1]) for i in valid_indices], dim = 0)
+            normalized_probs = torch.log_softmax(valid_logits_tensor, dim=0)
+        else: normalized_probs = []
 
-    def train(self, dataset : SceneGroundingDataset,  epochs : int = 1000, lr = 1e-2, topK = None):
-        import tqdm.gui as tqdmgui
-        optim = torch.optim.Adam(self.parameters(), lr = lr)
-        # epoch_bar = tqdmgui.tqdm(range(epochs), desc="Training epochs", unit="epoch")
+        return valid_results, normalized_probs, valid_programs, valid_parses
 
-        epoch_bar = tqdm(range(epochs), desc="Training epochs", unit="epoch")
 
+    def train(self, dataset: SceneGroundingDataset, epochs: int = 1000, lr = 1e-3, topK = None):
+        import tqdm
+        optim = torch.optim.Adam(self.parameters(), lr=lr)
+        
+        epoch_bar = tqdm.tqdm(range(epochs), desc="Training epochs", unit="epoch")
+        
         for epoch in epoch_bar:
-            loss = 0.0     
+            loss = 0.0
+            correct = 0
+            total_count = 0
+    
+            batch_loss = 0.0
+            batch_size = 32
+            batch_count = 0
+            
+            dataset.shuffle()
             for idx, sample in dataset:
                 query = sample["query"]
                 answer = sample["answer"]
                 grounding = sample["grounding"]
-                results, probs, programs = self(query, grounding)
-                if not results: print(f"no parsing found for query:{query}")
-
-                for i,result in enumerate(results):
+                
+                if isinstance(answer, bool):
+                    answer = Value(BOOL, answer)
+                    
+                if isinstance(answer.vtype, str):
+                    if answer.vtype == "boolean":
+                        answer.vtype = BOOL
+                    if answer.vtype == "float":
+                        answer.vtype = FLOAT
+                    if answer.vtype == "int":
+                        answer.vtype = INT
+                
+                results, probs, programs, _ = self(query, grounding, answer.vtype)
+                if not results:
+                    print(f"no parsing found for query:{query}")
+                
+                working_loss = 0.
+                for i, result in enumerate(results):
                     measure_conf = torch.exp(probs[i])
-                    if result is not None: # filter make sense progams
-                        assert isinstance(result, Value), f"{programs[i]} result is :{result} and not a Value type"
-                        if isinstance(answer, bool): answer = Value(BOOL, answer)
-                        if isinstance(answer.vtype, str):
-                            if answer.vtype == "boolean" : answer.vtype = BOOL
-                            if answer.vtype == "float" : answer.vtype = FLOAT
-                            if answer.vtype == "int" : answer.vtype = INT
+                    assert isinstance(result, Value), f"{programs[i]} result is :{result} and not a Value type"
+                    
+                    if answer.vtype == BOOL:
+                        measure_loss = torch.nn.functional.binary_cross_entropy_with_logits(
+                            result.value.reshape([-1]), 
+                            torch.tensor(float(answer.value)).reshape([-1])
+                        )
+                        predicted = (torch.sigmoid(result.value) >= 0.5).item()
+                        actual = bool(answer.value)
+                        if predicted == actual:
+                            correct += 1
+                    elif answer.vtype == FLOAT or answer.vtype == INT:
+                        measure_loss = torch.abs(result.value - answer.value)
+                        if measure_loss < 0.2:
+                            correct += 1
+                    #print(query,programs[i], result, answer)
+                    loss += measure_conf * measure_loss
+                    total_count += 1
+                    working_loss += measure_conf * measure_loss
+                
+                batch_loss += working_loss
+                batch_count += 1
 
-                        if answer.vtype == result.vtype:
-        
-                            if answer.vtype == BOOL:
-                                measure_loss =  torch.nn.functional.binary_cross_entropy_with_logits(
-                                    result.value.reshape([-1]) , torch.tensor(float(answer.value)).reshape([-1]))
-
-                            if answer.vtype == FLOAT or answer.vtype == INT:
-
-                                measure_loss = torch.abs(result.value - answer.value)
-
-                            loss += measure_conf * measure_loss
-
-                        else:
-                            lex_loss = 0.
-                            loss += measure_conf * lex_loss # suppress type-not-match outputs
-
-                    else: loss += measure_conf # suppress the non-sense outputs
-            try:
-                optim.zero_grad()
-                loss.backward()
-                optim.step()
-            except: raise RuntimeError("No Valid Parse Found.")
-
+                #for executor in self.executor.base_executor.executor_group:
+                #    check_gradient_flow(executor)
+                
+                if batch_count == batch_size or idx == len(dataset) - 1:
+                    batch_loss /= batch_count
+                    try:
+                        optim.zero_grad()
+                        batch_loss.backward()
+                        optim.step()
+                        batch_loss = 0.0
+                        batch_count = 0
+                    except: raise RuntimeError("No Valid Parse Found.")
+            
+            avg_acc = float(correct) / total_count
             avg_loss = loss / len(dataset) if len(dataset) > 0 else 0
-            epoch_bar.set_postfix({"avg_loss": f"{avg_loss.item():.4f}"})
-
-        return {"loss" : avg_loss}
+            epoch_bar.set_postfix({"avg_loss": f"{avg_loss.item():.4f}", "avg_acc": f"{avg_acc:.4f}"})
+        
+        return {"loss": avg_loss}
 
 
     def infer_metaphor_expressions(self, meta_exprs: Union[str, Expression,List[Expression], List[str]]):
@@ -377,31 +429,32 @@ class MetaLearner(nn.Module):
 
         return metaphors
 
-    def maximal_parse(self, sentence, forced = False):
+    def maximal_parse(self, sentence, tp = AnyType, forced = False):
         ### return a sorted list of tuple [parsed program, logit] of the possible parses
-        parses = self.parser.parse(sentence, forced = forced)
+        #parses = self.parser.parse(sentence, forced = forced)
+        _, _, _, parses = self(sentence, {}, tp, execute = False)
         distrs = self.parser.get_parse_probability(parses)
         parse_with_prob = list(zip([p.sem_program for p in parses], distrs))
         sorted_parses = sorted(parse_with_prob, key=lambda x: x[1], reverse=True)
+
         return sorted_parses
 
-    def parse_display(self, sentence, topK = 4, forced = False):
+    def parse_display(self, sentence, tp = AnyType,topK = 4, forced = False):
         """ display the topK possible parses of the given sentence """
-        sorted_parses = self.maximal_parse(sentence, forced)
+        sorted_parses = self.maximal_parse(sentence, tp,forced)
         for i, parse in enumerate(sorted_parses[:topK]):
             print(f"{parse[0]}, {float(parse[1].exp()):.2f}")
         print("\n")
         return sorted_parses
 
-    def execute_display(self, sentence, grounding = {}, topK = 4, forced = False):
+    def execute_display(self, sentence, grounding = {}, tp = AnyType, topK = 4, forced = False):
         """ execute the topK maximal parses """
         import tabulate
         data = []
-        sorted_parses = self.maximal_parse(sentence, forced)
+        sorted_parses = self.maximal_parse(sentence, tp, forced)
         for i, parse in enumerate(sorted_parses[:topK]):
             expr = Expression.parse_program_string(str(parse[0]))
-            try: answer = self.executor.evaluate(expr, grounding)
-            except: answer = "Failed To Execute"
+            answer = self.executor.evaluate(expr, grounding)
             tree = tree_display(str(parse[0]))
             data.append([tree, float(parse[1].exp()),answer])
         
