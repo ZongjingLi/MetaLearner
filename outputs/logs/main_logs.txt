@@ -26364,3 +26364,273 @@
 [15 15:17:39 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
 [15 15:17:39 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
 [15 15:17:39 143@main.py:Main] created model prototype and saved successfully.
+[15 20:37:23 24@main.py:Main] using the core knowledge stored in configs/core_domains.yaml to create prototype
+[15 20:37:23 26@main.py:Main] loading the checkpoint parameters in prototype
+[15 20:37:23 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[15 20:37:23 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[15 20:37:23 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[15 20:37:23 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[15 20:37:23 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function avg automatically registered.
+[15 20:37:23 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[15 20:37:23 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[15 20:37:23 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[15 20:37:23 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[15 20:37:23 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function subset automatically registered.
+[15 20:37:23 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function exists automatically registered.
+[15 20:37:23 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function forall automatically registered.
+[15 20:37:23 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function iota automatically registered.
+[15 20:37:23 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function negate automatically registered.
+[15 20:37:23 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function logic_and automatically registered.
+[15 20:37:23 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function logic_or automatically registered.
+[15 20:37:23 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function count automatically registered.
+[15 20:37:23 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function scene automatically registered.
+[15 20:37:23 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function red automatically registered.
+[15 20:37:23 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function green automatically registered.
+[15 20:37:23 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function blue automatically registered.
+[15 20:37:23 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function circle automatically registered.
+[15 20:37:23 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function square automatically registered.
+[15 20:37:23 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[15 20:37:23 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[15 20:37:23 143@main.py:Main] created model prototype and saved successfully.
+[15 20:37:41 24@main.py:Main] using the core knowledge stored in configs/core_domains.yaml to create prototype
+[15 20:37:41 26@main.py:Main] loading the checkpoint parameters in prototype
+[15 20:37:41 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[15 20:37:41 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[15 20:37:41 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[15 20:37:41 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[15 20:37:41 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function avg automatically registered.
+[15 20:37:41 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[15 20:37:41 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[15 20:37:41 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[15 20:37:41 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[15 20:37:41 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function subset automatically registered.
+[15 20:37:41 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function exists automatically registered.
+[15 20:37:41 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function forall automatically registered.
+[15 20:37:41 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function iota automatically registered.
+[15 20:37:41 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function negate automatically registered.
+[15 20:37:41 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function logic_and automatically registered.
+[15 20:37:41 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function logic_or automatically registered.
+[15 20:37:41 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function count automatically registered.
+[15 20:37:41 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function scene automatically registered.
+[15 20:37:41 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function red automatically registered.
+[15 20:37:41 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function green automatically registered.
+[15 20:37:41 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function blue automatically registered.
+[15 20:37:41 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function circle automatically registered.
+[15 20:37:41 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function square automatically registered.
+[15 20:37:41 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[15 20:37:41 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[15 20:37:41 143@main.py:Main] created model prototype and saved successfully.
+[15 23:37:54 24@main.py:Main] using the core knowledge stored in configs/core_domains.yaml to create prototype
+[15 23:37:54 26@main.py:Main] loading the checkpoint parameters in prototype
+[15 23:37:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[15 23:37:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[15 23:37:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[15 23:37:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[15 23:37:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function avg automatically registered.
+[15 23:37:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[15 23:37:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[15 23:37:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[15 23:37:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[15 23:37:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function subset automatically registered.
+[15 23:37:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function exists automatically registered.
+[15 23:37:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function forall automatically registered.
+[15 23:37:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function iota automatically registered.
+[15 23:37:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function negate automatically registered.
+[15 23:37:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function logic_and automatically registered.
+[15 23:37:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function logic_or automatically registered.
+[15 23:37:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function count automatically registered.
+[15 23:37:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function scene automatically registered.
+[15 23:37:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function red automatically registered.
+[15 23:37:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function green automatically registered.
+[15 23:37:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function blue automatically registered.
+[15 23:37:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function circle automatically registered.
+[15 23:37:54 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function square automatically registered.
+[15 23:37:54 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[15 23:37:54 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[15 23:37:54 143@main.py:Main] created model prototype and saved successfully.
+[15 23:39:02 24@main.py:Main] using the core knowledge stored in configs/core_domains.yaml to create prototype
+[15 23:39:02 26@main.py:Main] loading the checkpoint parameters in prototype
+[15 23:39:02 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[15 23:39:02 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[15 23:39:02 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[15 23:39:02 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[15 23:39:02 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function avg automatically registered.
+[15 23:39:02 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[15 23:39:02 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[15 23:39:02 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[15 23:39:02 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[15 23:39:02 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function subset automatically registered.
+[15 23:39:02 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function exists automatically registered.
+[15 23:39:02 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function forall automatically registered.
+[15 23:39:02 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function iota automatically registered.
+[15 23:39:02 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function negate automatically registered.
+[15 23:39:02 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function logic_and automatically registered.
+[15 23:39:02 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function logic_or automatically registered.
+[15 23:39:02 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function count automatically registered.
+[15 23:39:02 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function scene automatically registered.
+[15 23:39:02 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function red automatically registered.
+[15 23:39:02 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function green automatically registered.
+[15 23:39:02 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function blue automatically registered.
+[15 23:39:02 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function circle automatically registered.
+[15 23:39:02 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function square automatically registered.
+[15 23:39:02 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[15 23:39:02 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[15 23:39:02 143@main.py:Main] created model prototype and saved successfully.
+[15 23:40:21 24@main.py:Main] using the core knowledge stored in configs/core_domains.yaml to create prototype
+[15 23:40:21 26@main.py:Main] loading the checkpoint parameters in prototype
+[15 23:40:21 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[15 23:40:21 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[15 23:40:21 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[15 23:40:21 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[15 23:40:21 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function avg automatically registered.
+[15 23:40:21 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[15 23:40:21 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[15 23:40:21 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[15 23:40:21 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[15 23:40:21 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function subset automatically registered.
+[15 23:40:21 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function exists automatically registered.
+[15 23:40:21 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function forall automatically registered.
+[15 23:40:21 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function iota automatically registered.
+[15 23:40:21 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function negate automatically registered.
+[15 23:40:21 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function logic_and automatically registered.
+[15 23:40:21 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function logic_or automatically registered.
+[15 23:40:21 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function count automatically registered.
+[15 23:40:21 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function scene automatically registered.
+[15 23:40:21 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function red automatically registered.
+[15 23:40:21 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function green automatically registered.
+[15 23:40:21 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function blue automatically registered.
+[15 23:40:21 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function circle automatically registered.
+[15 23:40:21 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function square automatically registered.
+[15 23:40:21 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[15 23:40:21 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[15 23:40:21 143@main.py:Main] created model prototype and saved successfully.
+[15 23:45:08 24@main.py:Main] using the core knowledge stored in configs/core_domains.yaml to create prototype
+[15 23:45:08 26@main.py:Main] loading the checkpoint parameters in prototype
+[15 23:45:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[15 23:45:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[15 23:45:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[15 23:45:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[15 23:45:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function avg automatically registered.
+[15 23:45:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[15 23:45:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[15 23:45:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[15 23:45:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[15 23:45:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function subset automatically registered.
+[15 23:45:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function exists automatically registered.
+[15 23:45:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function forall automatically registered.
+[15 23:45:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function iota automatically registered.
+[15 23:45:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function negate automatically registered.
+[15 23:45:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function logic_and automatically registered.
+[15 23:45:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function logic_or automatically registered.
+[15 23:45:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function count automatically registered.
+[15 23:45:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function scene automatically registered.
+[15 23:45:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function red automatically registered.
+[15 23:45:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function green automatically registered.
+[15 23:45:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function blue automatically registered.
+[15 23:45:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function circle automatically registered.
+[15 23:45:08 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function square automatically registered.
+[15 23:45:08 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[15 23:45:08 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[15 23:45:08 143@main.py:Main] created model prototype and saved successfully.
+[15 23:49:51 24@main.py:Main] using the core knowledge stored in configs/core_domains.yaml to create prototype
+[15 23:49:51 26@main.py:Main] loading the checkpoint parameters in prototype
+[15 23:49:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[15 23:49:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[15 23:49:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[15 23:49:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[15 23:49:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function avg automatically registered.
+[15 23:49:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[15 23:49:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[15 23:49:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[15 23:49:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[15 23:49:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function subset automatically registered.
+[15 23:49:52 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function exists automatically registered.
+[15 23:49:52 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function forall automatically registered.
+[15 23:49:52 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function iota automatically registered.
+[15 23:49:52 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function negate automatically registered.
+[15 23:49:52 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function logic_and automatically registered.
+[15 23:49:52 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function logic_or automatically registered.
+[15 23:49:52 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function count automatically registered.
+[15 23:49:52 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function scene automatically registered.
+[15 23:49:52 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function red automatically registered.
+[15 23:49:52 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function green automatically registered.
+[15 23:49:52 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function blue automatically registered.
+[15 23:49:52 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function circle automatically registered.
+[15 23:49:52 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function square automatically registered.
+[15 23:49:52 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[15 23:49:52 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[15 23:49:52 143@main.py:Main] created model prototype and saved successfully.
+[16 00:16:21 24@main.py:Main] using the core knowledge stored in configs/core_domains.yaml to create prototype
+[16 00:16:21 26@main.py:Main] loading the checkpoint parameters in prototype
+[16 00:16:21 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[16 00:16:21 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[16 00:16:21 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[16 00:16:21 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[16 00:16:21 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function avg automatically registered.
+[16 00:16:21 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[16 00:16:21 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[16 00:16:21 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[16 00:16:21 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[16 00:16:21 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function subset automatically registered.
+[16 00:16:21 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function exists automatically registered.
+[16 00:16:21 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function forall automatically registered.
+[16 00:16:21 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function iota automatically registered.
+[16 00:16:21 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function negate automatically registered.
+[16 00:16:21 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function logic_and automatically registered.
+[16 00:16:21 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function logic_or automatically registered.
+[16 00:16:21 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function count automatically registered.
+[16 00:16:21 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function scene automatically registered.
+[16 00:16:21 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function red automatically registered.
+[16 00:16:21 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function green automatically registered.
+[16 00:16:21 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function blue automatically registered.
+[16 00:16:21 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function circle automatically registered.
+[16 00:16:21 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function square automatically registered.
+[16 00:16:21 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[16 00:16:21 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[16 00:16:21 143@main.py:Main] created model prototype and saved successfully.
+[16 00:17:02 24@main.py:Main] using the core knowledge stored in configs/core_domains.yaml to create prototype
+[16 00:17:02 26@main.py:Main] loading the checkpoint parameters in prototype
+[16 00:17:02 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function one automatically registered.
+[16 00:17:02 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function two automatically registered.
+[16 00:17:02 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function three automatically registered.
+[16 00:17:02 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function plus automatically registered.
+[16 00:17:02 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function avg automatically registered.
+[16 00:17:02 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function smaller automatically registered.
+[16 00:17:02 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function bigger automatically registered.
+[16 00:17:02 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function N automatically registered.
+[16 00:17:02 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function Z automatically registered.
+[16 00:17:02 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function subset automatically registered.
+[16 00:17:02 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function exists automatically registered.
+[16 00:17:02 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function forall automatically registered.
+[16 00:17:02 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function iota automatically registered.
+[16 00:17:02 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function negate automatically registered.
+[16 00:17:02 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function logic_and automatically registered.
+[16 00:17:02 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function logic_or automatically registered.
+[16 00:17:02 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function count automatically registered.
+[16 00:17:02 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function scene automatically registered.
+[16 00:17:02 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function red automatically registered.
+[16 00:17:02 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function green automatically registered.
+[16 00:17:02 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function blue automatically registered.
+[16 00:17:02 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function circle automatically registered.
+[16 00:17:02 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function square automatically registered.
+[16 00:17:02 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[16 00:17:02 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[16 00:17:02 143@main.py:Main] created model prototype and saved successfully.
+[16 02:52:51 24@main.py:Main] using the core knowledge stored in configs/core_domains.yaml to create prototype
+[16 02:52:51 26@main.py:Main] loading the checkpoint parameters in prototype
+[16 02:52:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function exists automatically registered.
+[16 02:52:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function forall automatically registered.
+[16 02:52:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function iota automatically registered.
+[16 02:52:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function negate automatically registered.
+[16 02:52:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function logic_and automatically registered.
+[16 02:52:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function logic_or automatically registered.
+[16 02:52:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function count automatically registered.
+[16 02:52:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function scene automatically registered.
+[16 02:52:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function red automatically registered.
+[16 02:52:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function green automatically registered.
+[16 02:52:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function blue automatically registered.
+[16 02:52:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function circle automatically registered.
+[16 02:52:51 46@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] Function square automatically registered.
+[16 02:52:51 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[16 02:52:51 27@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN The input domain is empty, creating an empty domain
+[16 02:52:51 143@main.py:Main] created model prototype and saved successfully.

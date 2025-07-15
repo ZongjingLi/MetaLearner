@@ -346,7 +346,7 @@ class MetaLearner(nn.Module):
             total_count = 0
     
             batch_loss = 0.0
-            batch_size = 32
+            batch_size = 4
             batch_count = 0
             
             dataset.shuffle()
