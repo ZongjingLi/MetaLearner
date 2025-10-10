@@ -25,21 +25,21 @@ __all__ = [
 
 
 direction_domain_str = """
-(domain Direction)
-(:type
-    position - vector[float,2]
+(domain :: Direction)
+(def type
+    position - Vector[float,2]
     angle - float
 )
-(:predicate
-    north ?x-position ?y-position -> boolean
-    south ?x-position ?y-position -> boolean
-    east ?x-position ?y-position -> boolean
-    west ?x-position ?y-position -> boolean
-    northeast ?x-position ?y-position -> boolean
-    northwest ?x-position ?y-position -> boolean
-    southeast ?x-position ?y-position -> boolean
-    southwest ?x-position ?y-position -> boolean
-    angle_between ?x-position ?y-position -> angle
+(def function
+    north (x y : position) : boolean := by pass
+    south (x y : position) : boolean := by pass
+    east  (x y : position) : boolean := by pass
+    west  (x y : position) : boolean := by pass
+    northeast (x y : position) : boolean := by pass
+    northwest (x y : position) : boolean := by pass
+    southeast (x y : position) : boolean := by pass
+    southwest (x y : position) : boolean := by pass
+    angle_between (x y : position) : angle := by pass
 )
 """
 direction_domain = load_domain_string(direction_domain_str)

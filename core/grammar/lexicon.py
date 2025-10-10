@@ -19,13 +19,7 @@ class CCGSyntacticType:
         self.arg_type = arg_type  # For complex types
         self.result_type = result_type  # For complex types
         self.direction = direction  # '/' for forward, '\' for backward
-        #try:
-        #    pass
-        #    print(self.arg_type)
-        #    print(self.result_type)
-        #except:
-        #    print(self.arg_type.__class__)
-        #    print(self.result_type.__class__)
+
     @property
     def is_primitive(self): return  self.result_type is None
     
@@ -91,11 +85,6 @@ class SemProgram:
         self.args = args if args else []
         self.lambda_vars = lambda_vars if lambda_vars else []  # For lambda functions
     
-    def execute(self, context=None):
-        """Execute the program in a given context"""
-        # This would execute on input data like images in the full implementation
-        # Here we'll just return a dummy result for demonstration
-        return f"Executed {self}"
     
     def __hash__(self): 
         return hash(self.__str__())
@@ -112,7 +101,45 @@ class SemProgram:
                 self.args == other.args and 
                 self.lambda_vars == other.lambda_vars)
 
+def parse_from_string(input_str):
+    """
+    - func_name: "red:Objects"
+    - args: [SemProgram(func_name="scene:Objects", args=[])]
+    """
+    import re
     
+    func_pattern = r'^([^(:]+(:[^(:]+)?)(\((.*)\))?$'
+    match = re.match(func_pattern, input_str.strip())
+    
+    if not match:
+        raise ValueError(f"Invalid syntax: {input_str}")
+    
+    func_name, _, has_args, args_str = match.groups()
+    
+    if not has_args: return SemProgram(func_name, [])
+    
+    # 解析参数列表
+    args = []
+    current_pos = 0
+    depth = 0
+    start_pos = 0
+    
+    for i, char in enumerate(args_str):
+        if char == '(':
+            depth += 1
+        elif char == ')':
+            depth -= 1
+        elif char == ',' and depth == 0:
+            arg_str = args_str[start_pos:i].strip()
+            if arg_str: args.append(parse_from_string(arg_str))
+            start_pos = i + 1
+
+    last_arg = args_str[start_pos:].strip()
+    if last_arg:
+        args.append(parse_from_string(last_arg))
+    
+    return SemProgram(func_name, args)
+
     
 class LexiconEntry:
     def __init__(self, word: str, syn_type: CCGSyntacticType, sem_program: SemProgram, weight: Union[float, torch.Tensor] = 0.0):

@@ -159,5 +159,5 @@ def _to_image(image):
 
 
 def Shapes3Dataset(dataset_size) -> Shapes3DatasetUnwrapped:
-    return Shapes3DatasetUnwrapped(dataset_size)
+    return  Shapes3DatasetUnwrapped(dataset_size)
 

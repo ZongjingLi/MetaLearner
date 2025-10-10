@@ -52,12 +52,9 @@ def enumerate_search(related_types: List[TypeBase], related_funcs: Dict, max_dep
             for fn, func_info in related_funcs.items():
                 params = func_info["parameters"]
                 ret_type = func_info["type"]
-                # 生成该函数的所有可能CCG类型
                 syn_types = enumerate_types(params, ret_type)
-                # 初始化语义程序：带lambda变量（数量=参数数）
                 lambda_vars = [f"x{i}" for i in range(len(params))]
                 sem_program = SemProgram(func_name=fn, args=[], lambda_vars=lambda_vars)
-                # 加入初始节点
                 for syn_type in syn_types:
                     new_nodes.append((syn_type, sem_program))
         

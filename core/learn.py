@@ -41,7 +41,7 @@ def optimal_schedule(dataset : SceneGroundingDataset, learned_vocab : List[str])
 
     
     # Start with k=1 (adding one word) and increase if needed
-    k = 1
+    k = len(all_words)
     improvement_found = False
     
     while not improvement_found and k <= len(unlearned_words):
@@ -75,15 +75,18 @@ class AutoLearnSchedule:
         self.cues = unbounded_cues if not cues else cues
         self.base_vocab : List[str] = None
         self.logger = get_logger("AutoSchedule")
+        self.device = "mps" if torch.backends.mps.is_available() else "cuda" if torch.cuda.is_available() else "cpu"
 
     def train(self, model : MetaLearner, epochs : int, lr : float = 2e-2):
         return model.train(self.dataset, epochs = epochs, lr = lr)
     
-    def procedual_train(self, model : MetaLearner, eps = 0.001):
+    def procedual_train(self, model : MetaLearner, lr = 2e-4, eps = 0.005):
+        device = self.device
         base_vocab = []#model.learned_vocab
         base_data  = []
         base_dataset = ListDataset(base_data)
-        step_epochs = 100
+        step_epochs = 10
+        #model = model.to(device)
 
         new_words, _ = optimal_schedule(self.dataset, base_vocab)
         while new_words:
@@ -94,22 +97,24 @@ class AutoLearnSchedule:
             self.logger.info(f"start to learn the words {new_words}, add corpus size {len(slice_data)}")
             [base_dataset.add(data) for data in slice_data]
 
-            model, info = self.train_phase(model, base_dataset, epochs = step_epochs, eps = eps)
+            model, info = self.train_phase(model, base_dataset, epochs = step_epochs, eps = eps, lr = lr)
             avg_loss = info["loss"]
+            avg_acc = info["acc"]
             
-            self.logger.info(f"learned words : {new_words} avg_loss:{avg_loss}")
+            self.logger.info(f"learned words : {new_words} avg_acc:{avg_acc} avg_loss:{avg_loss}")
         for word in base_vocab:
-            model.parser.purge_entry(word, 0.001, abs = 0)
+            model.parser.purge_entry(word, 0.0001, abs = 0)
             model.parser.display_word_entries(word)
         self.logger.info(f"complete the learning of words {base_vocab}")
 
-    def train_phase(self, model : MetaLearner, slice_dataset, epochs : int = 100, lr = 2e-3,eps : float = 0.01):
+    def train_phase(self, model : MetaLearner, slice_dataset, epochs : int = 10, lr : int = 5e-4, eps : float = 0.005):
         done = False
         while not done:
             info = model.train(slice_dataset, epochs = epochs, lr = lr)
             avg_loss = info["loss"]
-            if avg_loss < eps: done = True
-        return model, {"loss" : avg_loss}
+            avg_acc = info["acc"]
+            if 1 - avg_acc < eps: done = True
+        return model, {"loss" : avg_loss, "acc": avg_acc}
     
     #TODO: metaphorical expression infer
 

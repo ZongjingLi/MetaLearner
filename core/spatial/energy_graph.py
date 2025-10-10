@@ -200,9 +200,6 @@ class TimeInputEnergyMLP(nn.Module, ModelMixin):
 
         return {"energy":energy, "gradient":grad}
 
-class GeometricEnergyMLP(nn.Module, ModelMixin):
-	def __init__(self, dim = 2, hidden_dims = (16,128,256,128,16)):
-		super().__init__()
 
 
 class PointEnergyMLP(nn.Module, ModelMixin):

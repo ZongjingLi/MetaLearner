@@ -17,10 +17,9 @@ from helchriss.dsl.dsl_values import Value
 from helchriss.dsl.dsl_types import TypeBase, AnyType
 from helchriss.domain import Domain
 from .rewrite import NeuralRewriter, LocalFrame
-from .types import fill_hole
 
 # this is the for type space, basically a wrapper class
-from .types import infer_caster, fill_hole
+from .types import RuleBasedTransformInferer, fill_hole
 from dataclasses import dataclass
 import contextlib
 import networkx as nx
@@ -259,6 +258,7 @@ class RewriteExecutor(FunctionExecutor):
         super().__init__(None)
         self.base_executor : FunctionExecutor = executor
         self.rewriter : NeuralRewriter = NeuralRewriter() # use this structur to store the caster and hierarchies
+        self.inferer  = RuleBasedTransformInferer()
         self._gather_format = "{}:{}"
 
         """maintain the evaluation graph just to visualize and sanity check"""
@@ -292,7 +292,7 @@ class RewriteExecutor(FunctionExecutor):
             if isinstance(expr, FunctionApplicationExpression):
                 func_name = expr.func.name
 
-                source_arg_types : List[TypeBase] = [dfs(arg)[0] for arg in expr.args] # A List of Types
+                source_arg_types : List[TypeBase] = [dfs(arg)[0]        for arg in expr.args] # A List of Types
 
                 target_signatures = self.base_executor.function_signature(func_name)
 
@@ -337,14 +337,13 @@ class RewriteExecutor(FunctionExecutor):
             output_type = out_type      #(o) the output type for the target function
 
             ### 1) create the type casting rewrite rule and add a NeuralNet to fill the hole
-
             filler = fill_hole(input_type, output_type)
             self.base_executor.register_function(target_func, input_type, output_type, filler)
             output_metaphors.append(metaphor) ### add the extention of fill-hole
             
             ### 2) create the local frame that gathers other `source` functions to the `target` function
 
-            if caster is None: caster = infer_caster(input_type, expect_type)
+            if caster is None: caster = self.inferer.infer_caster(input_type, expect_type)
             rewrite_frame : LocalFrame = LocalFrame(target_func, expect_type, input_type, caster)
 
             reduce_hypothesis = self.base_executor.gather_functions(input_type, output_type)
@@ -586,7 +585,7 @@ class RewriteExecutor(FunctionExecutor):
         self.init_graph()
         if not isinstance(expression, Expression):
             expression = self.parse_expression(expression)
-
+        #print(expression)
         grounding = grounding if self._grounding is not None else grounding
 
         with self.with_grounding(grounding):

@@ -21,7 +21,7 @@ cycle_domain_str = """
 
     clockwise ?x-pos ?y-pos -> boolean
     counterclockwise ?x-pos ?y-pos -> boolean
-    opposite ?x-pos ?y-pos -> boolean
+    is_opposite ?x-pos ?y-pos -> boolean
 )
 """
 
@@ -81,7 +81,7 @@ class CycleExecutor(CentralExecutor, BatchVisualizer):
         counterclockwise_score = self.temperature * (math.pi - diff)
         return counterclockwise_score
     
-    def opposite(self, pos1, pos2):
+    def is_opposite(self, pos1, pos2):
         """Determine if pos1 and pos2 are on opposite sides of the circle."""
         theta1 = self.pos_to_theta(pos1)
         theta2 = self.pos_to_theta(pos2)

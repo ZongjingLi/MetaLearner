@@ -27,11 +27,11 @@ __all__ = [
 
 path_domain_str = """
 (domain Path)
-(:type
-    path - vector[float, 10, 2]
-    point - vector[float,2]
+(def type
+    path - vector[float, 4] ;; start point and end point
+    point - vector[float,2] ;; a point
 )
-(:predicate
+(def function
     sample_path -> path                   ;; random choose a pair of points and create spline path
     start_point ?x-path -> point          ;; the start point of the path (first element)
     end_point ?x-path -> point            ;; the end point of the path (last element)
@@ -45,6 +45,8 @@ path_domain_str = """
     path_to ?x-path ?y-point -> boolean   ;; assert the  end  point of a path is close to the given point
 
     attach ?x-path ?y-point -> path       ;; move a path so it starts at a point
+)
+(def constraint
 )
 """
 path_domain = load_domain_string(path_domain_str)

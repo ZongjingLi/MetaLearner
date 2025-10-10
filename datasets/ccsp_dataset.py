@@ -25,10 +25,7 @@ class Swissroll(Dataset):
            }
        }
 
-
-
 def collate_graph_batch(batch):
-    # Unpack batch efficiently
     batch_data = {
         "data": [],
         "cond": {"edges": []}
@@ -36,7 +33,6 @@ def collate_graph_batch(batch):
     
     offset = 0
     for sample in batch:
-        #(sample)
         state = sample["data"]
         edges = sample["cond"]["edges"]
         
@@ -49,8 +45,7 @@ def collate_graph_batch(batch):
             translated_edge.append(e[-1])
             batch_data["cond"]["edges"].append(translated_edge)
         offset += len(state)
-    
-    # Stack all states
+
     batch_data["data"] = torch.cat(batch_data["data"], dim=0)
     #print(batch_data["cond"]["edges"])
     

@@ -80,6 +80,7 @@ class MetaLearner(nn.Module):
 
         self.gather_format = self.executor.gather_format
         self.entries_setup() 
+        self.cheat = False # use the ground-truth to cheat
 
     def save_ckpt(self, ckpt_path):
         """
@@ -257,17 +258,6 @@ class MetaLearner(nn.Module):
 
         related_types = [str(tp) for (alia, tp) in self.filter_types(domains).items()]
         related_funcs = self.filter_functions(domains)
-        """
-        for tp in related_types:print(tp)
-
-        for tp in related_funcs:
-            print(tp)
-            for param in related_funcs[tp]["parameters"]:
-                print(param)
-            print(related_funcs[tp]["type"])
-            print("\n")
-            #print("tp",tp, related_funcs[tp])
-        """
         entries = enumerate_search(related_types, related_funcs, max_depth = depth)
 
         lexicon_entries = dict()
@@ -276,7 +266,6 @@ class MetaLearner(nn.Module):
                 lexicon_entries[f"{word}_{idx}"] = LexiconEntry(
                         word, syn_type, program, weight = torch.randn(1).item() - 0.0
                     )
-        #for entry in entries:print(entry[0], entry[1])
         grouped_lexicon = self.group_lexicon_entries(lexicon_entries)    
         self.parser = ChartParser(grouped_lexicon)
         return 0
@@ -289,13 +278,10 @@ class MetaLearner(nn.Module):
         """this method add a new set of vocab and related domains that could associate it with """
         self.vocab.extend(add_vocab)
 
-    
+    def forward(self, sentence : str, grounding = None, tp = AnyType, topK = None, execute : bool = True, forced = False):
 
-    def forward(self, sentence : str, grounding = None, tp = AnyType, topK = None, plot : bool = False, execute : bool = True):
-
-        parses      =  self.parser.parse(sentence,  topK = topK)
+        parses      =  self.parser.parse(sentence,  topK = topK, forced = forced)
         log_distrs  =  self.parser.get_parse_probability(parses)
-        
 
         results = []
         raw_logits = []
@@ -308,10 +294,8 @@ class MetaLearner(nn.Module):
 
             if len(program.lambda_vars) == 0 and tp == output_type:
                 expr = Expression.parse_program_string(str(program))
-                if execute:
-                    result = self.executor.evaluate(expr, grounding)
-                else:
-                    result = 0.0
+                if execute: result = self.executor.evaluate(expr, grounding)
+                else: result = 0.0
                 results.append(result)
                 raw_logits.append(parse_prob)
                 programs.append(program)
@@ -332,10 +316,11 @@ class MetaLearner(nn.Module):
         else: normalized_probs = []
 
         return valid_results, normalized_probs, valid_programs, valid_parses
-
+    
 
     def train(self, dataset: SceneGroundingDataset, epochs: int = 1000, lr = 1e-3, topK = None):
         import tqdm
+        device = "mps" if torch.backends.mps.is_available() else "cuda" if torch.cuda.is_available() else "cpu"
         optim = torch.optim.Adam(self.parameters(), lr=lr)
         
         epoch_bar = tqdm.tqdm(range(epochs), desc="Training epochs", unit="epoch")
@@ -346,74 +331,83 @@ class MetaLearner(nn.Module):
             total_count = 0
     
             batch_loss = 0.0
-            batch_size = 4
+            batch_size = 8
             batch_count = 0
             
             dataset.shuffle()
+            #dataset.to_device(device)
             for idx, sample in dataset:
                 query = sample["query"]
                 answer = sample["answer"]
                 grounding = sample["grounding"]
-                
-                if isinstance(answer, bool):
-                    answer = Value(BOOL, answer)
+                program = sample["program"] if "program" in sample and self.cheat else None
+ 
+                if isinstance(answer, bool): answer = Value(BOOL, answer)
                     
-                if isinstance(answer.vtype, str):
-                    if answer.vtype == "boolean":
-                        answer.vtype = BOOL
-                    if answer.vtype == "float":
-                        answer.vtype = FLOAT
-                    if answer.vtype == "int":
-                        answer.vtype = INT
-                
-                results, probs, programs, _ = self(query, grounding, answer.vtype)
-                if not results:
-                    print(f"no parsing found for query:{query}")
-                
-                working_loss = 0.
-                for i, result in enumerate(results):
-                    measure_conf = torch.exp(probs[i])
-                    assert isinstance(result, Value), f"{programs[i]} result is :{result} and not a Value type"
-                    
-                    if answer.vtype == BOOL:
-                        measure_loss = torch.nn.functional.binary_cross_entropy_with_logits(
-                            result.value.reshape([-1]), 
-                            torch.tensor(float(answer.value)).reshape([-1])
-                        )
-                        predicted = (torch.sigmoid(result.value) >= 0.5).item()
-                        actual = bool(answer.value)
-                        if predicted == actual:
-                            correct += 1
-                    elif answer.vtype == FLOAT or answer.vtype == INT:
-                        measure_loss = torch.abs(result.value - answer.value)
-                        if measure_loss < 0.2:
-                            correct += 1
-                    #print(query,programs[i], result, answer)
-                    loss += measure_conf * measure_loss
-                    total_count += 1
-                    working_loss += measure_conf * measure_loss
-                
-                batch_loss += working_loss
-                batch_count += 1
+                if isinstance(answer, Value) and isinstance(answer.vtype, str):
+                    if answer.vtype == "boolean": answer.vtype = BOOL
+                    if answer.vtype == "float": answer.vtype = FLOAT
+                    if answer.vtype == "int": answer.vtype = INT
 
-                #for executor in self.executor.base_executor.executor_group:
-                #    check_gradient_flow(executor)
+                if 1:#with torch.autograd.detect_anomaly():
+                    working_loss = 0.
+                    if program is None:
+                        results, probs, programs, _ = self(query, grounding, answer.vtype)
+                    else:
+                            results     =  [self.executor.evaluate(program, grounding)]
+                            probs       =  [torch.tensor(1.0)]
+                            programs    =  [program]
+
+                    if not results:
+                        print(f"no parsing found for query:{query}")
                 
-                if batch_count == batch_size or idx == len(dataset) - 1:
-                    batch_loss /= batch_count
-                    try:
-                        optim.zero_grad()
-                        batch_loss.backward()
-                        optim.step()
-                        batch_loss = 0.0
-                        batch_count = 0
-                    except: raise RuntimeError("No Valid Parse Found.")
+                    for i, result in enumerate(results):
+                        measure_conf = torch.exp(probs[i])
+                        assert isinstance(result, Value), f"{programs[i]} result is :{result} and not a Value type"
+                                                                
+                        if self.cheat and program:
+                            if str(program) == str(programs[i]):gt_program = 1.0
+                            else: gt_program = 0.0
+
+                        if answer.vtype == BOOL:
+                            measure_loss = torch.nn.functional.binary_cross_entropy_with_logits(
+                                result.value.reshape([-1]).clamp(-13.,13.), 
+                                torch.tensor(float(answer.value)).reshape([-1])
+                            )
+                            predicted = (result.value >= 0.).item()
+                            actual = bool(answer.value)
+                            if predicted == actual: correct += 1 * measure_conf
+  
+                        elif answer.vtype == FLOAT or answer.vtype == INT:
+                            measure_loss = torch.abs(result.value - answer.value)
+                            if measure_loss < 0.2: correct += 1 * measure_conf
+
+                        loss += measure_conf * measure_loss
+                        total_count += 1 * measure_conf
+                        working_loss += measure_conf * measure_loss
+                
+                    batch_loss += working_loss
+                    batch_count += 1
+
+                    #for executor in self.executor.base_executor.executor_group:
+                    #    check_gradient_flow(executor)
+                
+                    if batch_count == batch_size :#or idx == len(dataset) - 1:
+                        batch_loss /= batch_count
+                        try:
+                        
+                            optim.zero_grad()
+                            batch_loss.backward()
+                            optim.step()
+                            batch_loss = 0.0
+                            batch_count = 0
+                        except: raise RuntimeError("No Valid Parse Found.")
             
             avg_acc = float(correct) / total_count
             avg_loss = loss / len(dataset) if len(dataset) > 0 else 0
             epoch_bar.set_postfix({"avg_loss": f"{avg_loss.item():.4f}", "avg_acc": f"{avg_acc:.4f}"})
         
-        return {"loss": avg_loss}
+        return {"loss": avg_loss, "acc": avg_acc}
 
 
     def infer_metaphor_expressions(self, meta_exprs: Union[str, Expression,List[Expression], List[str]]):
@@ -432,7 +426,7 @@ class MetaLearner(nn.Module):
     def maximal_parse(self, sentence, tp = AnyType, forced = False):
         ### return a sorted list of tuple [parsed program, logit] of the possible parses
         #parses = self.parser.parse(sentence, forced = forced)
-        _, _, _, parses = self(sentence, {}, tp, execute = False)
+        _, _, _, parses = self(sentence, {}, tp, execute = False, forced = forced)
         distrs = self.parser.get_parse_probability(parses)
         parse_with_prob = list(zip([p.sem_program for p in parses], distrs))
         sorted_parses = sorted(parse_with_prob, key=lambda x: x[1], reverse=True)

@@ -35,9 +35,9 @@ def create_sprite(object_size: int = 32, sprite_type: str = 'number'):
     color_name = g_colors_index_to_name[color_idx]
     
     # Set the color in BGR format
-    if color_idx == 0: color = (37, 37, 173)  # Red (BGR format)
-    elif color_idx == 1: color = (17, 215, 99)#(61, 156, 55)  # Green
-    else: color = (165, 76, 49)  # Blue
+    if color_idx == 0: color = (37, 37, 173) #color = [0, 0, 255]#  # Red (BGR format)
+    elif color_idx == 1: color = color = (17, 215, 99)#[0, 255, 0]#(61, 156, 55)  # Green
+    else: color = (165, 76, 49)#  # Blue
     
     # Font settings for text (used for both types)
     font = cv2.FONT_HERSHEY_SIMPLEX
@@ -159,7 +159,7 @@ def _gen_random_label():
     """Generate a random label for questions"""
     # This covers both number and shape types
     label_types = [
-        'number',   # For both sprites types (they all have numbers)
+        #'number',   # For both sprites types (they all have numbers)
         'shape',    # For shape sprites
         'color'     # For both
     ]
@@ -180,9 +180,9 @@ def _gen_random_label():
 # Changes to _gen_random_question function for boolean questions
 def _gen_random_question(sprites, arity: int):
     """Generate a random boolean question about the sprites with shorter syntax"""
-    if arity == 1:
+    if 1 or arity == 1:
         label, label_type, label_value = _gen_random_label()
-        
+
         # Check if the label exists in any sprite
         if label_type == 'number':
             answer = any(sprite['number'] == int(label_value) for sprite in sprites)
@@ -193,7 +193,7 @@ def _gen_random_question(sprites, arity: int):
             
         # Shorter query format
         question = f'{label} exists'
-        program = f'exists(Object, lambda x: {label_value}(x))'
+        program = f'exists:Objects({label_value}:Objects(scene:Objects()))'
         return question, program, answer
         
     else:  # arity == 2
@@ -223,7 +223,9 @@ def _gen_random_question(sprites, arity: int):
 
         # Shorter query format
         question = f'{label1} {relation} of {label2}'
+        #print(question)
         program = f'exists(Object, lambda x: exists(Object, lambda y: {label_value1}(x) and {relation}(x, y) and {label_value2}(y)))'
+        program = f"exists:Objects({label_value1}:Objects({relation}:Objects({label_value2}:Objects(scene:Objects()),scene:Objects())))"
         return question, program, answer
 
 
@@ -694,11 +696,12 @@ def gen_mixed_sprites3_dataset(dataset_size):
     
     for i in range(dataset_size):
         # Randomly decide if we want all one type or mixed types
-        if npr.rand() < 0.3:  # 30% chance of being all one type
-            sprite_type = npr.choice(['number', 'shape'])
+        if npr.rand() < 1.0:  # 100% chance of being all one type
+            sprite_type = "shape"#npr.choice(['number', 'shape'])
             sprite_types = [sprite_type, sprite_type, sprite_type]
         else:
             # Mixed types
+            print("mixed")
             sprite_types = [npr.choice(['number', 'shape']) for _ in range(3)]
         
         image, sprites = create_mixed_sprites3(sprite_types=sprite_types)
@@ -706,13 +709,13 @@ def gen_mixed_sprites3_dataset(dataset_size):
         sprites_info.append(sprites)
 
         # Choose a question type: boolean (original) or arithmetic (new)
-        question_type = npr.choice(['boolean', 'arithmetic'])
+        question_type = npr.choice(['boolean', ]) # 'arithmetic'
         
         if question_type == 'boolean':
             # Original boolean questions
-            arity = npr.choice([1, 2])
+            arity = npr.choice([1, 2]) # 2
             answer = npr.choice([True, False])
-            for trials in range(10):
+            for trials in range(50):
                 question, logical_form, pred_answer = _gen_random_question(sprites, arity)
                 if pred_answer == answer:
                     break

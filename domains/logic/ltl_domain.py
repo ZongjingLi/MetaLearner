@@ -6,9 +6,8 @@ from helchriss.domain import load_domain_string
 ltl_domain_str = """
 (domain LTL)
 (:type
-    boolean - vector[float, 1]
-    integer
-    timepoint
+    integer - float
+    events - List[boolean]
 )
 (:predicate
     next ?x-boolean -> boolean

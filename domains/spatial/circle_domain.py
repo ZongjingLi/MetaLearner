@@ -81,9 +81,6 @@ class CircleExecutor(CentralExecutor, BatchVisualizer):
         dist = self.distance_between_centers(state1, state2)
         radii_sum = state1[:, 2] + state2[:, 2]
         radii_diff = torch.abs(state1[:, 2] - state2[:, 2])
-        
-
-
         upper_bound = self.temperature * (radii_sum - dist)
         lower_bound = self.temperature * (dist - radii_diff)
  

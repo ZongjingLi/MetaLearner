@@ -38,6 +38,7 @@ class ListDataset(BaseDataset, IterableDatasetMixin):
             data (list[Any]): the list of data.
         """
         self.data = data
+
     def shuffle(self):
         import random
         random.shuffle(self.data)
@@ -47,6 +48,31 @@ class ListDataset(BaseDataset, IterableDatasetMixin):
     def __getitem__(self, idx): return self.data[idx]
 
     def add(self, data): self.data.append(data)
+
+    def to_device(self, device: str):
+        """
+        将数据集中所有PyTorch张量移动到指定设备
+        
+        参数：
+            device (str): 目标设备，如 "cpu", "cuda", "mps"
+        """
+        def move_to_device(obj):
+            # 如果是PyTorch张量，移动到指定设备
+            if isinstance(obj, torch.Tensor):
+                return obj.to(device)
+            # 如果是字典，递归处理每个值
+            elif isinstance(obj, dict):
+                return {k: move_to_device(v) for k, v in obj.items()}
+            # 如果是列表或元组，递归处理每个元素
+            elif isinstance(obj, (list, tuple)):
+                return type(obj)(move_to_device(v) for v in obj)
+            # 其他类型保持不变
+            else:
+                return obj
+        
+        # 对数据集中的每个元素应用递归处理
+        self.data = [move_to_device(item) for item in self.data]
+        return self  # 返回自身以便链式调用
 
 class FilterableDatasetUnwrapped(BaseDataset, IterableDatasetMixin):
     """
