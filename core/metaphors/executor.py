@@ -113,7 +113,7 @@ class ExecutorGroup(FunctionExecutor):
         for domain_executor in domains:
             if isinstance(domain_executor, FunctionExecutor): executor = domain_executor
             elif isinstance(domain_executor, Domain): executor = FunctionExecutor(domain_executor)
-            else : raise Exception("input is not a Domain or FunctionExecutor")
+            else : raise Exception(f"input {domain_executor} is not a Domain or FunctionExecutor")
             self.executor_group.append(executor)
 
         self.extended_registry = nn.ModuleDict({})
@@ -206,12 +206,12 @@ class ExecutorGroup(FunctionExecutor):
             f_sign, in_types, out_type = function
             if func == f_sign: hyp_sign.append([in_types, out_type])
         return hyp_sign
-    
-    def gather_functions(self, input_types, output_type : TypeBase) -> List[str]:
+        
+    def gather_functions(self, input_types, output_type : Union[TypeBase, bool]) -> List[str]:
         funcs = []
         for function in self.functions:
             f_sign, in_types, out_type = function
-            if in_types == input_types and out_type == output_type:
+            if in_types == input_types and  out_type == output_type:
                 funcs.append(f_sign)
         return funcs
 

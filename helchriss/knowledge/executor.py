@@ -24,7 +24,7 @@ class FunctionExecutor(nn.Module):
     def __init__(self, domain : 'Domain' = None, concept_dim = 128):
         super().__init__()
         if domain is None:
-            logger.warning("The input domain is empty, creating an empty domain")
+            logger.warning(f"`{self._get_name()}` The input domain is empty, creating an empty domain")
 
         
         self._domain : 'Domain' = domain

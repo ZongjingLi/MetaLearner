@@ -249,21 +249,22 @@ class MLPCaster(nn.Module):
             nn.ReLU(),
             nn.Linear(64, 64),
             nn.ReLU(),
-            nn.Linear(64, len(self.output_dims))
+            nn.Linear(64, 1)
         )
     
     def forward(self, *args):
         flat_args = [arg.value.reshape(-1) for arg in args[0]]
         cat_args = torch.cat(flat_args, dim=0)
-
-
         output = self.net(cat_args)
         outputs = [t.reshape([d]) for t, d in zip(torch.split(output, self.output_dims), self.output_dims)]
 
         logit_output = self.logit_net(cat_args)
 
-        tuple_output = [(o, logit_output[i]) for i,o in enumerate(outputs)]
-        return tuple_output
+        args = [o for i,o in enumerate(outputs)]
+
+        logits = torch.sum(logit_output)
+
+        return args, logits
 
 def infer_mlp_caster(input_type : List[TypeBase], output_types : List[TypeBase]) -> nn.Module:
     input_dims = [type_dim(tp) for tp in input_type]

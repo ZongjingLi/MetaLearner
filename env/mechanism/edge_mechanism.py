@@ -1,7 +1,7 @@
 
 
-from rinarak.envs.gripper_env import GripperSimulator
-from rinarak.envs.recorder import SceneRecorder
+from helchriss.envs.gripper_env import GripperSimulator
+from helchriss.envs.recorder import SceneRecorder
 import sys
 import pybullet as p
 

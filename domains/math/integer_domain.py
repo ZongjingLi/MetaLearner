@@ -14,6 +14,8 @@ integer_domain_str = """
     two : num := by pass
     three : num := by pass
     plus (x y : num) : num := by pass
+    minus (x y : num) : num := by pass
+    mul (x y : num) : num := by pass
 
     avg (x : List[num]) : num := by pass
 
@@ -48,6 +50,7 @@ class NumbersExecutor(CentralExecutor):
     def Z(self): return self.Z_embed
 
     def plus(self, x, y): return x + y
+
 
     def minus(self, x, y): return x - y
 

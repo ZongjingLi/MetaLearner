@@ -52,6 +52,41 @@ class RewriteRule:
         else : return weight
  
 
+class Frame(nn.Module):
+    def __init__(self, source_type : List[TypeBase], target_type : List[TypeBase], rewriter):
+        super().__init__()
+        self.source_type : List[TypeBase] = source_type
+        self.target_type : List[TypeBase] = target_type
+
+        self.rewriter = rewriter
+        self.matches : nn.ParameterDict = nn.ParameterDict({})
+
+    def match_logits(self, fn, gn):
+        return
+
+    def apply(self, values : List[Value]) -> Tuple[List[Value], Union[float, torch.Tensor]]:
+        rewrite_args, rewrite_prob = self.rewriter(values)
+
+        args = [Value(self.target_type[i],v) for i,v in enumerate(rewrite_args)]
+
+        return args, rewrite_prob
+    
+    def applicable(self, args : List[Value]):
+        """return if the given args can be applied to the node"""
+        rewrite_args, rewrite_pr = self.rewriter(args)
+
+    
+    def __str__(self):
+        src_sig = 'x'.join([str(tp) for tp in self.source_type])
+        tgt_sig = 'x'.join([str(tp) for tp in self.target_type])
+
+        return f"Frame {src_sig}->{tgt_sig}"
+
+    def merge(self,  other : "Frame"):
+        """merge two frames that shares the same rewriter together and merge the matching logits """
+        return self
+
+
 class LocalFrame(nn.Module):
     """ A local frame is a collection of rewrite rules that shares the same NeuralWriter
     store 1) a nn.ModuleDict of type self casters that adapts 2) a nn.ModuleDict that perform type casting to target function"""
@@ -59,11 +94,11 @@ class LocalFrame(nn.Module):
         super().__init__()
         self.func_name      : str               = func_name             # name of the function in the local frame
         self.natural_types  : List[TypeBase]    = natural_type          # natural input type of the function stored
-        self.source_types  : List[TypeBase]    = source_type           # source type is mapped to the natural type and `g` defined on source
+        self.source_types   : List[TypeBase]    = source_type           # source type is mapped to the natural type and `g` defined on source
 
         assert caster is not None, "need to provide a fixed caster from the `g` to `f`"
         self.arg_writer     : nn.Module         =  caster               # how to map the `s` argument to the `t` argument
-        self.func_mappers   : nn.ParameterDict  = nn.ParameterDict({})  # how to map the g function to the `f` function entailment
+        self.func_mappers   : nn.ParameterDict  = nn.ParameterDict({})  # how to map the g function to the `f` function entailment    
 
     def add_source_caster(self, dest : str, weight : Union[float, torch.Tensor] = 0.0):
         # dest : str the `g` function that can reduce to `f`
