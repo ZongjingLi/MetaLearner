@@ -58,7 +58,6 @@ operate_actions = tuple([nethack.Command.PICKUP])
 action_space = compass_actions + operate_actions
 
 
-#print(env.get_neighbor_descriptions())
 
 env = gym.make(
     "MiniHack-Skill-Custom-v0",
