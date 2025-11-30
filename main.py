@@ -105,9 +105,9 @@ def process_command(command):
         cues = None
 
         learn_schedule = AutoLearnSchedule(train_dataset, cues)
-
+ 
         #learn_schedule.train(model, epochs = train_epochs, lr = train_lr)
-        learn_schedule.procedual_train(model, eps = 0.001)
+        learn_schedule.procedual_train(model, eps = 0.001, lr = config.lr)
 
         save_name = config.save_model
         model.save_ckpt(f"outputs/checkpoints/{save_name}")
@@ -141,8 +141,6 @@ def process_command(command):
 
         model.save_ckpt("outputs/checkpoints/prototype")
         main_logger.info(f"created model {model_name} and saved successfully.")
-
-
 
 if __name__ == "__main__":
     from config import config

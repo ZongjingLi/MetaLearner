@@ -6,7 +6,6 @@ core/prompt/access_llm.py
 *.gif
 *.csv
 /data
-/domains
 *.ply
 *.ply
 /assets/_legacydomains

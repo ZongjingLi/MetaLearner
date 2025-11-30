@@ -53,4 +53,9 @@ class SceneGroundingDataset(ListDataset):
         data = [{"query":queries[i], "answer":answers[i], "grounding": groundings[i]} for i in range(query_size)]
         super().__init__(data)
 
+    def shuffle(self):
+        import random
+        random.shuffle(self.data)
+
+
 

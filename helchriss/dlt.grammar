@@ -1,0 +1,100 @@
+// Functional Programming Language Grammar with Dependent Types
+// type aliases, dependent types, and function definitions.
+
+// Import common terminal definitions from Lark
+%import common.LETTER
+%import common.DIGIT
+%import common.WS_INLINE  // Inline whitespace (spaces and tabs)
+
+// Terminal definitions
+NUMBER: DIGIT+  // Integer number (e.g., 123)
+FLOATNUMBER: NUMBER "." NUMBER  // Floating-point number (e.g., 3.14)
+VARNAME: ("_" | LETTER) ("_" | "-" | LETTER | DIGIT)*  // Variable name (e.g., x, my_var)
+CONSTNAME: ("_" | LETTER) ("_" | "-" | "#" | ":" | LETTER | DIGIT)*  // Constant name
+IDENTIFIER: VARNAME | CONSTNAME  // Generic identifier
+DIM: NUMBER | VARNAME  // Dimension (can be a number or variable)
+
+// Ignored tokens
+WHITESPACE: (WS_INLINE | "\n")+
+%ignore WHITESPACE
+
+COMMENT: ";" /[^\n]*/  // Line comment starting with ;
+%ignore COMMENT
+
+// Top-level structure
+start: instruction+
+
+instruction: domain_definition
+           | type_definitions
+           | function_definitions
+           | structure_definitions
+
+// Domain definition
+domain_definition: "(" "domain" "::" domain_name ")"
+
+domain_name : IDENTIFIER
+
+// Type definitions
+type_definitions: "(" "def" "type" type_definition+ ")"
+                // Define multiple type aliases or parametric types
+
+type_definition: alias_name "-" actual_type  // Simple type alias (e.g., u_expr - u_var -> boolean)
+               | alias_name "{" type_parameters "}" "-" actual_type  // Parametric type (e.g., q_var{dim : int} - Vector[float, dim])
+
+alias_name: IDENTIFIER  // Name of the type alias (e.g., q_var)
+actual_type: type_expression  // Actual type expression
+
+type_parameters: type_parameter ("," type_parameter)*  // List of type parameters
+type_parameter: IDENTIFIER ":" TYPE_KIND  // Single type parameter (e.g., dim : int)
+
+// Structure definitions (similar to algebraic data types)
+structure_definitions: "(" "def" "structure" structure_definition+ ")"
+
+structure_definition: IDENTIFIER "(" type_parameters ")" "where" structure_field+
+                    // Define a structure with parameters and fields
+                    // Example: group (a : Type) where ...
+
+structure_field: IDENTIFIER ":" type_expression  // Field in a structure (e.g., mul : a -> a -> a)
+
+// Function definitions
+function_definitions: "(" "def" "function" function_definition+ ")"
+
+function_definition: IDENTIFIER dependent_types? typed_args ":" type_expression ":=" implementation
+                   // Define a function with optional dependent types
+                   // Example: exists {n : int} ?x:List[n, u_var] ?y:u_expr -> boolean := by pass
+
+dependent_types: "{" dependent_param ("," dependent_param)* "}"  // Dependent parameters (e.g., {n : int})
+dependent_param: IDENTIFIER ":" type_expression  // Single dependent parameter (e.g., n : int)
+
+typed_args: (typed_arg)*  // List of function arguments
+typed_arg: "(" IDENTIFIER* ":" type_expression ")"  // Typed argument (e.g., x : List[n, u_var])
+
+implementation: CODE_BLOCK  // Function implementation (simplified here)
+CODE_BLOCK: /[^\n]+/  // Simplified code block (actual implementation would be more complex)
+
+// Type expressions
+type_expression: base_type
+               | type_expression "->" type_expression  // Function type (e.g., A -> B)
+               | vector_type  // Vector type (e.g., Vector[float, dim])
+               | list_type  // List type (e.g., List[n, u_var])
+               | tuple_type  // Tuple type (e.g., Tuple[u_var, boolean])
+               | embedding_type // Embedding as a named vector space.
+               | "(" type_expression ")"  // Parenthesized type
+
+vector_type : "Vector" "[" type_expression "," dimension "]"
+list_type : "List" "[" dimension "," type_expression "]" | "List" "[" type_expression "]"
+tuple_type : "Tuple" "[" type_expression ("," type_expression)+ "]"
+embedding_type : "Embedding" "[" embedding_name "," dimension "]"
+embedding_name : IDENTIFIER
+
+base_type: IDENTIFIER | universe_type | BOOL | INT | FLOAT | STRING
+universe_type: "Type" ["_" NUMBER]  // Type universe (e.g., Type_0, Type_1)
+
+dimension: NUMBER | IDENTIFIER  // Dimension can be a number or variable
+
+// Basic types
+TYPE_KIND: "Type" | "int" | "float" | "boolean" | "string"
+BOOL: "Bool"
+INT: "Int"
+FLOAT: "Float"
+STRING: "String"

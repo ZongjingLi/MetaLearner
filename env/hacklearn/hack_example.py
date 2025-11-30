@@ -38,7 +38,7 @@ ROOM : "ordinary", lit, (5,3), (right, center), (15,15) {
     OBJECT:('%', "food ration"), random
     OBJECT:'*', (10,10)
     OBJECT :('"', "amulet of life saving"), random
-    OBJECT:('%', "corpse"), random
+    OBJECT:('%', "c orpse"), random
     OBJECT:('`', "statue"), (0,0), montype:"forest centaur", 1
     OBJECT:('(', "crystal ball"), (17,08), blessed, 5,name:"The Orb of Fate"
     OBJECT:('%',"egg"), (05,04), montype:"yellow dragon"
@@ -72,8 +72,8 @@ operate_actions = (
 action_space = compass_actions + operate_actions
 
 
-def make_env():
 
+def make_env():
     env = gym.make(
     "MiniHack-Navigation-Custom-v0",
     des_file = des_file,
@@ -86,7 +86,7 @@ def make_env():
 env = make_env()
 
 policy = DummyPolicy(env)
-rewards = run_policy(env, policy, render = 1)
+results = run_policy(env, policy, render = 1)
 
-print(rewards)
+print(results["episode_reward"])
 

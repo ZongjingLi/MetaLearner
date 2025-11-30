@@ -10,6 +10,8 @@ from typing import Dict, List, Tuple, Set, Optional, Any, Union
 
 class CCGRule:
     """Abstract base class for CCG combinatory rules"""
+    mismatch_logit = 10. ### magic number for the match-regularity
+
     @staticmethod
     def can_apply(left_type, right_type):
         """Check if the rule can apply to the given types"""
@@ -21,20 +23,28 @@ class CCGRule:
         return None
 
 class ForwardApplication(CCGRule):
+
     """Forward application rule: X/Y Y => X"""
     @staticmethod
     def can_apply(left_type : CCGSyntacticType, right_type : CCGSyntacticType):
+        if (not left_type.is_primitive):
+            pass
+            #print(left_type.arg_type, right_type, )
         return (not left_type.is_primitive and 
                 left_type.direction == '/' and 
-                left_type.arg_type == right_type)
+                str(left_type.arg_type) == str(right_type))
     
     @staticmethod
     def can_forced_apply(left_type : CCGSyntacticType, right_type : CCGSyntacticType):
         return (not left_type.is_primitive and
                 left_type.direction == "/")
-    
+
     @staticmethod
-    def apply(left_entry : LexiconEntry, right_entry : LexiconEntry):
+    def forced_logit(left_type : CCGSyntacticType , right_type : CCGSyntacticType):
+        return ((left_type.arg_type == right_type) - 0.5) * CCGRule.mismatch_logit
+
+    @staticmethod
+    def apply(left_entry : LexiconEntry, right_entry : LexiconEntry, offset : Union[float, torch.Tensor]):
         result_type = left_entry.syn_type.result_type
         if left_entry.sem_program.lambda_vars:
             new_args = left_entry.sem_program.args.copy()
@@ -48,13 +58,14 @@ class ForwardApplication(CCGRule):
             new_args = left_entry.sem_program.args.copy()
             new_args.append(right_entry.sem_program)
             new_program = SemProgram(left_entry.sem_program.func_name, new_args)
-        combined_weight = left_entry.weight + right_entry.weight
+        combined_weight = left_entry.weight + right_entry.weight + offset
         return LexiconEntry(f"{left_entry.word} {right_entry.word}", result_type, new_program, combined_weight)
 
 class BackwardApplication(CCGRule):
     """Backward application rule: Y X\Y => X"""
     @staticmethod
     def can_apply(left_type : CCGSyntacticType, right_type : CCGSyntacticType):
+
         return (not right_type.is_primitive and 
                 right_type.direction == '\\' and 
                 right_type.arg_type == left_type)
@@ -65,7 +76,11 @@ class BackwardApplication(CCGRule):
                 right_type.direction == '\\')
 
     @staticmethod
-    def apply(left_entry : LexiconEntry, right_entry : LexiconEntry):
+    def forced_logit(left_type : CCGSyntacticType , right_type : CCGSyntacticType):
+        return ((right_type.arg_type == left_type) - 0.5) * CCGRule.mismatch_logit
+
+    @staticmethod
+    def apply(left_entry : LexiconEntry, right_entry : LexiconEntry, offset : Union[float, torch.Tensor]):
         # Similar to forward application but with different direction
         result_type = right_entry.syn_type.result_type
         
@@ -82,7 +97,7 @@ class BackwardApplication(CCGRule):
             new_args.append(left_entry.sem_program)
             new_program = SemProgram(right_entry.sem_program.func_name, new_args)
 
-        combined_weight = left_entry.weight + right_entry.weight
+        combined_weight = left_entry.weight + right_entry.weight + offset
         return LexiconEntry(f"{left_entry.word} {right_entry.word}", result_type, new_program, combined_weight)
     
 class ChartParser(nn.Module):
@@ -113,7 +128,7 @@ class ChartParser(nn.Module):
             
             module_dict[word_key] = (module_list)
         
-        self.lexicon = module_dict#nn.ModuleDict(module_dict)
+        self.lexicon : Dict = module_dict
         self.lexicon_weight = nn.ParameterDict(weight_dict)
         self.rules = [ForwardApplication, BackwardApplication] if rules is None else rules
 
@@ -137,7 +152,7 @@ class ChartParser(nn.Module):
         Args:
             load_path: Path to load the weights from
         """
-        weight_dict = torch.load(load_path)
+        weight_dict = torch.load(load_path, weights_only=True)
         
         # Create new ParameterDict
         new_weight_dict = nn.ParameterDict()
@@ -169,7 +184,7 @@ class ChartParser(nn.Module):
                 raise TypeError(f"Unsupported expression type: {type(expr)}")
 
         return convert(expr)
-
+    
     def generate_sentences_for_program(self, target_program: str, max_depth: int = 10) -> List[str]:
         """
         Given a target SemProgram, generate possible surface-level sentences 
@@ -230,7 +245,6 @@ class ChartParser(nn.Module):
         sentences = [" ".join(entry.word for entry in derivation) for derivation in candidate_derivations]
     
         return sorted(set(sentences))
-
 
     def purge_entry(self, word: str, p: float, abs: bool = False):
         """only keep the word entries with weight greater than or equal to threshold p
@@ -304,6 +318,8 @@ class ChartParser(nn.Module):
         else: self.lexicon_weight[weight_key] = nn.Parameter(torch.tensor(0.0))
         self.lexicon[word] = existing_entries + entries
     
+    def clear_word_entry(self, word): self.lexicon[word] = []
+    
     def gather_word_entries(self, word : str) -> List[LexiconEntry]:
         if word not in self.lexicon: return []
         entries = []
@@ -359,6 +375,9 @@ class ChartParser(nn.Module):
             result.append(new_entry)
         
         return result
+    
+    def type_downcast(self, tp1 : str, tp2 : str) -> bool:
+        return tp1 == tp2 or tp1 == 'AnyType' or tp2 == 'AnyType'
 
     def parse(self, sentence: str, topK = None, forced = False):
         words = sentence.split()
@@ -406,7 +425,9 @@ class ChartParser(nn.Module):
                                 else:
                                     applicable = rule.can_apply(left_entry.syn_type, right_entry.syn_type)
                                 if applicable:
-                                    result = rule.apply(left_entry, right_entry)
+                                    offset = rule.forced_logit(left_entry.syn_type, right_entry.syn_type) if forced else 0.
+                                    #print(left_entry.syn_type, right_entry.syn_type, offset)
+                                    result = rule.apply(left_entry, right_entry, offset)
                                     if result:
                                         chart[(start, end)].append(result)
         

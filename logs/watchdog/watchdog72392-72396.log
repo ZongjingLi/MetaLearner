@@ -1,0 +1,8 @@
+2025-11-10 18:54:44 sunyiqideMacBook-Pro.local watchdog[72412] INFO Watchdog started between parent 72392 and child 72396
+2025-11-10 18:54:57 sunyiqideMacBook-Pro.local watchdog[72412] INFO Parent is not running, hence we need terminate the child.
+2025-11-10 18:54:57 sunyiqideMacBook-Pro.local watchdog[72412] INFO About to reap process tree of 72396:bash:/bin/bash i running, owner 1, printing process tree status in termination order:
+2025-11-10 18:54:57 sunyiqideMacBook-Pro.local watchdog[72412] INFO 	-72401:java:/Library/Java/JavaVirtualMachines/temurin-8.jdk/Contents/Home/bin/java i running, owner 72396
+2025-11-10 18:54:57 sunyiqideMacBook-Pro.local watchdog[72412] INFO 	-72396:bash:/bin/bash i running, owner 1
+2025-11-10 18:54:57 sunyiqideMacBook-Pro.local watchdog[72412] INFO Trying to SIGTERM 72401:java:/Library/Java/JavaVirtualMachines/temurin-8.jdk/Contents/Home/bin/java i running, owner 72396
+2025-11-10 18:54:57 sunyiqideMacBook-Pro.local watchdog[72412] INFO Process psutil.Process(pid=72401, name='java', status='terminated', started='18:54:42') terminated with exit code None
+2025-11-10 18:54:57 sunyiqideMacBook-Pro.local watchdog[72412] INFO Process psutil.Process(pid=72396, name='bash', status='terminated', started='18:54:42') does not exist or is zombie.

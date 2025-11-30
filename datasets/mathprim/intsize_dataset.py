@@ -4,6 +4,7 @@
 # @Last Modified by:   zongjingli
 # @Last Modified time: 2025-05-03 19:49:31
 from helchriss.dsl.dsl_values import Value
+from helchriss.dsl.dsl_types import FLOAT, BOOL
 from typing import List
 from datasets.base_dataset import SceneGroundingDataset
 
@@ -24,17 +25,17 @@ size_queries = ["two plus one", "two plus three", "one plus one", "red plus two"
                "three plus one",
                "three plus three",
                ]
-size_answers = [Value("int",3.0),Value("int",5.0), Value("int", 2.0), Value("int", 3.0),
-               Value("boolean", 1.0),
-               Value("boolean", 0.0),
-               Value("boolean", 1.0),
-               Value("boolean", 1.0),
-               Value("boolean", 1.0),
-               Value("boolean", 0.0),
-               Value("boolean", 0.0),
-               Value("int", 5.0),
-               Value("int", 4.0), 
-               Value("int", 6.0), 
+size_answers = [Value(FLOAT,3.0),Value(FLOAT,5.0), Value(FLOAT, 2.0), Value(FLOAT, 3.0),
+               Value(BOOL, 1.0),
+               Value(BOOL, 0.0),
+               Value(BOOL, 1.0),
+               Value(BOOL, 1.0),
+               Value(BOOL, 1.0),
+               Value(BOOL, 0.0),
+               Value(BOOL, 0.0),
+               Value(FLOAT, 5.0),
+               Value(FLOAT, 4.0), 
+               Value(FLOAT, 6.0), 
                ]
 n_queries = len(size_queries)
 num_groundings = [None] * n_queries
