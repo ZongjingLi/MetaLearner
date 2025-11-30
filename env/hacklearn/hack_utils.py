@@ -37,6 +37,12 @@ def render_pixels(pixels, delta = 0.01):
 def get_action_compass():
 	return nethack.CompassDirection
 
+from wrapper import NLEWrapper
+
+wrapper = NLEWrapper()
+
+
+
 def run_policy(env, policy, render : str = False, delta = 0.1, extra = True):
     """ return the episode reward and action probs etc
     """
@@ -53,7 +59,12 @@ def run_policy(env, policy, render : str = False, delta = 0.1, extra = True):
         if extra:obs, reward, terminated, truncated, info = env.step(action = action)
         else:
             obs, reward, terminated, truncated = env.step(action = action)
-        #if reward < -3: print(reward, action)
+       
+        result = wrapper.process_observation(obs)
+        #("text_glyphs:", result["text_glyphs"])
+        #print(result["text_blstats"])
+        #print(result["text_message"])
+
         episode_reward += reward
         if not done and render:
             pixels = obs["pixel"]

@@ -13,7 +13,8 @@ nethack_domain_str = """
 (def function
     player : obj := by pass
     location (x : obj): coord := by pass
-    mobs : (r : region) : List[obj] := by pass
+    monsters : (r : region) : List[obj] := by pass
+    boulders : (r : region) : List[obj] := by pass
 )
 
 """

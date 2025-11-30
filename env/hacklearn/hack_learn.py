@@ -29,14 +29,15 @@ maze_map = """
 lvl_gen = LevelGenerator(map = maze_map)
 lvl_gen.set_start_pos((1,1))
 lvl_gen.add_goal_pos((7,5))
-lvl_gen.add_gold(1,(4,4))
-lvl_gen.add_gold(1,(3,5))
-lvl_gen.add_boulder((3,4))
+lvl_gen.add_boulder((3,2))
+lvl_gen.add_boulder((2,2))
+lvl_gen.add_boulder((1,2))
+lvl_gen.add_boulder((3,1))
 lvl_gen.add_object("dagger", ")", (3,3))
 lvl_gen.add_object("dagger", ")", (4,4))
 lvl_gen.add_object("light", "/", (6,5))
 lvl_gen.add_object("apple", "%", (7,3))
-lvl_gen.add_sink((2,2))
+lvl_gen.add_sink((4,2))
 #slvl_gen.add_sink((2,2))
 
 #lvl_gen.add_object("apple", "%" )
@@ -47,14 +48,14 @@ rwd_manager = minihack.RewardManager()
 rwd_manager.add_eat_event("apple")
 rwd_manager.add_wield_event("dagger")
 rwd_manager.add_wield_event("light")
-rwd_manager.add_location_event("sink", reward= -1.)
+rwd_manager.add_location_event("sink", reward= -3.)
 rwd_manager.add_location_event("goal_pos", reward=3.)
 #rwd_manager.add_coordinate_event((3,3), 10., terminal_required=False, terminal_sufficient=True)
 #rwd_manager.add_location_event("gold", reward = 5.0)
 
 from hack_utils import get_action_compass
 compass_actions = tuple(get_action_compass())
-operate_actions = tuple([nethack.Command.PICKUP])
+operate_actions = tuple([nethack.Command.PICKUP,])
 
 action_space = compass_actions + operate_actions
 
@@ -62,7 +63,15 @@ action_space = compass_actions + operate_actions
 
 env = gym.make(
     "MiniHack-Skill-Custom-v0",
-    observation_keys = {"pixel", "glyphs","chars", "message"},
+    observation_keys = {"pixel", 
+                        "glyphs",
+                        "chars",
+                        "message",
+                        "blstats",
+                        "tty_chars",
+                        "inv_strs",
+                        "inv_letters",
+                        "tty_cursor"},
     des_file = lvl_gen.get_des(),
     actions = action_space,
     max_episode_steps = 100,
@@ -73,8 +82,8 @@ env = gym.make(
 model = DummyPolicy(env)
 
 
-model.load_state_dict(torch.load("test_reinforce_maze.pth"))
-reward = run_policy(env, model, render = True, delta = 0.5)
+#model.load_state_dict(torch.load("test_reinforce_maze.pth"))
+reward = run_policy(env, model, render = True, delta = 1)
 plt.close()
 #env = gym.make("CartPole-v1")
 

@@ -184,7 +184,7 @@ class ChartParser(nn.Module):
                 raise TypeError(f"Unsupported expression type: {type(expr)}")
 
         return convert(expr)
-
+    
     def generate_sentences_for_program(self, target_program: str, max_depth: int = 10) -> List[str]:
         """
         Given a target SemProgram, generate possible surface-level sentences 
@@ -245,7 +245,6 @@ class ChartParser(nn.Module):
         sentences = [" ".join(entry.word for entry in derivation) for derivation in candidate_derivations]
     
         return sorted(set(sentences))
-
 
     def purge_entry(self, word: str, p: float, abs: bool = False):
         """only keep the word entries with weight greater than or equal to threshold p
@@ -318,6 +317,8 @@ class ChartParser(nn.Module):
             else: self.lexicon_weight[weight_key] = nn.Parameter(entry.weight)
         else: self.lexicon_weight[weight_key] = nn.Parameter(torch.tensor(0.0))
         self.lexicon[word] = existing_entries + entries
+    
+    def clear_word_entry(self, word): self.lexicon[word] = []
     
     def gather_word_entries(self, word : str) -> List[LexiconEntry]:
         if word not in self.lexicon: return []

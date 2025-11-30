@@ -55,7 +55,6 @@ def tree_display(s):
     return '\n'.join(f"{pre}{node.name}" for pre, _, node in RenderTree(build(parse(s)[0])))
 
 def check_gradient_flow(submodel):
-    """检查子模型的梯度流动情况"""
     total_norm = 0
     has_gradient = False
     
@@ -269,6 +268,10 @@ class MetaLearner(nn.Module):
         grouped_lexicon = self.group_lexicon_entries(lexicon_entries)    
         self.parser = ChartParser(grouped_lexicon)
         return 0
+
+    def associate_word_domains(self, word, domains : List[str]):
+        #TODO: enumerate the function compositions in the domain and add them to the word entires.
+        return
 
     #TODO: need the actual learned vocab by minimize the entropy or not converge
     @property

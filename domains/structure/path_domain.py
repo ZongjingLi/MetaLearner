@@ -26,28 +26,27 @@ __all__ = [
 ]
 
 path_domain_str = """
-(domain Path)
+(domain :: Path)
 (def type
-    path - vector[float, 4] ;; start point and end point
-    point - vector[float,2] ;; a point
+    path - Embedding[path, 4] ;; start point and end point
+    point - Embedding[plane_point,2] ;; a point
 )
 (def function
-    sample_path -> path                   ;; random choose a pair of points and create spline path
-    start_point ?x-path -> point          ;; the start point of the path (first element)
-    end_point ?x-path -> point            ;; the end point of the path (last element)
-    point_on_body ?x-path -> point        ;; random select a point on the body of the path (not end or start)
+    sample_path : path := by pass                     ;; random choose a pair of points and create spline path
+    start_point (x : path) : point := by pass         ;; the start point of the path (first element)
+    end_point (x:path) : point := by pass             ;; the end point of the path (last element)
+    point_on_body (x:path) : point := by pass         ;; random select a point on the body of the path (not end or start)
 
-    intersect ?x-path ?y-path -> boolean  ;; if two path intersect with each other, it means if at least one pair of points from each path is close
-    on_path ?x-point ?y-path -> boolean   ;; if a point is on the path ,basically means if the start point is close to at least one point on the path
-    on_body ?x-point ?y-path -> boolean   ;; same for on path except not on the start or end point
+    intersect (x y :path) : boolean  := by pass ;; if two path intersect with each other, it means if at least one pair of points from each path is close
+    on_path (x:point) (y:path) : boolean := by pass   ;; if a point is on the path ,basically means if the start point is close to at least one point on the path
+    on_body (x:point) (y:path) : boolean := by pass   ;; same for on path except not on the start or end point
 
-    path_from ?x-path ?y-point -> boolean ;; assert the start point of a path is close to the given point
-    path_to ?x-path ?y-point -> boolean   ;; assert the  end  point of a path is close to the given point
+    path_from (x:path) (y:point) : boolean := by pass ;; assert the start point of a path is close to the given point
+    path_to (x:path) (y:point) : boolean  := by pass  ;; assert the  end  point of a path is close to the given point
 
-    attach ?x-path ?y-point -> path       ;; move a path so it starts at a point
+    attach (x:path) (y:point) : path  := by pass      ;; move a path so it starts at a point
 )
-(def constraint
-)
+
 """
 path_domain = load_domain_string(path_domain_str)
 
