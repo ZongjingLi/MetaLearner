@@ -18,12 +18,12 @@ from helchriss.dsl.dsl_types import TypeBase, AnyType, INT, FLOAT
 from core.metaphors.rewrite import NeuralRewriter, RewriteRule, Frame, pth_file
 from helchriss.domain import Domain
 from .rewrite import NeuralRewriter, LocalFrame
+from helchriss.logger import get_logger
 
 
 # this is the for type space, basically a wrapper class
 from .types import RuleBasedTransformInferer, fill_hole, infer_mlp_caster
 from dataclasses import dataclass
-import contextlib
 import networkx as nx
 from pathlib import Path
 
@@ -791,10 +791,33 @@ class SearchExecutor(FunctionExecutor):
     def __init__(self, executor):
         super().__init__()
         self.base_executor : FunctionExecutor = executor
-        self.rewrite_frames = nn.ModuleDict({}) # a bundle of rewriter rules that shares the same rewriter
+        self.frames = nn.ModuleDict({}) # a bundle of rewriter rules that shares the same rewriter
         self.storage = SearchVisualizer()
         self.unification_p = 0.001
         self.supressed = 0
+        self._gather_format = "{}:{}"
+        self.logger = get_logger(name = "SearchExecutor")
+    """stupid formatting stuff"""
+
+    def gather_format(self, name, domain): return self._gather_format.format(name, domain)
+    
+    @staticmethod
+    def format(function : str): return function.split(":")[0]
+
+    @property
+    def types(self): return self.base_executor.types
+
+    @property
+    def functions(self): return self.base_executor.functions
+
+    def function_out_type(self, func_name, domain = None):
+        if domain is None: func_name, domain = func_name.split(":")
+
+        return self.base_executor.function_out_type(func_name, domain)
+
+    def function_input_type(self, func_name, domain = None):
+        if domain is None: func_name, domain = func_name.split(":")
+        return self.base_executor.function_input_type(func_name, domain)
 
     """Save and Load Utils and Add Frames"""
     def save_ckpt(self, ckpt_path) -> int:
@@ -814,7 +837,8 @@ class SearchExecutor(FunctionExecutor):
 
     def add_frame(self,name : str, frame : Frame):
         """raw method of adding a frame to the dictionary"""
-        self.rewrite_frames[name] = frame
+        self.frames[name] = frame
+    
 
     """Rewrite Search Graph Implementations"""
     def edges(self, node : SearchNode) -> List[SearchNode]:
@@ -823,7 +847,7 @@ class SearchExecutor(FunctionExecutor):
         src_tp  = value_types(src_val)
         nodes = []
         edges = []
-        for key, frame in self.rewrite_frames.items():
+        for key, frame in self.frames.items():
             assert isinstance(frame, Frame), f"{frame} is not a `Frame`"
 
             if frame.source_type == src_tp:
@@ -912,6 +936,7 @@ class SearchExecutor(FunctionExecutor):
         src_node.next_weights = []
         rw_nodes : List[SearchNode] = [src_node]
 
+        #print(query_fn,self.base_executor.function_signature(query_fn))
         output_type = self.base_executor.function_signature(query_fn)[0][-1]
         functions = self.base_executor.gather_functions(value_types(value), output_type)
         for fn in functions:
@@ -1043,10 +1068,10 @@ class SearchExecutor(FunctionExecutor):
                 id_itr = 0
                 done = 0
                 while not done:
-                    if (frame_sig + str(id_itr)) in self.rewrite_frames:id_itr += 1
+                    if (frame_sig + str(id_itr)) in self.frames:id_itr += 1
                     else: done = 1
                 print(f"{gn}@{fn} by",frame_sig + str(id_itr))
-                self.rewrite_frames[frame_sig + str(id_itr)] = learn0_frame
+                self.frames[frame_sig + str(id_itr)] = learn0_frame
 
         # 2. add the filler that defined on the value node.
 
@@ -1068,19 +1093,18 @@ class SearchExecutor(FunctionExecutor):
         """
         return self
 
-    def additive_evaluation(self, query, grounding = {}):
+    def additive_evaluation(self, query, grounding):
+        """return the (output and loss) pair, also update the eval chain if unification failure"""
         try:
             out = self.evaluate(query, grounding = grounding)
-        except UnificationFailure as ue:
-            query_fn = ue.left_structure
-            value = ue.right_structure
+        except UnificationFailure as error:
+            query_fn = error.left_structure
+            value = error.right_structure
             self.update_chain(value, query_fn)
-            print("update chain")
-            print(ue)
+            self.logger.critical(f"update chain : {error}")
+            print(f"update chain : {error}")
             out = self.evaluate(query, grounding = grounding)
-        print(out)
-
-import networkx as nx
+        return out
 
 def convert_graph_to_visualization_data(G):
     """

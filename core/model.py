@@ -9,7 +9,7 @@ import yaml
 import torch
 import torch.nn as nn
 from typing import List, Union, Any
-from core.metaphors.executor import RewriteExecutor, ExecutorGroup
+from core.metaphors.executor import SearchExecutor, RewriteExecutor, ExecutorGroup
 from core.grammar.ccg_parser import ChartParser
 from core.grammar.lexicon import  LexiconEntry
 from core.grammar.learn import enumerate_search
@@ -63,7 +63,7 @@ def check_gradient_flow(submodel):
             has_gradient = True
             param_norm = param.grad.data.norm(2)
             total_norm += param_norm.item() ** 2
-            print(f"参数 {name} 的梯度范数: {param_norm:.6f}")
+            print(f"Param {name} Grad Norm: {param_norm:.6f}")
 
 class MetaLearner(nn.Module):
     def __init__(self, domains : List[Union[CentralExecutor]], vocab : List[str] = []):
@@ -71,8 +71,9 @@ class MetaLearner(nn.Module):
         self.name = "prototype"
         self._domain :List[Union[CentralExecutor]]  = domains
         self.domain_infos = {}
-        self.executor : CentralExecutor = RewriteExecutor(ExecutorGroup(domains))
-        
+        #self.executor : CentralExecutor = RewriteExecutor(ExecutorGroup(domains))
+        self.executor : SearchExecutor = SearchExecutor(ExecutorGroup(domains))
+  
         self._vocab = vocab
         self.lexicon_entries = {}
         self.parser = ChartParser(self.lexicon_entries)
@@ -148,7 +149,7 @@ class MetaLearner(nn.Module):
             domain_executors.append(eval(name))
         
         self._domain = domain_executors
-        self.executor = RewriteExecutor(ExecutorGroup(domain_executors))
+        self.executor = SearchExecutor(ExecutorGroup(domain_executors))
         self.executor.load_ckpt(ckpt_path)
 
         # load the vocabulary
@@ -297,7 +298,7 @@ class MetaLearner(nn.Module):
 
             if len(program.lambda_vars) == 0 and tp == output_type:
                 expr = Expression.parse_program_string(str(program))
-                if execute: result = self.executor.evaluate(expr, grounding)
+                if execute: result = self.executor.additive_evaluation(expr, grounding)
                 else: result = 0.0
                 results.append(result)
                 raw_logits.append(parse_prob)
@@ -357,14 +358,14 @@ class MetaLearner(nn.Module):
                     if program is None:
                         results, probs, programs, _ = self(query, grounding, answer.vtype)
                     else:
-                            results     =  [self.executor.evaluate(program, grounding)]
+                            results     =  [self.executor.additive_evaluation(program, grounding)]
                             probs       =  [torch.tensor(1.0)]
                             programs    =  [program]
 
-                    if not results:
-                        print(f"no parsing found for query:{query}")
+                    if not results:self.executor.logger.warnning(f"no parsing found for query:{query}")
                 
                     for i, result in enumerate(results):
+                        result, internal_loss = result
                         measure_conf = torch.exp(probs[i])
                         assert isinstance(result, Value), f"{programs[i]} result is :{result} and not a Value type"
                                                                 
@@ -385,9 +386,9 @@ class MetaLearner(nn.Module):
                             measure_loss = torch.abs(result.value - answer.value)
                             if measure_loss < 0.2: correct += 1 * measure_conf
 
-                        loss += measure_conf * measure_loss
+                        loss += measure_conf * (measure_loss + internal_loss)
                         total_count += 1 * measure_conf
-                        working_loss += measure_conf * measure_loss
+                        working_loss += measure_conf * measure_loss 
                 
                     batch_loss += working_loss
                     batch_count += 1
