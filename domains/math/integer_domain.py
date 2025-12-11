@@ -13,6 +13,7 @@ integer_domain_str = """
     one : num := by pass
     two : num := by pass
     three : num := by pass
+
     plus (x y : num) : num := by pass
     minus (x y : num) : num := by pass
     mul (x y : num) : num := by pass
@@ -24,6 +25,8 @@ integer_domain_str = """
 
     N : set := by pass
     Z : set := by pass
+
+    max (x : List[num]) : num := by pass
 
     subset (x y : set) : boolean := by pass
 )
@@ -38,6 +41,7 @@ class NumbersExecutor(CentralExecutor):
     Z_embed = nn.Parameter(torch.randn([32]))
     temperature = 0.132
 
+    def max(self, x): return torch.max(x)
 
     def one(self): return torch.tensor(1.0)
 

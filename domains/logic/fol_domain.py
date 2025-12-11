@@ -2,59 +2,81 @@ import torch
 import torch.nn as nn
 from helchriss.knowledge.executor import CentralExecutor
 from helchriss.domain import load_domain_string
-
+from helchriss.dsl.dsl_values import Value
+from helchriss.dsl.dsl_types import ListType, TupleType
+from helchriss.knowledge.symbolic import FunctionApplicationExpression, VariableExpression
 first_order_logic_domain_str = """
-(domain :: FirstOrderLogic)
+(domain :: Logic)
 (def type  ;; define type alias using a - b, meaning a is an alias to type b
-    var{dim : int} - Vector[float, dim] ;; as a quantified variable
-    u_expr{var : Type} - var -> boolean ;; given an unquantified variable output a boolean value
-    b_expr{var : Type} - var -> var -> boolean ;; arrow helps to make complex type A \to B make a complex type
-    object - Tuple[boolean, Embedding[object, 64]]
-    shape  - Tuple[boolean, Embedding[shape, 32]]
-    color - Embedding[color, 3]
-    
+    Object - Embedding[object, 64] ;; the type of certain object
+    Expr - str
 )
 (def function
     ;; by pass is defaulty used to avoid the actual definion of the functions
-    exists (x : List[object]) : boolean := by pass
-    forall (x : List[object]) : boolean := by pass
-    iota   (x : List[object]) : List[object] := by pass
+    exists (x : List[Object]) : boolean := by pass
+    forall (x : List[Object]) : boolean := by pass
+    iota   (x : List[Object]) : List[Object] := by pass
+    filter (x : List[Tuple[boolean,Object]]) (y : Expr) : List[Object] := by pass
 
     negate (x : boolean) : boolean := by pass
     logic_and (x y : boolean) : boolean := by pass
     logic_or  (x y : boolean) : boolean := by pass
 
-    assert {var : Type} (x : var) (y : var -> boolean) : boolean := by pass
-    
-    count (x : List[object]) : integer := by pass
+    count (x : List[Object]) : integer := by pass
     scene : List[object] := by pass
-
-    red      (x : List[object]) : List[object] := by pass
-    green    (x : List[object]) : List[object] := by pass
-    blue     (x : List[object]) : List[object] := by pass
-    
-    circle   (x : List[shape]) : List[shape] := by pass
-    square   (x : List[shape]) : List[shape] := by pass
-    triangle (x : List[shape]) : List[shape] := by pass
 )
 """
 
-from helchriss.dklearn.nn.mlp import FCBlock
-
 fol_domain = load_domain_string(first_order_logic_domain_str)
-fol_domain.print_summary()
+#fol_domain.print_summary()
 
 class FOLExecutor(CentralExecutor):
-
+    """extracts objects tagged in the grounding and implement the logic inference module recurrsively"""
     def __init__(self, domain):
         super().__init__(domain)
-        self.red_mlp    = FCBlock(64,2,64, 1)
-        self.green_mlp  = FCBlock(64,2,64, 1)
-        self.blue_mlp   = FCBlock(64,2,64, 1)
 
-    def scene(self): return self.grounding["objects"]
+    def ancestor_executor(self):
+        ancestor = self
+        while (ancestor is not None) and ancestor.has_parent_executor() :
+            ancestor = ancestor.parent_executor()
+        return ancestor 
 
-    def exists(self, objects): return torch.max(objects[: ,0])
+    def filter(self, vars, expr, **kwargs):
+        logits = [] # logits of reference in the scene.
+        objects = []
+        local_loss = 0.
+
+        for var in vars:
+            vtp = kwargs["arg_types"][0]
+            assert isinstance(vtp, ListType), f"{vtp}"
+            assert isinstance(vtp.element_type, TupleType), f"{vtp.element_type}"
+            obj_tp = vtp.element_type.element_types[1]
+
+            var_logit, obj = var[:1], var[1:]
+            if len(obj.shape) == 1: obj = obj[None,...]
+
+            logic_expr = FunctionApplicationExpression(VariableExpression(expr), [ VariableExpression(Value(obj_tp,obj)) ] )
+
+            class_logit, loss = self.ancestor_executor().evaluate(logic_expr, self.grounding)
+
+            logits.append(torch.min(class_logit.value, var_logit))
+            objects.append(obj)
+
+            local_loss += loss
+        logits = torch.stack(logits)
+        objects = torch.cat(objects, dim = 0)
+
+        reference_set = torch.cat([logits, objects], dim = 1)
+
+
+        return reference_set#, local_loss
+    
+    def relate(self, anchor_vars, ref_vars, expr):
+        return
+
+    def exists(self, objects):
+
+        return torch.max(objects[: ,0])
 
     def forall(self, objects): return torch.min(objects[:, 0])
     
@@ -71,16 +93,5 @@ class FOLExecutor(CentralExecutor):
 
     def count(self, objects): return torch.sum(torch.sigmoid(objects[:,0]))
 
-    def red(self, objects):
-        red_logits = self.red_mlp(objects[:,1:]).reshape([-1])
-        return torch.cat([torch.min(red_logits, objects[:,0]).reshape([-1,1]),objects[:,1:],], dim = -1)
-
-    def green(self, objects):
-        green_logits = self.green_mlp(objects[:,1:]).reshape([-1])
-        return torch.cat([torch.min(green_logits, objects[:,0]).reshape([-1,1]),objects[:,1:],], dim = -1)
-
-    def blue(self, objects):
-        blue_logits = self.blue_mlp(objects[:,1:]).reshape([-1])
-        return torch.cat([torch.min(blue_logits, objects[:,0]).reshape([-1,1]),objects[:,1:],], dim = -1)
 
 fol_executor = FOLExecutor(fol_domain)

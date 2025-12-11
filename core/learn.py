@@ -70,8 +70,9 @@ def optimal_schedule(dataset : SceneGroundingDataset, learned_vocab : List[str])
     return list(best_words_to_add), max_new_learnable_entries
 
 class AutoLearnSchedule:
-    def __init__(self, dataset : SceneGroundingDataset, cues : Mapping[str, str] = None):
+    def __init__(self, dataset : SceneGroundingDataset, testset:SceneGroundingDataset, cues : Mapping[str, str] = None):
         self.dataset = dataset
+        self.testset = testset
         self.cues = unbounded_cues if not cues else cues
         self.base_vocab : List[str] = None
         self.logger = get_logger("AutoSchedule")
@@ -80,7 +81,7 @@ class AutoLearnSchedule:
     def train(self, model : MetaLearner, epochs : int, lr : float = 2e-2):
         return model.train(self.dataset, epochs = epochs, lr = lr)
     
-    def procedual_train(self, model : MetaLearner, lr = 2e-4, eps = 0.005):
+    def procedual_train(self, model : MetaLearner, lr = 2e-4, eps = 0.005, verbose = False):
         device = self.device
         base_vocab = []#model.learned_vocab
         base_data  = []
@@ -102,15 +103,22 @@ class AutoLearnSchedule:
             avg_acc = info["acc"]
             
             self.logger.info(f"learned words : {new_words} avg_acc:{avg_acc} avg_loss:{avg_loss}")
-        for word in base_vocab:
-            model.parser.purge_entry(word, 0.0001, abs = 0)
-            model.parser.display_word_entries(word)
+        
+        if verbose:
+            for word in base_vocab:
+                model.parser.purge_entry(word, 0.0001, abs = 0)
+                model.parser.display_word_entries(word)
         self.logger.info(f"complete the learning of words {base_vocab}")
 
     def train_phase(self, model : MetaLearner, slice_dataset, epochs : int = 10, lr : int = 5e-4, eps : float = 0.005):
         done = False
+        # one epoch with suprression just to add the connections
+        self.logger.critical("unification structure check, eval run")
+        #info = model.train(slice_dataset, epochs = epochs, lr = lr, unify = True)
+
+        self.logger.critical("training until converges")
         while not done:
-            info = model.train(slice_dataset, epochs = epochs, lr = lr)
+            info = model.train(slice_dataset, epochs = epochs, lr = lr, unify = False, test_set = self.testset)
             avg_loss = info["loss"]
             avg_acc = info["acc"]
             if 1 - avg_acc < eps: done = True

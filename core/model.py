@@ -9,7 +9,7 @@ import yaml
 import torch
 import torch.nn as nn
 from typing import List, Union, Any
-from core.metaphors.executor import SearchExecutor, RewriteExecutor, ExecutorGroup
+from core.metaphors.executor import SearchExecutor, ExecutorGroup, UnificationFailure, value_types
 from core.grammar.ccg_parser import ChartParser
 from core.grammar.lexicon import  LexiconEntry
 from core.grammar.learn import enumerate_search
@@ -19,7 +19,7 @@ from helchriss.dsl.dsl_values import Value
 from helchriss.dsl.dsl_types import BOOL, FLOAT, INT, AnyType
 from anytree import Node, RenderTree
 
-from tqdm import tqdm
+
 from datasets.base_dataset import SceneGroundingDataset
 
 __all__ = ["MetaLearner"]
@@ -68,19 +68,26 @@ def check_gradient_flow(submodel):
 class MetaLearner(nn.Module):
     def __init__(self, domains : List[Union[CentralExecutor]], vocab : List[str] = []):
         super().__init__()
-        self.name = "prototype"
-        self._domain :List[Union[CentralExecutor]]  = domains
+        """domain information for execution and save ckpt"""
         self.domain_infos = {}
+        self._domain :List[Union[CentralExecutor]]  = domains
         #self.executor : CentralExecutor = RewriteExecutor(ExecutorGroup(domains))
         self.executor : SearchExecutor = SearchExecutor(ExecutorGroup(domains))
-  
-        self._vocab = vocab
-        self.lexicon_entries = {}
-        self.parser = ChartParser(self.lexicon_entries)
+        self.executor.refs["executor_parent"] = self # setup the executor parent
 
-        self.gather_format = self.executor.gather_format
+
+        """misc of saveing and formatting"""
+        self.name            = "prototype"
+        self.gather_format   = self.executor.gather_format
+        self.cheat           = False # use the ground-truth to cheat
+
+
+        """setup the lexicon entries and parser for combinotorical generalization"""
+        self._vocab          = vocab
+        self.lexicon_entries = {}
+        self.parser          = ChartParser(self.lexicon_entries)
         self.entries_setup() 
-        self.cheat = False # use the ground-truth to cheat
+
 
     def save_ckpt(self, ckpt_path):
         """
@@ -322,13 +329,66 @@ class MetaLearner(nn.Module):
         return valid_results, normalized_probs, valid_programs, valid_parses
     
 
-    def train(self, dataset: SceneGroundingDataset, epochs: int = 1000, lr = 1e-3, topK = None):
+    def train(self, dataset: SceneGroundingDataset, epochs: int = 1000, lr = 1e-3, topK = None, unify = False, test_set = None):
         import tqdm
         device = "mps" if torch.backends.mps.is_available() else "cuda" if torch.cuda.is_available() else "cpu"
         optim = torch.optim.Adam(self.parameters(), lr=lr)
+
+        self.executor.supressed = False if unify else True
         
         epoch_bar = tqdm.tqdm(range(epochs), desc="Training epochs", unit="epoch")
         
+        # Helper: Evaluate test set (minimal implementation matching training accuracy logic)
+        def evaluate_test_set():
+            if test_set is None: return -1.0
+            #self.eval()  # Set model to eval mode
+            test_correct = 0.0
+            test_total = 0.0
+            with torch.no_grad():  # Disable gradient computation for test
+                for idx, sample in test_set:
+                    query = sample["query"]
+                    answer = sample["answer"]
+                    grounding = sample["grounding"]
+                    images = sample["image"]
+                    program = sample["program"] if "program" in sample and self.cheat else None
+
+                    if isinstance(answer, bool): answer = Value(BOOL, answer)
+                    if isinstance(answer, Value) and isinstance(answer.vtype, str):
+                        if answer.vtype == "boolean": answer.vtype = BOOL
+                        if answer.vtype == "float": answer.vtype = FLOAT
+                        if answer.vtype == "int": answer.vtype = INT
+
+                    try:
+                        if program is None:
+                            results, probs, programs, _ = self(query, grounding, answer.vtype)
+                        else:
+                            results = [self.executor.additive_evaluation(program, grounding)]
+                            probs = [torch.tensor(1.0)]
+                            programs = [program]
+
+                        if not results: continue  # Skip if no parse
+
+                        for i, result in enumerate(results):
+                            result, _ = result
+                            measure_conf = torch.exp(probs[i])
+                            if not isinstance(result, Value):
+                                continue
+
+                            if answer.vtype == BOOL:
+                                predicted = (result.value >= 0.).item()
+                                actual = bool(answer.value)
+                                if predicted == actual:
+                                    test_correct += 1 * measure_conf
+                            elif answer.vtype == FLOAT or answer.vtype == INT:
+                                measure_loss = torch.abs(result.value - answer.value)
+                                if measure_loss < 0.2:
+                                    test_correct += 1 * measure_conf
+                            test_total += 1 * measure_conf
+                    except:
+                        continue  # Skip errors in test set
+            #self.train()  # Revert to train mode
+            return float(test_correct) / test_total if test_total > 0 else 0.0
+
         for epoch in epoch_bar:
             loss = 0.0
             correct = 0
@@ -344,23 +404,28 @@ class MetaLearner(nn.Module):
                 query = sample["query"]
                 answer = sample["answer"]
                 grounding = sample["grounding"]
+
+                images = sample["image"]
                 program = sample["program"] if "program" in sample and self.cheat else None
- 
+
                 if isinstance(answer, bool): answer = Value(BOOL, answer)
+
+                if isinstance(answer, int): answer = Value(INT, answer)
                     
                 if isinstance(answer, Value) and isinstance(answer.vtype, str):
                     if answer.vtype == "boolean": answer.vtype = BOOL
                     if answer.vtype == "float": answer.vtype = FLOAT
                     if answer.vtype == "int": answer.vtype = INT
 
-                if 1:#with torch.autograd.detect_anomaly():
+
+                try:
                     working_loss = 0.
                     if program is None:
                         results, probs, programs, _ = self(query, grounding, answer.vtype)
-                    else:
-                            results     =  [self.executor.additive_evaluation(program, grounding)]
-                            probs       =  [torch.tensor(1.0)]
-                            programs    =  [program]
+                    else:  
+                        results     =  [self.executor.additive_evaluation(program, grounding)]
+                        probs       =  [torch.tensor(1.0)]
+                        programs    =  [program]
 
                     if not results:self.executor.logger.warnning(f"no parsing found for query:{query}")
                 
@@ -392,9 +457,6 @@ class MetaLearner(nn.Module):
                 
                     batch_loss += working_loss
                     batch_count += 1
-
-                    #for executor in self.executor.base_executor.executor_group:
-                    #    check_gradient_flow(executor)
                 
                     if batch_count == batch_size :#or idx == len(dataset) - 1:
                         batch_loss /= batch_count
@@ -406,13 +468,23 @@ class MetaLearner(nn.Module):
                             batch_loss = 0.0
                             batch_count = 0
                         except: raise RuntimeError("No Valid Parse Found.")
+                except UnificationFailure as Error:
+                        if (Error.left_structure,value_types(Error.right_structure)) not in self.executor.ban_list:
+                            self.executor.logger.warning(f"unification failure on : {query} with {Error.left_structure}{value_types(Error.right_structure)}")
             
-            avg_acc = float(correct) / total_count
-            avg_loss = loss / len(dataset) if len(dataset) > 0 else 0
-            epoch_bar.set_postfix({"avg_loss": f"{avg_loss.item():.4f}", "avg_acc": f"{avg_acc:.4f}"})
-        
-        return {"loss": avg_loss, "acc": avg_acc}
-
+            #calculate test accuracy (if test_set exists) and update progress bar
+            test_acc = evaluate_test_set()
+            if not unify:
+                avg_acc = float(correct) / total_count if total_count > 0 else 0.0
+                avg_loss = loss / len(dataset) if len(dataset) > 0 else 0.0
+                # Add test_acc to postfix
+                epoch_bar.set_postfix({"avg_loss": f"{avg_loss.item():.4f}", "avg_acc": f"{avg_acc:.4f}", "test_acc": f"{test_acc:.4f}"})
+            else: 
+                avg_loss, avg_acc = -1, -1
+                # Show test_acc even if unify=True
+                epoch_bar.set_postfix({"test_acc": f"{test_acc:.4f}"})
+            self.executor.logger.info(f"acc:{avg_acc}, test_acc: {test_acc}")
+        return {"loss": avg_loss, "acc": avg_acc, "test_acc": test_acc}  # Add test_acc to return
 
     def infer_metaphor_expressions(self, meta_exprs: Union[str, Expression,List[Expression], List[str]]):
         if isinstance(meta_exprs, Expression) or isinstance(meta_exprs, str): meta_exprs = [meta_exprs]
@@ -421,15 +493,14 @@ class MetaLearner(nn.Module):
         for meta_expr in meta_exprs:
             infers = self.executor.infer_rewrite_expr(meta_expr)
             fixed_infers = self.executor.add_metaphors(infers)
-            #for inf in fixed_infers:print(inf)
-            #print("\n")
+
             metaphors.append(fixed_infers)
 
         return metaphors
 
     def maximal_parse(self, sentence, tp = AnyType, forced = False):
         ### return a sorted list of tuple [parsed program, logit] of the possible parses
-        #parses = self.parser.parse(sentence, forced = forced)
+
         _, _, _, parses = self(sentence, {}, tp, execute = False, forced = forced)
         distrs = self.parser.get_parse_probability(parses)
         parse_with_prob = list(zip([p.sem_program for p in parses], distrs))

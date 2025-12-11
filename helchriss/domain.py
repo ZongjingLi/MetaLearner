@@ -10,7 +10,7 @@ from typing import Callable, Any, List, Dict, Tuple, Optional, Union
 from helchriss.dsl.dsl_types import (
     TypeBase, UnionType, ObjectType, SequenceType, TupleType,
     UniformSequenceType, ListType, FixedListType, VectorType, FunctionType as BaseFunctionType,
-    AnyType, AutoType, DependentFunction, INT, FLOAT, BOOL, TYPE, ArrowType, EmbeddingType
+    AnyType, AutoType, DependentFunction, INT, FLOAT, BOOL, TYPE, ArrowType, EmbeddingType, STR
 )
 from helchriss.dsl.dsl_values import Value
 
@@ -75,7 +75,8 @@ class LKTransformer(Transformer):
             "int": INT,
             "float": FLOAT,
             "boolean": BOOL,
-            "Type": TYPE
+            "Type": TYPE,
+            "str" : STR
         }
 
     def IDENTIFIER(self, args): return str(args)

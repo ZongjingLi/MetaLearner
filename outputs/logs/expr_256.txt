@@ -1,0 +1,427 @@
+[08 09:35:28 98@learn.py:AutoSchedule] start to learn the words ['sprite', 'rectangle', 'exists', 'circle', 'triangle', 'red', 'green', 'blue'], add corpus size 256
+[08 09:35:28 114@learn.py:AutoSchedule] unification structure check, eval run
+[08 09:35:28 117@learn.py:AutoSchedule] training until converges
+[08 09:35:30 483@model.py:SearchExecutor] acc:0.5507826805114746, test_acc: 0.5624995231628418
+[08 09:35:32 483@model.py:SearchExecutor] acc:0.7070322036743164, test_acc: 0.7265616655349731
+[08 09:35:34 483@model.py:SearchExecutor] acc:0.7773445248603821, test_acc: 0.7265616655349731
+[08 09:35:36 483@model.py:SearchExecutor] acc:0.7968756556510925, test_acc: 0.7656242251396179
+[08 09:35:37 483@model.py:SearchExecutor] acc:0.8554692268371582, test_acc: 0.8906246423721313
+[08 09:35:39 483@model.py:SearchExecutor] acc:0.8847660422325134, test_acc: 0.8906246423721313
+[08 09:35:41 483@model.py:SearchExecutor] acc:0.9023441076278687, test_acc: 0.9140622615814209
+[08 09:35:43 483@model.py:SearchExecutor] acc:0.9199221730232239, test_acc: 0.9140622615814209
+[08 09:35:44 483@model.py:SearchExecutor] acc:0.9355471134185791, test_acc: 0.9453123211860657
+[08 09:35:46 483@model.py:SearchExecutor] acc:0.9570314288139343, test_acc: 0.9609373807907104
+[08 09:35:48 483@model.py:SearchExecutor] acc:0.9765625596046448, test_acc: 0.9687499403953552
+[08 09:35:50 483@model.py:SearchExecutor] acc:0.9785156846046448, test_acc: 0.9765624403953552
+[08 09:35:51 483@model.py:SearchExecutor] acc:0.9941406846046448, test_acc: 1.0
+[08 09:35:53 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 09:35:55 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 09:35:57 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 09:35:58 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 09:36:00 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 09:36:02 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 09:36:04 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 09:36:04 105@learn.py:AutoSchedule] learned words : ['sprite', 'rectangle', 'exists', 'circle', 'triangle', 'red', 'green', 'blue'] avg_acc:1.0 avg_loss:7.427056698361412e-05
+[08 09:36:04 98@learn.py:AutoSchedule] start to learn the words [], add corpus size 0
+[08 09:36:04 114@learn.py:AutoSchedule] unification structure check, eval run
+[08 09:36:04 117@learn.py:AutoSchedule] training until converges
+[08 09:36:05 483@model.py:SearchExecutor] acc:0.998046875, test_acc: 1.0
+[08 09:36:07 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 09:36:09 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 09:36:11 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 09:36:13 483@model.py:SearchExecutor] acc:0.998046875, test_acc: 1.0
+[08 09:36:15 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 09:36:17 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 09:36:19 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 09:36:21 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 09:36:22 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 09:36:22 105@learn.py:AutoSchedule] learned words : [] avg_acc:1.0 avg_loss:2.0540177501970902e-05
+[08 09:36:23 109@learn.py:AutoSchedule] complete the learning of words ['sprite', 'rectangle', 'exists', 'circle', 'triangle', 'red', 'green', 'blue']
+[08 09:36:23 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[08 09:36:23 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[08 09:36:23 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[08 09:36:23 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[08 09:42:21 98@learn.py:AutoSchedule] start to learn the words ['sprite', 'red', 'circle', 'blue', 'green', 'triangle', 'exists', 'rectangle'], add corpus size 256
+[08 09:42:21 114@learn.py:AutoSchedule] unification structure check, eval run
+[08 09:42:21 117@learn.py:AutoSchedule] training until converges
+[08 09:42:24 483@model.py:SearchExecutor] acc:0.6191418766975403, test_acc: 0.6249994039535522
+[08 09:42:25 483@model.py:SearchExecutor] acc:0.7402352690696716, test_acc: 0.6796867847442627
+[08 09:42:27 483@model.py:SearchExecutor] acc:0.7734382748603821, test_acc: 0.7031242251396179
+[08 09:42:29 483@model.py:SearchExecutor] acc:0.8144537806510925, test_acc: 0.7187491655349731
+[08 09:42:30 483@model.py:SearchExecutor] acc:0.8652348518371582, test_acc: 0.828124463558197
+[08 09:42:32 483@model.py:SearchExecutor] acc:0.9511720538139343, test_acc: 0.9218747615814209
+[08 09:42:34 483@model.py:SearchExecutor] acc:0.99609375, test_acc: 1.0
+[08 09:42:36 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 09:42:37 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 09:42:39 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 09:42:39 105@learn.py:AutoSchedule] learned words : ['sprite', 'red', 'circle', 'blue', 'green', 'triangle', 'exists', 'rectangle'] avg_acc:1.0 avg_loss:0.000327995017869398
+[08 09:42:39 98@learn.py:AutoSchedule] start to learn the words [], add corpus size 0
+[08 09:42:39 114@learn.py:AutoSchedule] unification structure check, eval run
+[08 09:42:39 117@learn.py:AutoSchedule] training until converges
+[08 09:42:41 483@model.py:SearchExecutor] acc:0.998046875, test_acc: 1.0
+[08 09:42:43 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 09:42:44 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 09:42:46 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 09:42:48 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 09:42:50 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 09:42:52 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 09:42:54 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 09:42:55 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 09:42:57 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 09:42:57 105@learn.py:AutoSchedule] learned words : [] avg_acc:1.0 avg_loss:6.303775080596097e-06
+[08 09:42:57 109@learn.py:AutoSchedule] complete the learning of words ['sprite', 'red', 'circle', 'blue', 'green', 'triangle', 'exists', 'rectangle']
+[08 09:42:58 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[08 09:42:58 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[08 09:42:58 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[08 09:42:58 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[08 09:44:30 98@learn.py:AutoSchedule] start to learn the words ['exists', 'green', 'rectangle', 'triangle', 'circle', 'blue', 'sprite', 'red'], add corpus size 256
+[08 09:44:30 114@learn.py:AutoSchedule] unification structure check, eval run
+[08 09:44:30 117@learn.py:AutoSchedule] training until converges
+[08 09:44:32 483@model.py:SearchExecutor] acc:0.6289074420928955, test_acc: 0.6640617847442627
+[08 09:44:34 483@model.py:SearchExecutor] acc:0.7832038402557373, test_acc: 0.835936963558197
+[08 09:44:36 483@model.py:SearchExecutor] acc:0.9082034230232239, test_acc: 0.8828121423721313
+[08 09:44:37 483@model.py:SearchExecutor] acc:0.9433595538139343, test_acc: 0.8828121423721313
+[08 09:44:39 483@model.py:SearchExecutor] acc:0.9355471134185791, test_acc: 0.9062497019767761
+[08 09:44:41 483@model.py:SearchExecutor] acc:0.9531251788139343, test_acc: 0.9531248807907104
+[08 09:44:43 483@model.py:SearchExecutor] acc:0.9824219346046448, test_acc: 0.9531248807907104
+[08 09:44:44 483@model.py:SearchExecutor] acc:0.9882813096046448, test_acc: 0.9296873211860657
+[08 09:44:46 483@model.py:SearchExecutor] acc:0.9843750596046448, test_acc: 0.9531248807907104
+[08 09:44:48 483@model.py:SearchExecutor] acc:0.9882813096046448, test_acc: 0.9531248807907104
+[08 09:44:49 483@model.py:SearchExecutor] acc:0.9863281846046448, test_acc: 0.9531248807907104
+[08 09:44:51 483@model.py:SearchExecutor] acc:0.9882813096046448, test_acc: 0.8984372019767761
+[08 09:44:52 483@model.py:SearchExecutor] acc:0.9824219346046448, test_acc: 0.9687499403953552
+[08 09:44:54 483@model.py:SearchExecutor] acc:0.9843750596046448, test_acc: 0.9687499403953552
+[08 09:44:56 483@model.py:SearchExecutor] acc:0.9882813096046448, test_acc: 0.9687499403953552
+[08 09:44:57 483@model.py:SearchExecutor] acc:0.9882813096046448, test_acc: 0.9687499403953552
+[08 09:44:59 483@model.py:SearchExecutor] acc:0.9882813096046448, test_acc: 0.9687499403953552
+[08 09:45:01 483@model.py:SearchExecutor] acc:0.9882813096046448, test_acc: 0.9687499403953552
+[08 09:45:02 483@model.py:SearchExecutor] acc:0.9882813096046448, test_acc: 0.9687499403953552
+[08 09:45:04 483@model.py:SearchExecutor] acc:0.9882813096046448, test_acc: 0.9687499403953552
+[08 09:45:06 483@model.py:SearchExecutor] acc:0.9863281846046448, test_acc: 0.9687499403953552
+[08 09:45:07 483@model.py:SearchExecutor] acc:0.9882813096046448, test_acc: 0.9687499403953552
+[08 09:45:09 483@model.py:SearchExecutor] acc:0.9882813096046448, test_acc: 0.9687499403953552
+[08 09:45:11 483@model.py:SearchExecutor] acc:0.9882813096046448, test_acc: 0.9609373807907104
+[08 09:45:12 483@model.py:SearchExecutor] acc:0.9882813096046448, test_acc: 0.9687499403953552
+[08 09:45:14 483@model.py:SearchExecutor] acc:0.9570314288139343, test_acc: 0.8671870827674866
+[08 09:45:16 483@model.py:SearchExecutor] acc:0.8671879768371582, test_acc: 0.835936963558197
+[08 09:45:17 483@model.py:SearchExecutor] acc:0.8925784826278687, test_acc: 0.8749996423721313
+[08 09:45:19 483@model.py:SearchExecutor] acc:0.8945316076278687, test_acc: 0.8749996423721313
+[08 09:45:21 483@model.py:SearchExecutor] acc:0.8945316076278687, test_acc: 0.8749996423721313
+[08 09:45:22 483@model.py:SearchExecutor] acc:0.8945316076278687, test_acc: 0.8749996423721313
+[08 09:45:24 483@model.py:SearchExecutor] acc:0.8945316076278687, test_acc: 0.8515620231628418
+[08 09:45:26 483@model.py:SearchExecutor] acc:0.8906253576278687, test_acc: 0.8749996423721313
+[08 09:45:27 483@model.py:SearchExecutor] acc:0.8906253576278687, test_acc: 0.8749996423721313
+[08 09:45:29 483@model.py:SearchExecutor] acc:0.8945316076278687, test_acc: 0.8749996423721313
+[08 09:45:31 483@model.py:SearchExecutor] acc:0.8945316076278687, test_acc: 0.8749996423721313
+[08 09:45:32 483@model.py:SearchExecutor] acc:0.8945316076278687, test_acc: 0.8749996423721313
+[08 09:45:34 483@model.py:SearchExecutor] acc:0.8945316076278687, test_acc: 0.8749996423721313
+[08 09:45:36 483@model.py:SearchExecutor] acc:0.8945316076278687, test_acc: 0.8749996423721313
+[08 09:45:37 483@model.py:SearchExecutor] acc:0.8945316076278687, test_acc: 0.8749996423721313
+[08 09:45:39 483@model.py:SearchExecutor] acc:0.8945316076278687, test_acc: 0.8749996423721313
+[08 09:45:41 483@model.py:SearchExecutor] acc:0.8945316076278687, test_acc: 0.8749996423721313
+[08 09:45:42 483@model.py:SearchExecutor] acc:0.8945316076278687, test_acc: 0.8749996423721313
+[08 09:45:44 483@model.py:SearchExecutor] acc:0.8789066672325134, test_acc: 0.8906246423721313
+[08 09:45:46 483@model.py:SearchExecutor] acc:0.8945316076278687, test_acc: 0.8906246423721313
+[08 09:45:48 483@model.py:SearchExecutor] acc:0.8945316076278687, test_acc: 0.8906246423721313
+[08 09:45:49 483@model.py:SearchExecutor] acc:0.8945316076278687, test_acc: 0.8906246423721313
+[08 09:45:51 483@model.py:SearchExecutor] acc:0.8945316076278687, test_acc: 0.8906246423721313
+[08 09:45:53 483@model.py:SearchExecutor] acc:0.8945316076278687, test_acc: 0.8906246423721313
+[08 09:45:54 483@model.py:SearchExecutor] acc:0.9121096730232239, test_acc: 0.8984372019767761
+[08 09:45:56 483@model.py:SearchExecutor] acc:0.9160159230232239, test_acc: 0.8906246423721313
+[08 09:45:58 483@model.py:SearchExecutor] acc:0.9003909826278687, test_acc: 0.8749996423721313
+[08 09:45:59 483@model.py:SearchExecutor] acc:0.9257814884185791, test_acc: 0.9062497019767761
+[08 09:46:01 483@model.py:SearchExecutor] acc:0.9238283634185791, test_acc: 0.8749996423721313
+[08 09:46:33 98@learn.py:AutoSchedule] start to learn the words ['green', 'rectangle', 'sprite', 'exists', 'triangle', 'blue', 'circle', 'red'], add corpus size 256
+[08 09:46:33 114@learn.py:AutoSchedule] unification structure check, eval run
+[08 09:46:33 117@learn.py:AutoSchedule] training until converges
+[08 09:46:35 483@model.py:SearchExecutor] acc:0.5136734843254089, test_acc: 0.5390620827674866
+[08 09:46:37 483@model.py:SearchExecutor] acc:0.6484386324882507, test_acc: 0.7499991655349731
+[08 09:46:38 483@model.py:SearchExecutor] acc:0.8007819056510925, test_acc: 0.8203119039535522
+[08 09:46:40 483@model.py:SearchExecutor] acc:0.835938036441803, test_acc: 0.8984372019767761
+[08 09:46:42 483@model.py:SearchExecutor] acc:0.8554692268371582, test_acc: 0.8515620231628418
+[08 09:46:43 483@model.py:SearchExecutor] acc:0.8769535422325134, test_acc: 0.9062497019767761
+[08 09:46:45 483@model.py:SearchExecutor] acc:0.9160159230232239, test_acc: 0.8671870827674866
+[08 09:46:47 483@model.py:SearchExecutor] acc:0.9394533634185791, test_acc: 1.0
+[08 09:46:48 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 09:46:50 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 09:46:50 105@learn.py:AutoSchedule] learned words : ['green', 'rectangle', 'sprite', 'exists', 'triangle', 'blue', 'circle', 'red'] avg_acc:1.0 avg_loss:0.0031531001441180706
+[08 09:46:50 98@learn.py:AutoSchedule] start to learn the words [], add corpus size 0
+[08 09:46:50 114@learn.py:AutoSchedule] unification structure check, eval run
+[08 09:46:50 117@learn.py:AutoSchedule] training until converges
+[08 09:46:52 483@model.py:SearchExecutor] acc:0.99609375, test_acc: 1.0
+[08 09:46:54 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 09:46:55 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 09:46:57 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 09:46:59 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 09:47:00 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 09:47:02 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 09:47:04 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 09:47:06 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 09:47:07 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 09:47:07 105@learn.py:AutoSchedule] learned words : [] avg_acc:1.0 avg_loss:6.19925003775279e-06
+[08 09:47:07 109@learn.py:AutoSchedule] complete the learning of words ['green', 'rectangle', 'sprite', 'exists', 'triangle', 'blue', 'circle', 'red']
+[08 09:47:08 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[08 09:47:08 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[08 09:47:08 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[08 09:47:08 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[08 09:55:54 98@learn.py:AutoSchedule] start to learn the words ['green', 'triangle', 'rectangle', 'blue', 'exists', 'circle', 'red', 'sprite'], add corpus size 256
+[08 09:55:54 114@learn.py:AutoSchedule] unification structure check, eval run
+[08 09:55:54 117@learn.py:AutoSchedule] training until converges
+[08 09:55:56 483@model.py:SearchExecutor] acc:0.5234390497207642, test_acc: 0.5234371423721313
+[08 09:55:58 483@model.py:SearchExecutor] acc:0.7363290190696716, test_acc: 0.7890618443489075
+[08 09:55:59 483@model.py:SearchExecutor] acc:0.7851569652557373, test_acc: 0.7734367847442627
+[08 09:56:01 483@model.py:SearchExecutor] acc:0.8222662210464478, test_acc: 0.8046869039535522
+[08 09:56:03 483@model.py:SearchExecutor] acc:0.8828129172325134, test_acc: 0.8515620231628418
+[08 09:56:05 483@model.py:SearchExecutor] acc:0.8945316076278687, test_acc: 0.8828121423721313
+[08 09:56:07 483@model.py:SearchExecutor] acc:0.9257814884185791, test_acc: 0.8515620231628418
+[08 09:56:09 483@model.py:SearchExecutor] acc:0.9042972326278687, test_acc: 0.8906246423721313
+[08 09:56:10 483@model.py:SearchExecutor] acc:0.9335939884185791, test_acc: 0.8828121423721313
+[08 09:56:12 483@model.py:SearchExecutor] acc:0.9394533634185791, test_acc: 0.8906246423721313
+[08 09:56:14 483@model.py:SearchExecutor] acc:0.9453126788139343, test_acc: 0.8906246423721313
+[08 09:56:16 483@model.py:SearchExecutor] acc:0.9453126788139343, test_acc: 0.9296873211860657
+[08 09:56:17 483@model.py:SearchExecutor] acc:0.9453126788139343, test_acc: 0.9218747615814209
+[08 09:56:19 483@model.py:SearchExecutor] acc:0.9609376192092896, test_acc: 0.8906246423721313
+[08 09:56:21 483@model.py:SearchExecutor] acc:0.9550783038139343, test_acc: 0.9374998211860657
+[08 09:56:23 483@model.py:SearchExecutor] acc:0.9609376192092896, test_acc: 0.9374998211860657
+[08 09:56:25 483@model.py:SearchExecutor] acc:0.9628907442092896, test_acc: 0.9374998211860657
+[08 09:56:26 483@model.py:SearchExecutor] acc:0.9648438692092896, test_acc: 0.9218747615814209
+[08 09:56:28 483@model.py:SearchExecutor] acc:0.9628907442092896, test_acc: 0.9218747615814209
+[08 09:56:30 483@model.py:SearchExecutor] acc:0.9667969942092896, test_acc: 0.8984372019767761
+[08 09:56:32 483@model.py:SearchExecutor] acc:0.9609376192092896, test_acc: 0.9374998211860657
+[08 09:56:33 483@model.py:SearchExecutor] acc:0.9667969942092896, test_acc: 0.9218747615814209
+[08 09:56:35 483@model.py:SearchExecutor] acc:0.9628907442092896, test_acc: 0.9218747615814209
+[08 09:56:37 483@model.py:SearchExecutor] acc:0.9609376192092896, test_acc: 0.9374998211860657
+[08 09:56:39 483@model.py:SearchExecutor] acc:0.9687501192092896, test_acc: 0.9140622615814209
+[08 09:56:41 483@model.py:SearchExecutor] acc:0.9707032442092896, test_acc: 0.9218747615814209
+[08 09:56:43 483@model.py:SearchExecutor] acc:0.9628907442092896, test_acc: 0.9218747615814209
+[08 09:56:45 483@model.py:SearchExecutor] acc:0.9667969942092896, test_acc: 0.9218747615814209
+[08 09:56:46 483@model.py:SearchExecutor] acc:0.9667969942092896, test_acc: 0.9140622615814209
+[08 09:56:48 483@model.py:SearchExecutor] acc:0.9667969942092896, test_acc: 0.9218747615814209
+[08 09:56:50 483@model.py:SearchExecutor] acc:0.9648438692092896, test_acc: 0.9218747615814209
+[08 09:56:52 483@model.py:SearchExecutor] acc:0.9667969942092896, test_acc: 0.8515620231628418
+[08 09:56:54 483@model.py:SearchExecutor] acc:0.9687501192092896, test_acc: 0.9218747615814209
+[08 09:56:55 483@model.py:SearchExecutor] acc:0.9687501192092896, test_acc: 0.9218747615814209
+[08 09:56:57 483@model.py:SearchExecutor] acc:0.9667969942092896, test_acc: 0.9218747615814209
+[08 09:56:59 483@model.py:SearchExecutor] acc:0.9687501192092896, test_acc: 0.9218747615814209
+[08 09:57:01 483@model.py:SearchExecutor] acc:0.9648438692092896, test_acc: 0.9218747615814209
+[08 09:57:03 483@model.py:SearchExecutor] acc:0.9628907442092896, test_acc: 0.9062497019767761
+[08 09:57:05 483@model.py:SearchExecutor] acc:0.9726563692092896, test_acc: 0.9140622615814209
+[08 09:57:07 483@model.py:SearchExecutor] acc:0.9746094942092896, test_acc: 0.8984372019767761
+[08 09:57:09 483@model.py:SearchExecutor] acc:0.9687501192092896, test_acc: 0.9062497019767761
+[08 09:57:11 483@model.py:SearchExecutor] acc:0.9726563692092896, test_acc: 0.9062497019767761
+[08 09:57:12 483@model.py:SearchExecutor] acc:0.9667969942092896, test_acc: 0.9140622615814209
+[08 09:57:14 483@model.py:SearchExecutor] acc:0.9707032442092896, test_acc: 0.8984372019767761
+[08 09:57:16 483@model.py:SearchExecutor] acc:0.9707032442092896, test_acc: 0.9062497019767761
+[08 09:57:18 483@model.py:SearchExecutor] acc:0.9511720538139343, test_acc: 0.835936963558197
+[08 09:57:19 483@model.py:SearchExecutor] acc:0.9472658038139343, test_acc: 0.9218747615814209
+[08 09:57:21 483@model.py:SearchExecutor] acc:0.9687501192092896, test_acc: 0.9140622615814209
+[08 09:57:23 483@model.py:SearchExecutor] acc:0.9707032442092896, test_acc: 0.9062497019767761
+[08 09:57:25 483@model.py:SearchExecutor] acc:0.9687501192092896, test_acc: 0.9062497019767761
+[08 09:57:27 483@model.py:SearchExecutor] acc:0.9726563692092896, test_acc: 0.9062497019767761
+[08 09:57:28 483@model.py:SearchExecutor] acc:0.9687501192092896, test_acc: 0.9140622615814209
+[08 09:57:30 483@model.py:SearchExecutor] acc:0.9707032442092896, test_acc: 0.8984372019767761
+[08 09:57:32 483@model.py:SearchExecutor] acc:0.9707032442092896, test_acc: 0.9062497019767761
+[08 09:57:34 483@model.py:SearchExecutor] acc:0.9707032442092896, test_acc: 0.8984372019767761
+[08 09:57:35 483@model.py:SearchExecutor] acc:0.9726563692092896, test_acc: 0.8984372019767761
+[08 09:57:37 483@model.py:SearchExecutor] acc:0.9726563692092896, test_acc: 0.9140622615814209
+[08 09:57:39 483@model.py:SearchExecutor] acc:0.9707032442092896, test_acc: 0.9140622615814209
+[08 09:57:41 483@model.py:SearchExecutor] acc:0.9609376192092896, test_acc: 0.8984372019767761
+[08 09:57:42 483@model.py:SearchExecutor] acc:0.9121096730232239, test_acc: 0.8593745827674866
+[08 09:57:44 483@model.py:SearchExecutor] acc:0.9160159230232239, test_acc: 0.8593745827674866
+[08 09:57:46 483@model.py:SearchExecutor] acc:0.9160159230232239, test_acc: 0.8593745827674866
+[08 09:57:48 483@model.py:SearchExecutor] acc:0.9179690480232239, test_acc: 0.8593745827674866
+[08 09:57:50 483@model.py:SearchExecutor] acc:0.9179690480232239, test_acc: 0.8593745827674866
+[08 10:00:11 98@learn.py:AutoSchedule] start to learn the words ['red', 'triangle', 'exists', 'circle', 'green', 'sprite', 'blue', 'rectangle'], add corpus size 256
+[08 10:00:11 114@learn.py:AutoSchedule] unification structure check, eval run
+[08 10:00:11 117@learn.py:AutoSchedule] training until converges
+[08 10:00:14 483@model.py:SearchExecutor] acc:0.673829197883606, test_acc: 0.7421866655349731
+[08 10:00:15 483@model.py:SearchExecutor] acc:0.7773445248603821, test_acc: 0.7812492847442627
+[08 10:00:17 483@model.py:SearchExecutor] acc:0.8085944056510925, test_acc: 0.7890618443489075
+[08 10:00:19 483@model.py:SearchExecutor] acc:0.7988287806510925, test_acc: 0.8203119039535522
+[08 10:00:20 483@model.py:SearchExecutor] acc:0.8261724710464478, test_acc: 0.7968743443489075
+[08 10:00:22 483@model.py:SearchExecutor] acc:0.8691410422325134, test_acc: 0.8593745827674866
+[08 10:00:24 483@model.py:SearchExecutor] acc:0.9042972326278687, test_acc: 0.8671870827674866
+[08 10:00:25 483@model.py:SearchExecutor] acc:0.8750004172325134, test_acc: 0.8906246423721313
+[08 10:00:27 483@model.py:SearchExecutor] acc:0.9121096730232239, test_acc: 0.9218747615814209
+[08 10:00:29 483@model.py:SearchExecutor] acc:0.9804688096046448, test_acc: 1.0
+[08 10:00:30 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 10:00:32 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 10:00:34 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 10:00:35 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 10:00:37 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 10:00:39 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 10:00:40 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 10:00:42 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 10:00:44 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 10:00:45 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 10:00:45 105@learn.py:AutoSchedule] learned words : ['red', 'triangle', 'exists', 'circle', 'green', 'sprite', 'blue', 'rectangle'] avg_acc:1.0 avg_loss:5.74148316445644e-06
+[08 10:00:45 98@learn.py:AutoSchedule] start to learn the words [], add corpus size 0
+[08 10:00:45 114@learn.py:AutoSchedule] unification structure check, eval run
+[08 10:00:45 117@learn.py:AutoSchedule] training until converges
+[08 10:00:47 483@model.py:SearchExecutor] acc:0.9804688096046448, test_acc: 0.9687499403953552
+[08 10:00:49 483@model.py:SearchExecutor] acc:0.9570314288139343, test_acc: 1.0
+[08 10:00:50 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 10:00:52 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 10:00:54 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 10:00:56 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 10:00:57 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 10:00:59 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 10:01:01 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 10:01:02 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 10:01:02 105@learn.py:AutoSchedule] learned words : [] avg_acc:1.0 avg_loss:1.1932100278500002e-05
+[08 10:01:02 109@learn.py:AutoSchedule] complete the learning of words ['red', 'triangle', 'exists', 'circle', 'green', 'sprite', 'blue', 'rectangle']
+[08 10:01:03 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[08 10:01:03 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[08 10:01:03 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[08 10:01:03 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[08 10:17:34 98@learn.py:AutoSchedule] start to learn the words ['green', 'rectangle', 'blue', 'circle', 'sprite', 'red', 'exists', 'triangle'], add corpus size 256
+[08 10:17:34 114@learn.py:AutoSchedule] unification structure check, eval run
+[08 10:17:34 117@learn.py:AutoSchedule] training until converges
+[08 10:17:36 483@model.py:SearchExecutor] acc:0.6113293766975403, test_acc: 0.7031242251396179
+[08 10:17:37 483@model.py:SearchExecutor] acc:0.8027350306510925, test_acc: 0.8593745827674866
+[08 10:17:39 483@model.py:SearchExecutor] acc:0.8554692268371582, test_acc: 0.8593745827674866
+[08 10:17:43 483@model.py:SearchExecutor] acc:0.8710941672325134, test_acc: 0.9062497019767761
+[08 10:17:44 483@model.py:SearchExecutor] acc:0.9023441076278687, test_acc: 0.9531248807907104
+[08 10:17:46 483@model.py:SearchExecutor] acc:0.9316408634185791, test_acc: 0.9921875
+[08 10:17:48 483@model.py:SearchExecutor] acc:0.9511720538139343, test_acc: 0.984375
+[08 10:17:49 483@model.py:SearchExecutor] acc:0.9335939884185791, test_acc: 0.9218747615814209
+[08 10:17:52 483@model.py:SearchExecutor] acc:0.9609376192092896, test_acc: 0.9609373807907104
+[08 10:17:56 483@model.py:SearchExecutor] acc:0.9472658038139343, test_acc: 0.9921875
+[08 10:17:58 483@model.py:SearchExecutor] acc:0.9472658038139343, test_acc: 0.9921875
+[08 10:18:00 483@model.py:SearchExecutor] acc:0.9648438692092896, test_acc: 0.9687499403953552
+[08 10:18:03 483@model.py:SearchExecutor] acc:0.9687501192092896, test_acc: 0.9921875
+[08 10:18:05 483@model.py:SearchExecutor] acc:0.9628907442092896, test_acc: 0.9921875
+[08 10:18:07 483@model.py:SearchExecutor] acc:0.9648438692092896, test_acc: 0.9374998211860657
+[08 10:18:09 483@model.py:SearchExecutor] acc:0.9570314288139343, test_acc: 0.9921875
+[08 10:18:10 483@model.py:SearchExecutor] acc:0.9648438692092896, test_acc: 0.9921875
+[08 10:18:12 483@model.py:SearchExecutor] acc:0.9707032442092896, test_acc: 0.9609373807907104
+[08 10:18:14 483@model.py:SearchExecutor] acc:0.9628907442092896, test_acc: 0.9921875
+[08 10:18:15 483@model.py:SearchExecutor] acc:0.9648438692092896, test_acc: 0.9921875
+[08 10:18:17 483@model.py:SearchExecutor] acc:0.9511720538139343, test_acc: 0.9765624403953552
+[08 10:18:19 483@model.py:SearchExecutor] acc:0.9550783038139343, test_acc: 0.9921875
+[08 10:18:21 483@model.py:SearchExecutor] acc:0.9589844942092896, test_acc: 0.9921875
+[08 10:18:22 483@model.py:SearchExecutor] acc:0.9648438692092896, test_acc: 0.9921875
+[08 10:18:24 483@model.py:SearchExecutor] acc:0.9687501192092896, test_acc: 0.9921875
+[08 10:18:26 483@model.py:SearchExecutor] acc:0.9648438692092896, test_acc: 0.9921875
+[08 10:18:27 483@model.py:SearchExecutor] acc:0.9667969942092896, test_acc: 0.9921875
+[08 10:18:29 483@model.py:SearchExecutor] acc:0.9648438692092896, test_acc: 0.9921875
+[08 10:18:31 483@model.py:SearchExecutor] acc:0.9687501192092896, test_acc: 0.9921875
+[08 10:18:32 483@model.py:SearchExecutor] acc:0.9687501192092896, test_acc: 0.9921875
+[08 10:18:34 483@model.py:SearchExecutor] acc:0.9609376192092896, test_acc: 0.9921875
+[08 10:18:36 483@model.py:SearchExecutor] acc:0.9707032442092896, test_acc: 0.9921875
+[08 10:18:37 483@model.py:SearchExecutor] acc:0.9589844942092896, test_acc: 0.9921875
+[08 10:18:39 483@model.py:SearchExecutor] acc:0.9687501192092896, test_acc: 0.9921875
+[08 10:18:41 483@model.py:SearchExecutor] acc:0.9687501192092896, test_acc: 0.9921875
+[08 10:18:42 483@model.py:SearchExecutor] acc:0.9687501192092896, test_acc: 0.9921875
+[08 10:18:44 483@model.py:SearchExecutor] acc:0.9687501192092896, test_acc: 0.9921875
+[08 10:18:46 483@model.py:SearchExecutor] acc:0.9687501192092896, test_acc: 0.984375
+[08 10:18:47 483@model.py:SearchExecutor] acc:0.9687501192092896, test_acc: 0.9765624403953552
+[08 10:18:49 483@model.py:SearchExecutor] acc:0.9726563692092896, test_acc: 0.9921875
+[08 10:18:51 483@model.py:SearchExecutor] acc:0.9687501192092896, test_acc: 0.9921875
+[08 10:18:52 483@model.py:SearchExecutor] acc:0.9667969942092896, test_acc: 0.8984372019767761
+[08 10:18:54 483@model.py:SearchExecutor] acc:0.9433595538139343, test_acc: 0.9765624403953552
+[08 10:18:56 483@model.py:SearchExecutor] acc:0.9433595538139343, test_acc: 0.9609373807907104
+[08 10:18:57 483@model.py:SearchExecutor] acc:0.9492189288139343, test_acc: 0.9609373807907104
+[08 10:18:59 483@model.py:SearchExecutor] acc:0.9492189288139343, test_acc: 0.9609373807907104
+[08 10:19:01 483@model.py:SearchExecutor] acc:0.9492189288139343, test_acc: 0.9609373807907104
+[08 10:19:02 483@model.py:SearchExecutor] acc:0.9492189288139343, test_acc: 0.9609373807907104
+[08 10:19:04 483@model.py:SearchExecutor] acc:0.9492189288139343, test_acc: 0.9609373807907104
+[08 10:19:06 483@model.py:SearchExecutor] acc:0.9492189288139343, test_acc: 0.9609373807907104
+[08 10:19:07 483@model.py:SearchExecutor] acc:0.9492189288139343, test_acc: 0.9609373807907104
+[08 10:19:09 483@model.py:SearchExecutor] acc:0.9453126788139343, test_acc: 0.9765624403953552
+[08 10:19:11 483@model.py:SearchExecutor] acc:0.9414064288139343, test_acc: 0.9609373807907104
+[08 10:19:12 483@model.py:SearchExecutor] acc:0.9375002384185791, test_acc: 0.9609373807907104
+[08 10:19:14 483@model.py:SearchExecutor] acc:0.9414064288139343, test_acc: 0.9765624403953552
+[08 10:19:16 483@model.py:SearchExecutor] acc:0.9472658038139343, test_acc: 0.9609373807907104
+[08 10:19:17 483@model.py:SearchExecutor] acc:0.9492189288139343, test_acc: 0.9609373807907104
+[08 10:19:19 483@model.py:SearchExecutor] acc:0.9472658038139343, test_acc: 0.9609373807907104
+[08 10:19:21 483@model.py:SearchExecutor] acc:0.9492189288139343, test_acc: 0.9609373807907104
+[08 10:19:22 483@model.py:SearchExecutor] acc:0.9511720538139343, test_acc: 0.9609373807907104
+[08 10:19:24 483@model.py:SearchExecutor] acc:0.9433595538139343, test_acc: 0.9609373807907104
+[08 10:19:25 483@model.py:SearchExecutor] acc:0.9511720538139343, test_acc: 0.9609373807907104
+[08 10:19:27 483@model.py:SearchExecutor] acc:0.9492189288139343, test_acc: 0.9609373807907104
+[08 10:19:29 483@model.py:SearchExecutor] acc:0.9453126788139343, test_acc: 0.9609373807907104
+[08 10:19:30 483@model.py:SearchExecutor] acc:0.9531251788139343, test_acc: 0.9453123211860657
+[08 10:19:32 483@model.py:SearchExecutor] acc:0.9550783038139343, test_acc: 0.9609373807907104
+[08 10:19:36 483@model.py:SearchExecutor] acc:0.9531251788139343, test_acc: 0.9453123211860657
+[08 10:19:38 483@model.py:SearchExecutor] acc:0.9511720538139343, test_acc: 0.9609373807907104
+[08 10:19:40 483@model.py:SearchExecutor] acc:0.9609376192092896, test_acc: 0.9453123211860657
+[08 10:19:43 483@model.py:SearchExecutor] acc:0.7968756556510925, test_acc: 0.7187491655349731
+[08 10:19:46 483@model.py:SearchExecutor] acc:0.845703661441803, test_acc: 0.8984372019767761
+[08 10:19:48 483@model.py:SearchExecutor] acc:0.9414064288139343, test_acc: 0.9453123211860657
+[08 10:19:51 483@model.py:SearchExecutor] acc:0.9628907442092896, test_acc: 0.9609373807907104
+[08 10:19:53 483@model.py:SearchExecutor] acc:0.9648438692092896, test_acc: 0.9453123211860657
+[08 10:19:55 483@model.py:SearchExecutor] acc:0.9648438692092896, test_acc: 0.9453123211860657
+[08 10:19:57 483@model.py:SearchExecutor] acc:0.9648438692092896, test_acc: 0.9609373807907104
+[08 10:19:59 483@model.py:SearchExecutor] acc:0.9648438692092896, test_acc: 0.9453123211860657
+[08 10:20:01 483@model.py:SearchExecutor] acc:0.9648438692092896, test_acc: 0.9453123211860657
+[08 10:20:03 483@model.py:SearchExecutor] acc:0.9628907442092896, test_acc: 0.9453123211860657
+[08 10:20:05 483@model.py:SearchExecutor] acc:0.9648438692092896, test_acc: 0.9453123211860657
+[08 10:20:07 483@model.py:SearchExecutor] acc:0.9628907442092896, test_acc: 0.9453123211860657
+[08 10:20:09 483@model.py:SearchExecutor] acc:0.9648438692092896, test_acc: 0.9687499403953552
+[08 10:20:10 483@model.py:SearchExecutor] acc:0.9843750596046448, test_acc: 0.9765624403953552
+[08 10:20:12 483@model.py:SearchExecutor] acc:0.9882813096046448, test_acc: 0.9609373807907104
+[08 10:20:13 483@model.py:SearchExecutor] acc:0.9882813096046448, test_acc: 0.9609373807907104
+[08 10:20:15 483@model.py:SearchExecutor] acc:0.9882813096046448, test_acc: 0.9609373807907104
+[08 10:20:17 483@model.py:SearchExecutor] acc:0.9863281846046448, test_acc: 0.9609373807907104
+[08 10:20:18 483@model.py:SearchExecutor] acc:0.9863281846046448, test_acc: 0.9609373807907104
+[08 10:20:20 483@model.py:SearchExecutor] acc:0.9843750596046448, test_acc: 0.9609373807907104
+[08 10:20:22 483@model.py:SearchExecutor] acc:0.9531251788139343, test_acc: 0.9453123211860657
+[08 10:20:24 483@model.py:SearchExecutor] acc:0.9589844942092896, test_acc: 0.9609373807907104
+[08 10:20:25 483@model.py:SearchExecutor] acc:0.9609376192092896, test_acc: 0.9453123211860657
+[08 10:20:27 483@model.py:SearchExecutor] acc:0.9687501192092896, test_acc: 0.9453123211860657
+[08 10:20:29 483@model.py:SearchExecutor] acc:0.9609376192092896, test_acc: 0.9453123211860657
+[08 10:20:31 483@model.py:SearchExecutor] acc:0.9648438692092896, test_acc: 0.9453123211860657
+[08 10:20:32 483@model.py:SearchExecutor] acc:0.9648438692092896, test_acc: 0.9453123211860657
+[08 10:20:34 483@model.py:SearchExecutor] acc:0.9648438692092896, test_acc: 0.9453123211860657
+[08 10:20:35 483@model.py:SearchExecutor] acc:0.9648438692092896, test_acc: 0.9453123211860657
+[08 10:20:37 483@model.py:SearchExecutor] acc:0.9648438692092896, test_acc: 0.9453123211860657
+[08 10:20:39 483@model.py:SearchExecutor] acc:0.9628907442092896, test_acc: 0.9453123211860657
+[08 10:20:40 483@model.py:SearchExecutor] acc:0.9667969942092896, test_acc: 0.9453123211860657
+[08 10:20:42 483@model.py:SearchExecutor] acc:0.9570314288139343, test_acc: 0.9453123211860657
+[08 10:20:43 483@model.py:SearchExecutor] acc:0.9628907442092896, test_acc: 0.9453123211860657
+[08 10:20:45 483@model.py:SearchExecutor] acc:0.9628907442092896, test_acc: 0.9453123211860657
+[08 10:20:46 483@model.py:SearchExecutor] acc:0.9628907442092896, test_acc: 0.9453123211860657
+[08 10:21:32 98@learn.py:AutoSchedule] start to learn the words ['rectangle', 'exists', 'circle', 'green', 'sprite', 'red', 'blue', 'triangle'], add corpus size 256
+[08 10:21:32 114@learn.py:AutoSchedule] unification structure check, eval run
+[08 10:21:32 117@learn.py:AutoSchedule] training until converges
+[08 10:21:34 483@model.py:SearchExecutor] acc:0.6191418766975403, test_acc: 0.7187491655349731
+[08 10:21:35 483@model.py:SearchExecutor] acc:0.7812507152557373, test_acc: 0.7890618443489075
+[08 10:21:37 483@model.py:SearchExecutor] acc:0.8222662210464478, test_acc: 0.8046869039535522
+[08 10:21:38 483@model.py:SearchExecutor] acc:0.841797411441803, test_acc: 0.8515620231628418
+[08 10:21:40 483@model.py:SearchExecutor] acc:0.8593754768371582, test_acc: 0.8671870827674866
+[08 10:21:41 483@model.py:SearchExecutor] acc:0.8867191076278687, test_acc: 0.8671870827674866
+[08 10:21:43 483@model.py:SearchExecutor] acc:0.8945316076278687, test_acc: 0.9062497019767761
+[08 10:21:44 483@model.py:SearchExecutor] acc:0.9140627980232239, test_acc: 0.8984372019767761
+[08 10:21:46 483@model.py:SearchExecutor] acc:0.9355471134185791, test_acc: 0.9140622615814209
+[08 10:21:47 483@model.py:SearchExecutor] acc:0.9687501192092896, test_acc: 0.9609373807907104
+[08 10:21:49 483@model.py:SearchExecutor] acc:0.998046875, test_acc: 1.0
+[08 10:21:50 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 10:21:52 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 10:21:53 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 10:21:55 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 10:21:56 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 10:21:58 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 10:21:59 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 10:22:01 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 10:22:02 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 10:22:02 105@learn.py:AutoSchedule] learned words : ['rectangle', 'exists', 'circle', 'green', 'sprite', 'red', 'blue', 'triangle'] avg_acc:1.0 avg_loss:1.034945762512507e-05
+[08 10:22:02 98@learn.py:AutoSchedule] start to learn the words [], add corpus size 0
+[08 10:22:02 114@learn.py:AutoSchedule] unification structure check, eval run
+[08 10:22:02 117@learn.py:AutoSchedule] training until converges
+[08 10:22:04 483@model.py:SearchExecutor] acc:0.998046875, test_acc: 1.0
+[08 10:22:05 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 10:22:07 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 10:22:09 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 10:22:10 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 10:22:12 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 10:22:13 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 10:22:15 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 10:22:17 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 10:22:18 483@model.py:SearchExecutor] acc:1.0, test_acc: 1.0
+[08 10:22:18 105@learn.py:AutoSchedule] learned words : [] avg_acc:1.0 avg_loss:5.727351435780292e-06
+[08 10:22:18 109@learn.py:AutoSchedule] complete the learning of words ['rectangle', 'exists', 'circle', 'green', 'sprite', 'red', 'blue', 'triangle']
+[08 10:22:19 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[08 10:22:19 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[08 10:22:19 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[08 10:22:19 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain

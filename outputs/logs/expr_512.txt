@@ -1,0 +1,185 @@
+[08 10:23:32 98@learn.py:AutoSchedule] start to learn the words ['sprite', 'green', 'blue', 'triangle', 'red', 'exists', 'rectangle', 'circle'], add corpus size 512
+[08 10:23:32 114@learn.py:AutoSchedule] unification structure check, eval run
+[08 10:23:32 117@learn.py:AutoSchedule] training until converges
+[08 10:23:35 483@model.py:SearchExecutor] acc:0.5888678431510925, test_acc: 0.5390620827674866
+[08 10:23:38 483@model.py:SearchExecutor] acc:0.670898973941803, test_acc: 0.7968743443489075
+[08 10:23:41 483@model.py:SearchExecutor] acc:0.8183596730232239, test_acc: 0.835936963558197
+[08 10:23:44 483@model.py:SearchExecutor] acc:0.8447268009185791, test_acc: 0.8593745827674866
+[08 10:23:47 483@model.py:SearchExecutor] acc:0.9404297471046448, test_acc: 1.0
+[08 10:23:50 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:23:53 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:23:56 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:23:59 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:24:02 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:24:02 105@learn.py:AutoSchedule] learned words : ['sprite', 'green', 'blue', 'triangle', 'red', 'exists', 'rectangle', 'circle'] avg_acc:0.9999999403953552 avg_loss:3.9206981455208734e-05
+[08 10:24:02 98@learn.py:AutoSchedule] start to learn the words [], add corpus size 0
+[08 10:24:02 114@learn.py:AutoSchedule] unification structure check, eval run
+[08 10:24:02 117@learn.py:AutoSchedule] training until converges
+[08 10:24:05 483@model.py:SearchExecutor] acc:0.9990233778953552, test_acc: 1.0
+[08 10:24:08 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:24:10 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:24:13 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:24:16 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:24:19 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:24:22 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:24:25 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:24:28 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:24:31 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:24:31 105@learn.py:AutoSchedule] learned words : [] avg_acc:0.9999999403953552 avg_loss:5.700075234926771e-06
+[08 10:24:31 109@learn.py:AutoSchedule] complete the learning of words ['sprite', 'green', 'blue', 'triangle', 'red', 'exists', 'rectangle', 'circle']
+[08 10:24:31 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[08 10:24:31 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[08 10:24:31 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[08 10:24:31 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[08 10:25:46 98@learn.py:AutoSchedule] start to learn the words ['exists', 'circle', 'rectangle', 'sprite', 'red', 'triangle', 'green', 'blue'], add corpus size 512
+[08 10:25:46 114@learn.py:AutoSchedule] unification structure check, eval run
+[08 10:25:46 117@learn.py:AutoSchedule] training until converges
+[08 10:25:50 483@model.py:SearchExecutor] acc:0.6113287210464478, test_acc: 0.828124463558197
+[08 10:25:53 483@model.py:SearchExecutor] acc:0.8242189884185791, test_acc: 0.8515620231628418
+[08 10:25:56 483@model.py:SearchExecutor] acc:0.8759767413139343, test_acc: 0.8515620231628418
+[08 10:25:59 483@model.py:SearchExecutor] acc:0.8847658038139343, test_acc: 0.9218747615814209
+[08 10:26:02 483@model.py:SearchExecutor] acc:0.9121094942092896, test_acc: 0.9531248807907104
+[08 10:26:05 483@model.py:SearchExecutor] acc:0.9853515625, test_acc: 1.0
+[08 10:26:08 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:26:11 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:26:14 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:26:17 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:26:17 105@learn.py:AutoSchedule] learned words : ['exists', 'circle', 'rectangle', 'sprite', 'red', 'triangle', 'green', 'blue'] avg_acc:0.9999999403953552 avg_loss:0.00032904979889281094
+[08 10:26:17 98@learn.py:AutoSchedule] start to learn the words [], add corpus size 0
+[08 10:26:17 114@learn.py:AutoSchedule] unification structure check, eval run
+[08 10:26:17 117@learn.py:AutoSchedule] training until converges
+[08 10:26:21 483@model.py:SearchExecutor] acc:0.99609375, test_acc: 1.0
+[08 10:26:27 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:26:30 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:26:35 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:26:41 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:26:44 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:26:48 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:26:51 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:26:54 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:26:57 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:26:57 105@learn.py:AutoSchedule] learned words : [] avg_acc:0.9999999403953552 avg_loss:6.698411198158283e-06
+[08 10:26:58 109@learn.py:AutoSchedule] complete the learning of words ['exists', 'circle', 'rectangle', 'sprite', 'red', 'triangle', 'green', 'blue']
+[08 10:26:58 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[08 10:26:58 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[08 10:26:58 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[08 10:26:58 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[08 10:27:41 98@learn.py:AutoSchedule] start to learn the words ['blue', 'green', 'circle', 'exists', 'rectangle', 'red', 'sprite', 'triangle'], add corpus size 512
+[08 10:27:41 114@learn.py:AutoSchedule] unification structure check, eval run
+[08 10:27:41 117@learn.py:AutoSchedule] training until converges
+[08 10:27:45 483@model.py:SearchExecutor] acc:0.6376959085464478, test_acc: 0.6953117251396179
+[08 10:27:49 483@model.py:SearchExecutor] acc:0.7607425451278687, test_acc: 0.7656242251396179
+[08 10:27:52 483@model.py:SearchExecutor] acc:0.7734378576278687, test_acc: 0.7968743443489075
+[08 10:27:55 483@model.py:SearchExecutor] acc:0.8583986163139343, test_acc: 0.8671870827674866
+[08 10:27:59 483@model.py:SearchExecutor] acc:0.8466799259185791, test_acc: 0.8671870827674866
+[08 10:28:02 483@model.py:SearchExecutor] acc:0.8798829913139343, test_acc: 0.9140622615814209
+[08 10:28:05 483@model.py:SearchExecutor] acc:0.8994141817092896, test_acc: 0.9062497019767761
+[08 10:28:08 483@model.py:SearchExecutor] acc:0.9462891221046448, test_acc: 0.9687499403953552
+[08 10:28:12 483@model.py:SearchExecutor] acc:0.974609375, test_acc: 0.9687499403953552
+[08 10:28:15 483@model.py:SearchExecutor] acc:0.978515625, test_acc: 1.0
+[08 10:28:18 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:28:22 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:28:25 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:28:28 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:28:32 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:28:35 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:28:38 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:28:42 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:28:45 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:28:48 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:28:48 105@learn.py:AutoSchedule] learned words : ['blue', 'green', 'circle', 'exists', 'rectangle', 'red', 'sprite', 'triangle'] avg_acc:0.9999999403953552 avg_loss:5.718974989576964e-06
+[08 10:28:48 98@learn.py:AutoSchedule] start to learn the words [], add corpus size 0
+[08 10:28:48 114@learn.py:AutoSchedule] unification structure check, eval run
+[08 10:28:48 117@learn.py:AutoSchedule] training until converges
+[08 10:28:52 483@model.py:SearchExecutor] acc:0.9980468153953552, test_acc: 1.0
+[08 10:28:55 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:28:59 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:29:02 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:29:05 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:29:09 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:29:12 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:29:15 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:29:19 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:29:22 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:29:22 105@learn.py:AutoSchedule] learned words : [] avg_acc:0.9999999403953552 avg_loss:5.700078418158228e-06
+[08 10:29:22 109@learn.py:AutoSchedule] complete the learning of words ['blue', 'green', 'circle', 'exists', 'rectangle', 'red', 'sprite', 'triangle']
+[08 10:29:23 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[08 10:29:23 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[08 10:29:23 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[08 10:29:23 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[08 10:32:11 98@learn.py:AutoSchedule] start to learn the words ['exists', 'triangle', 'rectangle', 'green', 'red', 'sprite', 'circle', 'blue'], add corpus size 512
+[08 10:32:11 114@learn.py:AutoSchedule] unification structure check, eval run
+[08 10:32:11 117@learn.py:AutoSchedule] training until converges
+[08 10:32:15 483@model.py:SearchExecutor] acc:0.5673835277557373, test_acc: 0.6796867847442627
+[08 10:32:18 483@model.py:SearchExecutor] acc:0.7373051047325134, test_acc: 0.7421866655349731
+[08 10:32:21 483@model.py:SearchExecutor] acc:0.8193362355232239, test_acc: 0.8437495231628418
+[08 10:32:25 483@model.py:SearchExecutor] acc:0.9072266817092896, test_acc: 0.9140622615814209
+[08 10:32:28 483@model.py:SearchExecutor] acc:0.9814453125, test_acc: 0.9921875
+[08 10:32:31 483@model.py:SearchExecutor] acc:0.990234375, test_acc: 0.9921875
+[08 10:32:35 483@model.py:SearchExecutor] acc:0.9892578125, test_acc: 0.9921875
+[08 10:32:38 483@model.py:SearchExecutor] acc:0.9921875, test_acc: 0.9921875
+[08 10:32:41 483@model.py:SearchExecutor] acc:0.9921875, test_acc: 0.9921875
+[08 10:32:44 483@model.py:SearchExecutor] acc:0.9921875, test_acc: 0.9921875
+[08 10:32:48 483@model.py:SearchExecutor] acc:0.9912109375, test_acc: 0.9921875
+[08 10:32:51 483@model.py:SearchExecutor] acc:0.9921875, test_acc: 0.9921875
+[08 10:32:54 483@model.py:SearchExecutor] acc:0.9775390625, test_acc: 0.9609373807907104
+[08 10:32:58 483@model.py:SearchExecutor] acc:0.9873046875, test_acc: 0.9921875
+[08 10:33:01 483@model.py:SearchExecutor] acc:0.9873046875, test_acc: 0.9453123211860657
+[08 10:33:04 483@model.py:SearchExecutor] acc:0.9833984375, test_acc: 1.0
+[08 10:33:08 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:33:11 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:33:15 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:33:18 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:33:18 105@learn.py:AutoSchedule] learned words : ['exists', 'triangle', 'rectangle', 'green', 'red', 'sprite', 'circle', 'blue'] avg_acc:0.9999999403953552 avg_loss:0.00018893659580498934
+[08 10:33:18 98@learn.py:AutoSchedule] start to learn the words [], add corpus size 0
+[08 10:33:18 114@learn.py:AutoSchedule] unification structure check, eval run
+[08 10:33:18 117@learn.py:AutoSchedule] training until converges
+[08 10:33:21 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:33:25 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:33:28 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:33:32 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:33:35 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:33:39 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:33:42 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:33:45 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:33:48 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:33:51 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:33:51 105@learn.py:AutoSchedule] learned words : [] avg_acc:0.9999999403953552 avg_loss:5.671964117937023e-06
+[08 10:33:51 109@learn.py:AutoSchedule] complete the learning of words ['exists', 'triangle', 'rectangle', 'green', 'red', 'sprite', 'circle', 'blue']
+[08 10:33:52 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[08 10:33:52 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[08 10:33:52 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[08 10:33:52 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[08 10:34:05 98@learn.py:AutoSchedule] start to learn the words ['exists', 'red', 'blue', 'triangle', 'green', 'sprite', 'circle', 'rectangle'], add corpus size 512
+[08 10:34:05 114@learn.py:AutoSchedule] unification structure check, eval run
+[08 10:34:05 117@learn.py:AutoSchedule] training until converges
+[08 10:34:08 483@model.py:SearchExecutor] acc:0.647461473941803, test_acc: 0.7656242251396179
+[08 10:34:11 483@model.py:SearchExecutor] acc:0.8603517413139343, test_acc: 0.8828121423721313
+[08 10:34:16 483@model.py:SearchExecutor] acc:0.9736328125, test_acc: 0.9531248807907104
+[08 10:34:19 483@model.py:SearchExecutor] acc:0.9443359971046448, test_acc: 1.0
+[08 10:34:22 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:34:26 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:34:29 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:34:32 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:34:35 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:34:38 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:34:38 105@learn.py:AutoSchedule] learned words : ['exists', 'red', 'blue', 'triangle', 'green', 'sprite', 'circle', 'rectangle'] avg_acc:0.9999999403953552 avg_loss:7.94440638856031e-05
+[08 10:34:38 98@learn.py:AutoSchedule] start to learn the words [], add corpus size 0
+[08 10:34:38 114@learn.py:AutoSchedule] unification structure check, eval run
+[08 10:34:38 117@learn.py:AutoSchedule] training until converges
+[08 10:34:41 483@model.py:SearchExecutor] acc:0.9970702528953552, test_acc: 1.0
+[08 10:34:44 483@model.py:SearchExecutor] acc:0.99609375, test_acc: 1.0
+[08 10:34:47 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:34:51 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:34:54 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:34:57 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:35:00 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:35:03 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:35:06 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:35:09 483@model.py:SearchExecutor] acc:0.9999999403953552, test_acc: 1.0
+[08 10:35:09 105@learn.py:AutoSchedule] learned words : [] avg_acc:0.9999999403953552 avg_loss:5.952929768682225e-06
+[08 10:35:10 109@learn.py:AutoSchedule] complete the learning of words ['exists', 'red', 'blue', 'triangle', 'green', 'sprite', 'circle', 'rectangle']
+[08 10:35:10 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[08 10:35:10 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[08 10:35:10 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[08 10:35:10 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain

@@ -3,7 +3,7 @@ from helchriss.dsl.dsl_values import Value
 from typing import List, Mapping, Tuple, Any, Union, Dict
 from dataclasses import dataclass
 import torch
-import torch.nn as nn
+import torch.nn as nn 
 import networkx as nx
 import os
 

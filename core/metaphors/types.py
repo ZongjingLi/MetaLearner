@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 from helchriss.dsl.dsl_types import VectorType, ListType, EmbeddingType, TupleType, FixedListType, ArrowType, BatchedListType
 import copy
 
-__all__ = ["PatternVar","match_pattern", "CasterRegistry", "type_dim", "fill_hole", "infer_caster"]
+__all__ = ["PatternVar","match_pattern", "TransformRule", "RuleBasedTransform", "get_transform_rules"]
 
 """Match the Pattern for Tree Regular Language"""
 class PatternVar(TypeBase):
@@ -19,88 +19,11 @@ class PatternVar(TypeBase):
 
     def __eq__(self, other: TypeBase) -> bool:  return True 
 
-def match_pattern(
-    target_type: TypeBase,
-    pattern: TypeBase,
-    bindings: Optional[Dict[str, TypeBase]] = None
-) -> Optional[Dict[str, TypeBase]]:
-    """ if the pattern matches the
-    Args:
-        target_type: the type to match
-        pattern: pattern to match
-        bindings: the known pattern to match
-    
-    Returns:
-        variable binding that maps %var to the actual type or value
-    """
-    bindings = bindings or {}
-
-    # Case 1：pattern is single variable -> binding
-    if isinstance(pattern, PatternVar):
-        var_name = pattern.var_name
-        if var_name in bindings: ### check if the variable binding is consistent
-            if bindings[var_name] != target_type: return None
-        else: bindings[var_name] = target_type
-        return bindings
-
-    # Case 2：target type inconsistent with the  -> failed to match
-    if type(target_type) != type(pattern): return None
-
-    try: # compare the type name
-        if not (hasattr(target_type, 'element_type') or hasattr(target_type, 'element_types')):
-            return bindings if target_type == pattern else None
-    except: return None
-
-    # nested type -> recursive match the subtype
-    # 4.1 ListType（uniform sequence, single element type）
-    if isinstance(target_type, (ListType, FixedListType, VectorType, BatchedListType)):
-        # check the subtyping
-        sub_bindings = match_pattern(
-            target_type.element_type,
-            pattern.element_type,
-            copy.deepcopy(bindings)
-        )
-        if sub_bindings is None: return None
-        if isinstance(target_type, VectorType):
-            if target_type.dim != pattern.dim and not isinstance(pattern.dim, PatternVar):
-                return None
-        if isinstance(target_type, FixedListType):
-            if target_type.typename != pattern.typename:  # 包含length信息
-                return None
-        return sub_bindings
-
-    # 4.2 TupleType with multiple elemnt types
-    if isinstance(target_type, TupleType):
-        if len(target_type.element_types) != len(pattern.element_types):
-            return None
-        # recusrive match each element type
-        new_bindings = copy.deepcopy(bindings)
-        for t_elem, p_elem in zip(target_type.element_types, pattern.element_types):
-            elem_bindings = match_pattern(t_elem, p_elem, new_bindings)
-            if elem_bindings is None:
-                return None
-            new_bindings.update(elem_bindings)
-        return new_bindings
-
-    # 4.3 EmbeddingType : space_name and dim
-    if isinstance(target_type, EmbeddingType):
-        if (target_type.space_name != pattern.space_name or 
-            target_type.dim != pattern.dim):
-            return None
-        return bindings
-
-    # 4.4 ArrowType : match the firs second
-    if isinstance(target_type, ArrowType):
-        first_bindings = match_pattern(target_type.first, pattern.first, copy.deepcopy(bindings))
-        if first_bindings is None:
-            return None
-        second_bindings = match_pattern(target_type.second, pattern.second, first_bindings)
-        return second_bindings
-
-    return bindings if target_type == pattern else None
-
 class TransformRule:
-    def __init__(self, source_pattern: TypeBase, transform_func: Callable[[Dict[str, TypeBase]], TypeBase], target_pattern = None):
+    def __init__(self, 
+                 source_pattern: TypeBase,
+                 transform_func: Callable[[Dict[str, TypeBase]],TypeBase],
+                 target_pattern: TypeBase = None):
         self.source_pattern = source_pattern
         self.target_pattern = target_pattern
         self.transform_func = transform_func
@@ -109,9 +32,152 @@ class TransformRule:
         source_vars = match_pattern(source_type, self.source_pattern)
         if source_vars is None : return None
         if self.target_pattern is not None and not match_pattern(target_type, self.target_pattern): return None
-        return self.transform_func(source_vars)
+        return self.fill_in_func(source_vars)
+
+class FillerRule:
+    def __init__(self,
+                 source_pattern : TypeBase,
+                 target_pattern : TypeBase,
+                 filler):
+        self.source_pattern = source_pattern
+        self.target_pattern = target_pattern
+        self.filler = filler
+        assert self.filler is not None, f"filler {source_pattern} -> {target_pattern} is None"
+    
+    def applicable(self, source_type : TypeBase, target_type):
+        source_vars = match_pattern(source_type, self.source_pattern)
+        #print(source_vars, source_type, self.source_pattern)
+        target_vars = match_pattern(target_type, self.target_pattern)
+        #print(target_vars, target_type, self.target_pattern)
+        return source_vars is not None and target_vars is not None
+    
+    def fill_in(self, source_type : TypeBase, target_type : TypeBase):
+        source_vars = match_pattern(source_type, self.source_pattern)
+        #print(source_vars, source_type, self.source_pattern)
+        target_vars = match_pattern(target_type, self.target_pattern)
+        #print(target_vars, target_type, self.target_pattern)
+        
+        return self.filler({**source_vars, ** target_vars})
+
+import copy
+from typing import Optional, Dict, Type
 
 
+def match_pattern(
+    target_type: TypeBase,
+    pattern: TypeBase,
+    bindings: Optional[Dict[str, TypeBase]] = None
+) -> Optional[Dict[str, TypeBase]]:
+    """Match target type against pattern and return consistent variable bindings."""
+    bindings = bindings or {}
+
+    # Case 1: Pattern is a variable -> bind and check consistency
+    if isinstance(pattern, PatternVar):
+        var_name = pattern.var_name
+        if var_name in bindings:
+            if bindings[var_name] != target_type:
+                return None
+        else:
+            bindings[var_name] = target_type
+        return bindings
+
+    # Case 2: List/FixedList/Vector types (uniform sequence types)
+    target_is_seq = isinstance(target_type, (ListType, FixedListType, VectorType))
+    pattern_is_seq = isinstance(pattern, (ListType, FixedListType, VectorType))
+    
+    if target_is_seq and pattern_is_seq:
+        # 1. Validate sequence type compatibility (e.g., List ↔ FixedList is allowed only if intentional)
+        # Strict check: same sequence subclass (adjust if you want loose matching)
+        if type(target_type) != type(pattern):
+            return None
+
+        # 2. Match element type recursively
+        elem_bindings = match_pattern(
+            target_type.element_type,
+            pattern.element_type,
+            copy.deepcopy(bindings)
+        )
+        #print("Elem:", elem_bindings)
+        if elem_bindings is None:
+            return None
+
+        # 3. Handle FixedList-specific length check (supports PatternVar)
+
+        if isinstance(target_type, ListType):
+
+            length_bindings = match_pattern(
+                target_type.element_type,
+                pattern.element_type,
+                copy.deepcopy(elem_bindings)
+            )
+            return length_bindings
+            #elem_bindings = length_bindings
+            #print("LEN",elem_bindings)
+
+
+        # 4. Handle Vector-specific dim check (supports PatternVar)
+        if isinstance(target_type, VectorType):
+            dim_bindings = match_pattern(
+                target_type.dim,
+                pattern.dim,
+                copy.deepcopy(elem_bindings)
+            )
+            if dim_bindings is None:
+                return None
+            elem_bindings = dim_bindings
+
+
+        return elem_bindings
+
+    # Case 3: TupleType (multiple element types)
+    if isinstance(target_type, TupleType) and isinstance(pattern, TupleType):
+        if len(target_type.element_types) != len(pattern.element_types):
+            return None
+        
+        new_bindings = copy.deepcopy(bindings)
+        #print("start:", target_type.element_types, pattern.element_types)
+        for t_elem, p_elem in zip(target_type.element_types, pattern.element_types):
+            #print("enter tuple",t_elem, p_elem, new_bindings)
+
+            elem_bindings = match_pattern(t_elem, p_elem, new_bindings)
+            #print("tuple pair:",t_elem, p_elem)
+            if elem_bindings is None:
+                #print("EXIT")
+                return None
+            new_bindings.update(elem_bindings)
+            #print('tuple:',elem_bindings)
+        return new_bindings
+
+    # Case 4: EmbeddingType (fixed to support PatternVar)
+    if isinstance(target_type, EmbeddingType) and isinstance(pattern, EmbeddingType):
+        # Match space_name (supports PatternVar)
+        space_bindings = match_pattern(
+            target_type.space_name,
+            pattern.space_name,
+            copy.deepcopy(bindings)
+        )
+        if space_bindings is None:
+            return None
+        
+        # Match dim (supports PatternVar)
+        dim_bindings = match_pattern(
+            target_type.dim,
+            pattern.dim,
+            copy.deepcopy(space_bindings)
+        )
+
+        return dim_bindings if dim_bindings is not None else None
+
+    # Case 5: ArrowType (function/arrow types)
+    if isinstance(target_type, ArrowType) and isinstance(pattern, ArrowType):
+        first_bindings = match_pattern(target_type.first, pattern.first, copy.deepcopy(bindings))
+        if first_bindings is None:
+            return None
+        second_bindings = match_pattern(target_type.second, pattern.second, first_bindings)
+        return second_bindings
+
+    # Case 6: Exact match for primitive types
+    return bindings if target_type == pattern else None
 def find_transform_path(
     initial_type: TypeBase, 
     target_type: TypeBase,
@@ -140,96 +206,16 @@ def find_transform_path(
         type_key = current_type.typename
         if type_key in visited: continue
         visited.add(type_key)
-
+        
         for rule in rules:
-            bindings = match_pattern(current_type, rule.pattern)
+            bindings = match_pattern(current_type, rule.source_pattern)
             if bindings is None: continue
-
-            try: new_type = rule.transform_func(bindings)
-            except Exception: continue
-
+            new_type = rule.transform_func(bindings)
             new_path = path + [(rule, bindings)]
             queue.append((new_type, new_path, depth + 1))
     return None
 
-
-class RuleBasedTransformInferer:
-    def __init__(self):
-        self.rules = [] # tuples of (TransformRule, priority)
-        self._register_default_rules()
-    
-    def _register_default_rules(self):
-        pass
-    
-    def register_rule(self, rule: TransformRule, priority = 0.0):
-        self.rules.append([rule, priority])
-        self.rules.sort(key=lambda r: r[1], reverse=True)
-    
-    def infer_caster(self, input_types: List[TypeBase], output_types: List[TypeBase]) -> nn.Module:
-        print("input types:")
-        [print(a) for a in input_types]
-        print("output types:")
-        [print(a) for a in output_types]
-        for rule in self.rules:
-            if rule.can_apply(input_types, output_types):
-                return rule.create_caster(input_types, output_types)
-        
-        return fallback_infer_caster(input_types, output_types)
-
-def type_dim(tp : TypeBase) -> int:
-    if isinstance(tp, TypeBase) and tp.typename in ["int", "float", "boolean", "bool"]: return 1
-    elif isinstance(tp, VectorType): return int(tp.dim)
-    elif isinstance(tp, EmbeddingType): return int(tp.dim)
-    elif isinstance(tp, ListType): type_dim(tp.element_type)
-    elif isinstance(tp, TupleType):return sum(type_dim(elem) for elem in tp.element_types)
-    elif isinstance(tp, FixedListType):
-        length = tp.length if isinstance(tp.length, int) else 10  # 默认长度
-        return length * type_dim(tp.element_type)
-    raise NotImplementedError(f"dim of type {tp} cannot be inferred")
-
-
-def fill_hole(arg_types : List[TypeBase], out_type : TypeBase) -> nn.Module:
-    complexity = analyze_type_complexity(arg_types + [out_type])
-    hidden_size = min(64 * (complexity // 2 + 1), 512)
-    num_layers = min(complexity // 3 + 2, 5)
-    
-    in_dim = sum([type_dim(tp) for tp in arg_types])
-    out_dim = type_dim(out_type)
-
-    layers = []
-    layers.append(nn.Linear(in_dim, hidden_size))
-    layers.append(nn.ReLU())
-    
-    for _ in range(num_layers - 2):
-        layers.append(nn.Linear(hidden_size, hidden_size))
-        layers.append(nn.ReLU())
-    
-    layers.append(nn.Linear(hidden_size, out_dim))
-    
-    net = nn.Sequential(*layers)
-    filler = MLPFiller(arg_types, out_type, net)
-    return filler
-
-def analyze_type_complexity(types: List[TypeBase]) -> int:
-    complexity = 0
-    
-    for tp in types:
-        if isinstance(tp, ListType) or isinstance(tp, TupleType):
-            complexity += 2
-            try:
-                complexity += analyze_type_complexity([tp.element_type])
-            except: complexity + 1
-            try:
-                complexity += analyze_type_complexity(tp.element_types)
-            except: complexity += 1
-        elif isinstance(tp, VectorType) or isinstance(tp, EmbeddingType):
-            complexity += 1
-        else:
-            complexity += 0
-    
-    return complexity
-
-class MLPCaster(nn.Module):
+class MLPArgumentCaster(nn.Module):
     def __init__(self, input_dims : List[int], output_dims : List[int]):
         super().__init__()
         self.input_dims = input_dims
@@ -257,16 +243,173 @@ class MLPCaster(nn.Module):
         cat_args = torch.cat(flat_args, dim=0)
         output = self.net(cat_args)
         outputs = [t.reshape([d]) for t, d in zip(torch.split(output, self.output_dims), self.output_dims)]
-
         logit_output = self.logit_net(cat_args)
-
         args = [o for i,o in enumerate(outputs)]
-
         logits = torch.sum(logit_output)
-
         return args, logits
 
-def infer_mlp_caster(input_type : List[TypeBase], output_types : List[TypeBase]) -> nn.Module:
-    input_dims = [type_dim(tp) for tp in input_type]
-    output_dims = [type_dim(tp) for tp in output_types]
-    return MLPCaster(input_dims, output_dims)
+def type_dim(tp : TypeBase) -> int:
+    if isinstance(tp, TypeBase) and tp.typename in ["int", "float", "boolean", "bool"]: return 1
+    elif isinstance(tp, VectorType): return int(tp.dim)
+    elif isinstance(tp, EmbeddingType): return int(tp.dim)
+    elif isinstance(tp, ListType): type_dim(tp.element_type)
+    elif isinstance(tp, TupleType):return sum(type_dim(elem) for elem in tp.element_types)
+    elif isinstance(tp, FixedListType):
+        length = tp.length if isinstance(tp.length, int) else 10  # 默认长度
+        return length * type_dim(tp.element_type)
+    raise NotImplementedError(f"dim of type {tp} cannot be inferred")
+
+
+
+from helchriss.dsl.dsl_types import FLOAT, ListType, VectorType, EmbeddingType, TypeBase
+
+class RuleBasedTransform:
+
+    def __init__(self, transform_rules : List[TransformRule], filler_rules : List[FillerRule]):
+        self.transform_rules = transform_rules
+        self.filler_rules = filler_rules
+        self.k = 3
+    
+    def add_rule(self, rule : TransformRule): self.transform_rules.append(rule)
+
+
+    """infer the possible set of fillers from signature """
+    def infer_fn_prototypes(self,input_type : List[TypeBase], output_type : TypeBase):
+        #print( TupleType(input_type), output_type)
+        
+        #paths = find_transform_path(
+        #    TupleType(input_type),
+        #    output_type, rules=self.transform_rules,
+        #    max_depth=self.k)
+        fillers = []
+        for fill_rule in self.filler_rules:
+            #print(TupleType(input_type), output_type)
+            if fill_rule.applicable(TupleType(input_type), output_type):
+
+                fillers.append( fill_rule.fill_in(TupleType(input_type), output_type) )
+        assert fillers, f"not found for {input_type} to {output_type}"
+        return fillers
+        #
+    
+
+    """infer argument transformation using the predefined transformation rules"""
+    def infer_args_caster(input_type : List[TypeBase], output_types : List[TypeBase]) -> nn.Module:
+        input_dims = [type_dim(tp) for tp in input_type]
+        output_dims = [type_dim(tp) for tp in output_types]
+        return MLPArgumentCaster(input_dims, output_dims)
+
+import torch
+import torch.nn as nn
+from typing import List, Callable
+
+def obj_list_to_float_filler(binds: dict) -> Callable[[], nn.Module]:
+    """
+    Factory function returning a custom nn.Module class that:
+    - Takes two list inputs (list of [1+n] and [1+m] dim tensors)
+    - Computes expectation (mean) over each list
+    - Combines to n+m dim tensor, then projects to 1 dim via Linear
+    
+    Args:
+        binds: Dictionary with "n" and "m" keys (defines tensor dimensions)
+    
+    Returns:
+        Callable that instantiates the custom nn.Module
+    """
+    n = int(binds["n"])
+    m = int(binds["m"])
+    
+    class FloatFiller(nn.Module):
+        def __init__(self):
+            super().__init__()
+            # Linear layer: n+m input dim → 1 output dim
+            self.linear = nn.Linear(n + m, 1)
+
+        def forward(self, list1: List[torch.Tensor], list2: List[torch.Tensor], **kwargs) -> torch.Tensor:
+            # Step 1: Compute expectation (mean) over each list (collapse list to single tensor)
+            # list1: [B1, 1+n] → mean over list → [1+n]; list2: [B2, 1+m] → mean → [1+m]
+            print(list1.shape)
+            exp1 = list1.mean(dim=0)  # Expectation over list1
+            exp2 = list2.mean(dim=0)  # Expectation over list2
+            
+            # Step 2: Strip logit dimension (first dim) → [n] and [m]
+            feat1 = exp1[1:]  # Drop logit (1st dim) → shape [n]
+            feat2 = exp2[1:]  # Drop logit (1st dim) → shape [m]
+            
+            # Step 3: Concatenate to n+m dim tensor
+            combined = torch.cat([feat1, feat2], dim=0)  # Shape [n+m]
+            
+            # Step 4: Project to 1 dim via linear layer
+            output = self.linear(combined)  # Shape [1]
+            return Value(FLOAT,output)
+
+    return FloatFiller()
+
+def get_transform_rules():
+    object_dim = 128
+    def obj_tuple_to_embedding_tp(binding):
+
+        return EmbeddingType("object", binding["n1"] + binding["n2"])
+
+    rule_obj_tuple_to_embedding_transform = TransformRule(
+        source_pattern = TupleType([
+            ListType(EmbeddingType("object", PatternVar("n1"))),
+            ListType(EmbeddingType("object", PatternVar("n2")))
+        ]
+        ),
+        transform_func =obj_tuple_to_embedding_tp,
+    )
+
+
+
+
+    transform_rules = [
+        rule_obj_tuple_to_embedding_transform
+    ]
+
+    def emb2emb_filler(binds):
+        return nn.Linear(binds["n"], binds["m"])
+    emb2emb_fill_rule = FillerRule(
+        EmbeddingType(PatternVar("K"), PatternVar("n")),
+        EmbeddingType(PatternVar("C"), PatternVar("m")),
+        emb2emb_filler
+    )
+
+    def emb2vector_filler(binds):
+        return nn.Linear(binds["n"], binds["m"])
+    emb2vector_fill_rule = FillerRule(
+        EmbeddingType(PatternVar("K"), PatternVar("n")),
+        VectorType(PatternVar("C"), PatternVar("m")),
+        emb2vector_filler
+    )
+
+    def obj_list_to_emb_filler(binds):
+
+        return nn.Linear(int(binds["n1"]) + int(binds["n2"]), int(binds["m"]))
+    obj_list_to_emb_fill_rule = FillerRule(
+        TupleType([
+            ListType(EmbeddingType("object", PatternVar("n1"))),
+            ListType(EmbeddingType("object", PatternVar("n2")))
+        ]
+        ),
+        EmbeddingType(PatternVar("name"), PatternVar("m")),
+        obj_list_to_emb_filler
+    )
+
+
+    obj_list_to_float_fill_rule = FillerRule(
+        TupleType([
+            ListType(EmbeddingType("object", PatternVar("n"))),
+            ListType(EmbeddingType("object", PatternVar("m")))
+        ]
+        ),
+       FLOAT,
+        obj_list_to_float_filler
+    )
+
+    filler_rules = [
+        emb2emb_fill_rule,
+        emb2vector_fill_rule,
+        obj_list_to_emb_fill_rule,
+        obj_list_to_float_fill_rule
+    ]
+    return transform_rules, filler_rules

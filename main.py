@@ -14,7 +14,6 @@ import numpy as np
 from tqdm import tqdm
 from helchriss.logger import get_logger, set_output_file
 
-
 main_logger = get_logger("Main")
 set_output_file("outputs/logs/main_logs.txt")
 

@@ -20,6 +20,7 @@ from helchriss.dsl.dsl_values import Value, ProbValue
 from helchriss.dsl.dsl_types import TypeBase, ListType, TupleType
 logger = get_logger(__file__)
 
+
 class FunctionExecutor(nn.Module):
     def __init__(self, domain : 'Domain' = None, concept_dim = 128):
         super().__init__()
@@ -42,7 +43,7 @@ class FunctionExecutor(nn.Module):
                 self.function_output_type[fn_name] = function.return_type
                 self.function_input_types[fn_name] = [arg[1] for arg in function.typed_args]
                 if hasattr(self, fn_name):
-                    self.register_function(fn_name, self.unwrap_values(getattr(self, fn_name)))
+                    self.register_extended_function(fn_name, self.unwrap_values(getattr(self, fn_name)))
                     logger.info('Function {} automatically registered.'.format(fn_name))
         """
         if domain is not None:
@@ -72,7 +73,7 @@ class FunctionExecutor(nn.Module):
     @property
     def types(self) : return self.domain.types
     
-    def register_function(self, name: str, func: Callable):
+    def register_extended_function(self, name: str, func: Callable):
         """Register an implementation for a function.
 
         Args:
@@ -146,9 +147,18 @@ class FunctionExecutor(nn.Module):
         """
 
         if isinstance(expr, FunctionApplicationExpression):
+            print(expr.func.name)
+            print(self._function_registry)
             func = self._function_registry[expr.func.name]
+
+            # wrap this as the lambda function
+            #f"lambda {', '.join(params)}: {body}"
+            print(func)
+            
+
             args = [self._evaluate(arg) for arg in expr.args]
-            return func(*args)
+            lambda_wrapped_function = eval(f"lambda {', '.join(args)}: {func}")
+            return lambda_wrapped_function
         elif isinstance(expr, ConstantExpression):
             assert isinstance(expr.const, Value)
             return expr.const
@@ -187,7 +197,7 @@ class FunctionExecutor(nn.Module):
         Returns:
             The decorated function or a function decorator.
         """
-        FunctionType = CentralExecutor # TODO: remove this
+        FunctionType = FunctionExecutor # TODO: remove this
 
         if isinstance(func_or_ftype, FunctionType):
             ftype = func_or_ftype
@@ -235,4 +245,9 @@ class TensorStateExecutor(FunctionExecutor):
 class CentralExecutor(FunctionExecutor):
     def __init__(self, domain, concept_dim = 128):
         super().__init__(domain, concept_dim = concept_dim)
+        self.refs = {"executor_parent": None}
+    
+    def parent_executor(self): return self.refs["executor_parent"]
 
+    def has_parent_executor(self):
+        return self.refs["executor_parent"] is not None and isinstance(self.refs["executor_parent"], CentralExecutor)

@@ -1,3 +1,9 @@
+'''
+ # @Author: Yiqi Sun
+ # @Create Time: 2025-11-30 23:47:48
+ # @Modified by: Yiqi Sun
+ # @Modified time: 2025-12-10 13:28:32
+'''
 import torch
 import torch.nn as nn
 from helchriss.knowledge.executor import CentralExecutor
@@ -7,39 +13,32 @@ from helchriss.utils import stprint
 objects_domain_str = """
 (domain :: Objects)
 (def type  ;; define type alias using a - b, meaning a is an alias to type b
-    object - Tuple[boolean, Embedding[object, 64]]
-    shape  - Tuple[boolean, Embedding[shape, 32]]
-    color - Embedding[color, 3]
+    Object -  Embedding[object, 64]
+    Shape  - Embedding[shape, 32]
+    Color - Embedding[color, 3]
 )
 (def function
     ;; by pass is defaulty used to avoid the actual definion of the functions
-    exists (x : List[object]) : boolean := by pass
-    forall (x : List[object]) : boolean := by pass
-    iota   (x : List[object]) : List[object] := by pass
+    scene : List[Tuple[boolean,Object]] := by pass
 
-    negate (x : boolean) : boolean := by pass
-    logic_and (x y : boolean) : boolean := by pass
-    logic_or  (x y : boolean) : boolean := by pass
+    color (x : Object) : Color := by pass
+    shape (x : Object) : Shape := by pass
 
-    assert {var : Type} (x : var) (y : var -> boolean) : boolean := by pass
+    red        (x : Object) : boolean := by pass
+    green      (x : Object) : boolean := by pass
+    blue       (x : Object) : boolean := by pass
     
-    count (x : List[object]) : integer := by pass
-    scene : List[object] := by pass
+    circle     (x : Object) : boolean := by pass
+    rectangle  (x : Object) : boolean := by pass
+    triangle   (x : Object) : boolean := by pass
 
-    red      (x : List[object]) : List[object] := by pass
-    green    (x : List[object]) : List[object] := by pass
-    blue     (x : List[object]) : List[object] := by pass
-    
-    circle    (x : List[Object]) : List[Object] := by pass
-    rectangle  (x : List[Object]) : List[Object] := by pass
-    triangle  (x : List[Object]) : List[Object] := by pass
-
-    left  (x : List[Object]) (y : List[Object]) : List[Object] := by pass
-    right (x : List[Object]) (y : List[Object]) : List[Object] := by pass
+    left  (x : Object) (y : Object) : boolean := by pass
+    right (x : Object) (y : Object) : boolean := by pass
 )
 """
 
 def stable_softmax(logits, dim=-1, eps=1e-6):
+    return torch.softmax(logits, dim = dim)
     logits = logits - torch.max(logits, dim=dim, keepdim=True)[0]
     exp_logits = torch.exp(logits)
     probs = exp_logits / (torch.sum(exp_logits, dim=dim, keepdim=True) + eps)
@@ -57,7 +56,9 @@ class CNNObjEncoder(nn.Module):
             nn.MaxPool2d(2, 2),               # pool2: 32x5x5
         )
         self.fc = nn.Sequential(
-            nn.Linear(32 * 5 * 5, output_dim),
+            nn.Linear(32 * 5 * 5, 64),
+            nn.ReLU(),
+            nn.Linear(64, output_dim),
             nn.ReLU(),
             )
         self.position_embedding = nn.Embedding(9, spatial_dim)
@@ -75,10 +76,13 @@ class CNNObjEncoder(nn.Module):
         #img = img.reshape((b, 3, 1, 32, 3, 32)).permute((0, 2, 4, 1, 3, 5)).reshape((b * 3, 3, 32, 32))
         img = self.lenet(img)
 
+
         img = img.reshape((b, -1))
         img = self.fc(img)
 
         positions = torch.arange(b, device=img.device)
+        #print(positions)
+
         pos_embed = self.position_embedding(positions)
         combined = torch.cat([img, pos_embed], dim=1)
         return combined
@@ -109,7 +113,7 @@ class ObjectsExecutor(CentralExecutor):
     def __init__(self, domain):
         super().__init__(domain)
         feature_dim = 64
-        spatial_dim = 32
+        spatial_dim = 0
         obj_dim = feature_dim + spatial_dim
         self.red_mlp    = FCBlock(obj_dim,1) #nn.Linear(obj_dim, 1)
         self.green_mlp  = FCBlock(obj_dim,1) #nn.Linear(obj_dim, 1)
@@ -122,106 +126,70 @@ class ObjectsExecutor(CentralExecutor):
         self.left_mlp  = FCBlock(obj_dim + obj_dim, 1)
         self.right_mlp = FCBlock(obj_dim + obj_dim, 1)
 
-        self.object_encoder = CNNObjEncoder(output_dim = feature_dim, spatial_dim = spatial_dim)#MLPObjEncoder(output_dim = obj_dim)#
+        self.object_encoder = CNNObjEncoder(output_dim = feature_dim, spatial_dim = spatial_dim)
+        #self.object_encoder = MLPObjEncoder(output_dim = obj_dim)#
         self.device = "cpu"#mps" if torch.backends.mps.is_available() else "cuda" if torch.cuda.is_available() else "cpu"
 
-    def scene(self):
+    def scene(self, **kwargs):
         device = self.device
-        if "image" not in self.grounding: self._grounding = {"image":torch.zeros([3,32,32 * 3])}
+
+        if "image" not in self.grounding:
+            self._grounding = {"image":torch.zeros([3,32,32 * 3])}
+            print("warning: no image provided")
         images = self.grounding["image"]
         sub_images = torch.chunk(images, 3, dim=2)
-        encoded_vectors = []
-    
-        for img in sub_images:
 
-            flat_img = img[None,...]#img.reshape([1,-1]) #
+        if 0:
+            import matplotlib.pyplot as plt
+            for i in range(len(sub_images)):
+                plt.subplot(1,3,i+1)
+                plt.imshow(sub_images[i].permute(1,2,0))
+            plt.show()
 
-            encoded = self.object_encoder(flat_img)
-            encoded_vectors.append(encoded)
-        result = torch.cat(encoded_vectors, dim=0)
+        result = self.object_encoder(torch.stack(sub_images))
+
         result = torch.cat([
             torch.ones([3, 1], device = device) * 13,
             result
         ], dim = 1)
+        
         return result
 
-    def exists(self, objects): return torch.max(objects[: ,0])
-
-    def forall(self, objects): return torch.min(objects[:, 0])
-    
-    def iota(self, objects): return torch.cat([
-        torch.logit(torch.softmax(objects[:, 0], dim = 0).reshape([-1,1]), eps = 1e-6),
-          objects[:,1:]
-    ], dim = -1)
-
-    def negate(self, logit): return -logit
-
-    def logic_and(self, logit1, logit2): return torch.min(logit1, logit2)
-
-    def logic_or(self, logit1, logit2): return torch.max(logit1, logit2)
-
-    def count(self, objects): return torch.sum(torch.sigmoid(objects[:,0]))
-
     def color_logits(self, objects):
-        red_logits = self.red_mlp(objects[:,1:])
-        green_logits = self.green_mlp(objects[:,1:])
-        blue_logits = self.blue_mlp(objects[:,1:])
+        red_logits     = self.red_mlp(objects)
+        green_logits   = self.green_mlp(objects)
+        blue_logits    = self.blue_mlp(objects)
         color_logits = torch.cat([red_logits, green_logits, blue_logits], dim = -1)
-        
         #color_logits = torch.logit(stable_softmax(color_logits, dim = 1), eps = 1e-6)
-
-        #print("red logits:",    color_logits[:,0])
-        #print("greeen logits:", color_logits[:,1])
-        #print("blue logits:",   color_logits[:,2])
-        
         return color_logits
 
     def red(self, objects):        
-        red_logits = self.color_logits(objects)[:,0]
-        return torch.cat([torch.min(red_logits, objects[:,0]).reshape([-1,1]),objects[:,1:],], dim = -1)
+        return self.color_logits(objects)[:,0]
 
     def green(self, objects):
-        green_logits = self.color_logits(objects)[:,1]
-
-        return torch.cat([torch.min(green_logits, objects[:,0]).reshape([-1,1]),objects[:,1:],], dim = -1)
+        return self.color_logits(objects)[:,1]
 
     def blue(self, objects):
-        blue_logits = self.color_logits(objects)[:,2]
-        return torch.cat([torch.min(blue_logits, objects[:,0]).reshape([-1,1]),objects[:,1:],], dim = -1)
-    
+        return self.color_logits(objects)[:,2]
+
     def shape_logits(self, objects):
-        circle_logits = self.circle_mlp(objects[:,1:])
-        rectangle_logits = self.rectangle_mlp(objects[:,1:])
-        triangle = self.triangle_mlp(objects[:,1:])
+        circle_logits    = self.circle_mlp(objects)
+        rectangle_logits = self.rectangle_mlp(objects)
+        triangle         = self.triangle_mlp(objects)
         
         shape_logits = torch.cat([circle_logits, rectangle_logits, triangle], dim = 1)
-        shape_logits = torch.logit(stable_softmax(shape_logits, dim = 1), eps = 1e-6)
-        #print("circle logits: ", shape_logits[:,0])
-        #print("rectangle logits: ", shape_logits[:,1])
-        #print("triangle logits: ", shape_logits[:,2])
-        
+        #shape_logits = torch.logit(stable_softmax(shape_logits, dim = 1), eps = 1e-6)
         return shape_logits
 
     def circle(self, objects):
-        circle_logits = self.shape_logits(objects)[:, 0]
-        return torch.cat([
-            torch.min(circle_logits, objects[:,0]).reshape([-1,1]), 
-            objects[:,1:]
-        ], dim = 1)
+        return self.shape_logits(objects)[:, 0]
 
     def rectangle(self, objects):
-        rectangle_logits = self.shape_logits(objects)[:, 1]
-        return torch.cat([
-            torch.min(rectangle_logits, objects[:,0]).reshape([-1,1]), 
-            objects[:,1:]
-        ], dim = 1)
+        return  self.shape_logits(objects)[:, 1]
 
     def triangle(self, objects):
-        triangle_logits = self.shape_logits(objects)[:, 2]
-        return torch.cat([
-            torch.min(triangle_logits, objects[:,0]).reshape([-1,1]), 
-            objects[:,1:]
-        ], dim = -1)
+        return self.shape_logits(objects)[:, 2]
+
     
     def relation_features(self, anchor_object, ref_objects):
         anchor_features = anchor_object[:,1:] # [nxd]
@@ -239,16 +207,12 @@ class ObjectsExecutor(CentralExecutor):
 
         relation_features = self.relation_features(anchor_object, ref_objects)
         left_logits = self.left_mlp(relation_features)
-        #anchor_dist = torch.softmax(anchor_logits, dim=0)
-        anchor_dist = torch.sigmoid(anchor_logits)
-        #anchor_dist = anchor_logits.unsqueeze(-1).unsqueeze(-1)
-        
-        n = ref_logits.shape[0]
-        #print("anchor logits:", anchor_logits)
-        #print("ref logits:", ref_logits)
 
-        #stprint(left_logits)
-        #stprint(anchor_dist)
+        anchor_dist = torch.sigmoid(anchor_logits)
+
+        n = ref_logits.shape[0]
+
+
         #output_ref_logits = torch.einsum("nnk,nk -> nk",left_logits, anchor_dist)  # [n, 1]  expectation of ref logits over the anchor object distribution (first dimension)
         output_ref_logits = torch.sum(left_logits * anchor_dist.unsqueeze(0).repeat(n,1,1), dim = 0)
         output_ref_logits = torch.min(output_ref_logits, ref_logits)
@@ -257,7 +221,7 @@ class ObjectsExecutor(CentralExecutor):
         output_ref_objects = torch.cat(
             [output_ref_logits, ref_objects[:, 1:]], dim = -1
         )
-        #print("left logits",left_logits.reshape(n,n))
+
         return output_ref_objects
     
     def right(self, anchor_object, ref_objects):
@@ -267,23 +231,19 @@ class ObjectsExecutor(CentralExecutor):
 
         relation_features = self.relation_features(anchor_object, ref_objects)
         right_logits = self.right_mlp(relation_features)
-        #anchor_dist = torch.softmax(anchor_logits, dim=0)
-        anchor_dist = torch.sigmoid(anchor_logits)
-        #anchor_dist = anchor_logits.unsqueeze(-1).unsqueeze(-1)
 
-        #stprint(anchor_dist)
-        #stprint( right_logits)
+        anchor_dist = torch.sigmoid(anchor_logits)
+
+
         #output_ref_logits = torch.einsum("nnk,nk -> nk",right_logits, anchor_dist)  # [n, 1]  expectation of ref logits over the anchor object distribution (first dimension)
         output_ref_logits = torch.sum(right_logits * anchor_dist.unsqueeze(0).repeat(n,1,1), dim = 0)
-        #stprint(output_ref_logits)
-        #stprint(ref_logits)
+
         output_ref_logits = torch.min(output_ref_logits, ref_logits)
-        #stprint(output_ref_logits)
+
 
         output_ref_objects = torch.cat(
             [output_ref_logits, ref_objects[:, 1:]], dim = -1
         )
-        #print("right logits",right_logits.reshape(n,n))
         return output_ref_objects
 
 objects_executor = ObjectsExecutor(objects_domain)

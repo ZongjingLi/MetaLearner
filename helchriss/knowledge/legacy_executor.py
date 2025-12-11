@@ -428,3 +428,452 @@ class CentralExecutor(nn.Module):
             )
         
         return states, actions, costs, nr_expansions
+    
+
+'''
+
+class RewriteExecutor(CentralExecutor):
+    """this is some kind of wrap out of an executor, equipped with a reductive graph"""
+    def __init__(self, executor):
+        super().__init__(None)
+        self.base_executor : CentralExecutor = executor
+        self.rewriter : NeuralRewriter = NeuralRewriter() # use this structur to store the caster and hierarchies
+        self.inferer  = RuleBasedTransformInferer()
+        self._gather_format = "{}:{}"
+
+        """maintain the evaluation graph just to visualize and sanity check"""
+        self.eval_graph : nx.DiGraph = nx.DiGraph()
+        self.node_count = {}
+        self.record = 1
+
+    def init_graph(self):
+        self.eval_graph = nx.DiGraph()
+        self.node_count = {}
+        self.record = 1
+
+    def save_ckpt(self, ckpt_path = "tmp.ckpt"):
+        self.base_executor.save_ckpt(ckpt_path)
+        self.rewriter.save_ckpt(ckpt_path)
+
+    def load_ckpt(self, ckpt_path = "tmp.ckpt"):
+        self.base_executor.load_ckpt(ckpt_path)
+        self.rewriter.load_ckpt(ckpt_path)
+        return self
+
+    def gather_format(self, name, domain): return self._gather_format.format(name, domain)
+    
+    @staticmethod
+    def format(function : str): return function.split(":")[0]
+
+    def infer_rewrite_expr(self, expr : Expression, reducer = None) -> List[Tuple[str, List[TypeBase], List[TypeBase]]]:
+        """given an expression, use the unifer to infer if there exist casting of types or change in the local frames"""
+        metaphor_exprs = []
+        def dfs(expr : Expression):
+            if isinstance(expr, FunctionApplicationExpression):
+                func_name = expr.func.name
+
+                source_arg_types : List[TypeBase] = [dfs(arg)[0]        for arg in expr.args] # A List of Types
+
+                target_signatures = self.base_executor.function_signature(func_name)
+
+                min_mismatch = len(source_arg_types) + 1
+                best_matched = None # find the best matched function signature
+                assert len(target_signatures) != 0,f"did not find any function {func_name}"
+
+                for hyp_sign in target_signatures:
+
+                    arg_types, out_type = hyp_sign
+                    
+                    mismatch_count = 0
+                    for i,tp in enumerate(arg_types):
+                        if source_arg_types[i].typename != arg_types[i].typename:
+                            mismatch_count += 1
+                    if mismatch_count < min_mismatch:
+                        min_mismatch = mismatch_count
+                        best_matched = hyp_sign
+
+
+                if not min_mismatch == 0:
+    
+                    metaphor_exprs.append([func_name, best_matched[0], source_arg_types, best_matched[1]])
+                output_type = best_matched[1]
+    
+                #print(output_type.alias, output_type.typename)
+                return [output_type, best_matched[0]]
+            
+            else: raise NotImplementedError(f"did not write how to infer from {expr}")
+        dfs(expr)
+
+        return metaphor_exprs
+    
+    def add_metaphors(self, metaphors : List[Tuple[str, List[TypeBase], List[TypeBase]]], caster = None):
+        if not isinstance(metaphors, List) : metaphors = [metaphors]
+        output_metaphors = []
+        for metaphor in metaphors:
+            target_func, target_types, source_types, out_type = metaphor
+
+            input_type  = source_types  #(y) self.function_input_type(*reduce_func.split(":"))      # actual input type for the function
+            expect_type = target_types  #(x) expect input type for the function
+            output_type = out_type      #(o) the output type for the target function
+
+            ### 1) create the type casting rewrite rule and add a NeuralNet to fill the hole
+            filler = fill_hole(input_type, output_type)
+            self.base_executor.register_function(target_func, input_type, output_type, filler)
+            output_metaphors.append(metaphor) ### add the extention of fill-hole
+            
+            ### 2) create the local frame that gathers other `source` functions to the `target` function
+
+            if caster is None: caster = self.inferer.infer_caster(input_type, expect_type)
+            rewrite_frame : LocalFrame = LocalFrame(target_func, expect_type, input_type, caster)
+
+            reduce_hypothesis = self.base_executor.gather_functions(input_type, output_type)
+            for reduce_func in reduce_hypothesis:
+
+                rewrite_frame.add_source_caster(reduce_func, 0.0) # init the reduction `g`->`f` weight logits 0.0
+                output_metaphors.append([reduce_func, target_types, source_types, out_type])
+
+            hash_frame = target_func + str(hash((tuple(input_type) + tuple(expect_type))))
+            
+            self.rewriter.add_frame(hash_frame, rewrite_frame) # multiple frame lead to the same procedure
+
+        return output_metaphors
+    
+    @property
+    def types(self): return self.base_executor.types
+
+    @property
+    def functions(self): return self.base_executor.functions
+
+    def function_out_type(self, func_name, domain = None):
+        if domain is None: func_name, domain = func_name.split(":")
+
+        return self.base_executor.function_out_type(func_name, domain)
+
+    def function_input_type(self, func_name, domain = None):
+        if domain is None: func_name, domain = func_name.split(":")
+        return self.base_executor.function_input_type(func_name, domain)
+
+    def display(self, fname=None):
+        """Display the computational graph with proper visualization of nodes and edges."""
+        import matplotlib.pyplot as plt
+        import networkx as nx
+        from networkx import spring_layout
+        import numpy as np
+        
+        G = check_graph_node_names(self.eval_graph)
+        H = G.copy()
+        for n, d in H.nodes(data=True):
+            # Keep only basic attributes for layout
+            attrs_to_remove = ['inputs', 'output', 'args', 'weight']
+            for attr in attrs_to_remove:
+                d.pop(attr, None)
+        
+        for u, v, d in H.edges(data=True):
+            d.pop('output', None)
+
+    
+        #from networkx.drawing.nx_agraph import graphviz_layout
+        pos = balanced_tree_pos(H)
+
+        #pos = hierarchy_pos(H)
+        #pos = radial_tree_pos(H)
+        #pos = nx.spring_layout(H, k=14, iterations=150, seed=42)
+        #pos = graphviz_layout(G, prog='dot')  # Top-down tree
+        #pos = graphviz_layout(G, prog='twopi')  # Radial tree
+        edge_colors = []
+        for u, v, d in G.edges(data=True):
+            color = d.get('color', '#cccccc')
+            edge_colors.append(color)
+
+        
+        node_colors = []
+        node_weights = []
+        
+        for node, data in G.nodes(data=True):
+            # Handle node colors
+            color = data.get('color', '#1f77b4')  # default blue
+            node_colors.append(color)
+            
+            # Handle node weights (for alpha transparency)
+            weight = data.get('weight', 1.0)
+            try:
+                if hasattr(weight, 'item'):  # torch tensor
+                    weight_val = float(weight.item())
+                else:
+                    weight_val = float(weight)
+                # Normalize weight to [0.3, 1.0] range for visibility
+                weight_val = max(0.01, min(1.0, abs(weight_val)))
+            except (ValueError, TypeError):
+                weight_val = 1.0
+            node_weights.append(weight_val)
+        
+        # Create the plot
+        plt.figure("Rewrite Computational Graph", figsize=(12, 8))
+
+        
+
+        # Draw nodes with individual colors and transparency
+        from collections import OrderedDict
+        pos= OrderedDict((node, pos[node]) for node in G.nodes)
+        for i, (node, (x, y)) in enumerate(pos.items()):
+            nx.draw_networkx_nodes(
+                G, pos, 
+                nodelist=[node], 
+                node_color=[node_colors[i]], 
+                node_size=2000, 
+                alpha=  node_weights[i],
+                edgecolors='black',
+                linewidths=1,
+            )
+
+        nx.draw_networkx_edges(
+            G, pos, 
+            edge_color=edge_colors, 
+            arrows=True, 
+            arrowsize=15, 
+            arrowstyle='-|>',
+            width=2,
+            alpha=0.7
+        )
+        
+        # Add node labels and information
+        for i, (node, (x, y)) in enumerate(pos.items()):
+            data = G.nodes[node]
+            
+            # Node weight label (top)
+            weight = data.get('weight', 'N/A')
+            try:
+                if hasattr(weight, 'item'):
+                    weight_str = f"{float(weight.item()):.3f}"
+                else:
+                    weight_str = f"{float(weight):.3f}"
+            except (ValueError, TypeError):
+                weight_str = str(weight)
+            
+            plt.text(x, y + 0.15, weight_str, 
+                    fontsize=8, color='white', weight='bold',
+                    ha='center', va='center',
+                    bbox=dict(boxstyle="round,pad=0.2", facecolor='black', alpha=0.7))
+            
+            # Node name (center)
+            node_text_color = data.get("text_color", "black")
+            # Truncate long node names
+            display_name = node.split("&")[0]#node if len(str(node)) < 20 else str(node)[:17] + "..."
+            plt.text(x, y, display_name, 
+                    fontsize=7, color=node_text_color, weight='bold',
+                    ha='center', va='center')
+            
+            # Output information (bottom)
+            if 'output' in data and data['output'] is not None:
+                output = data['output']
+                if 1:
+                    # Handle output value
+                    if hasattr(output, 'value'):
+                        if hasattr(output.value, 'item'):  # torch tensor
+                            if sum(list(output.value.shape)) < 9:
+                                val_str = f"{output.value}"
+                            else:
+                                from helchriss.utils import stprint_str
+                                val_str = f"{output.value.shape}"
+                        else: val_str = str(output.value)
+                    else: val_str = str(output)
+                    
+                    # Handle output type
+                    if hasattr(output, 'vtype'):
+                        if hasattr(output.vtype, 'alias'):
+                            type_str = str(output.vtype)
+                        else:
+                            type_str = str(output.vtype)
+                    else:
+                        type_str = "Unknown"
+                    
+                
+                    out_label = f"V: {val_str}\nT: {type_str}"
+                    
+                
+                plt.text(x, y - 0.2, out_label, 
+                        fontsize=7, color=node_text_color,
+                        ha='center', va='center')
+        
+        # Add edge labels
+        edge_labels = {}
+        for u, v, d in G.edges(data=True):
+            label_parts = []
+            
+            # Add weight if available
+            if 'weight' in d:
+                try:
+                    weight = d['weight']
+                    if hasattr(weight, 'item'):
+                        weight_val = float(weight.item())
+                    else:
+                        weight_val = float(weight)
+                    label_parts.append(f"W: {weight_val:.3f}")
+                except (ValueError, TypeError):
+                    label_parts.append(f"W: {d['weight']}")
+            
+            # Add output info if available
+            if 'output' in d and d['output'] is not None:
+                try:
+                    output = d['output']
+                    if hasattr(output, 'value'):
+                        if hasattr(output.value, 'item'):
+                            val_str = f"{float(output.value.item()):.3f}"
+                        else:
+                            val_str = str(output.value)[:10]
+                        label_parts.append(f"V: {val_str}")
+                except:
+                    pass
+            
+            if label_parts:
+                edge_labels[(u, v)] = '\n'.join(label_parts)
+        
+        # Draw edge labels with better positioning
+        if 1 and edge_labels:
+            nx.draw_networkx_edge_labels(
+                G, pos, 
+                edge_labels=edge_labels, 
+                font_size=7,
+                font_color='#2c3e50',
+                bbox=dict(boxstyle="round,pad=0.2", facecolor='white', alpha=0.8)
+            )
+        
+        # Style the plot
+        ax = plt.gca()
+        ax.set_facecolor('white')
+        ax.set_aspect('equal')
+        
+        # Remove axes
+        for spine in ax.spines.values():
+            spine.set_visible(False)
+        ax.tick_params(left=False, right=False, labelleft=False, 
+                       labelbottom=False, bottom=False, top=False)
+        
+        plt.title("Computational Graph Visualization", fontsize=14, pad=20)
+        plt.tight_layout()
+        
+        # Save if filename provided
+        if fname is not None:
+            plt.savefig(f"{fname}.png", dpi=300, bbox_inches='tight', 
+                       facecolor='white', edgecolor='none')
+            #print(f"Graph saved as {fname}.png")
+        
+        plt.show()
+        return G, pos  # Return graph and positions for further use if needed
+
+    def evaluate(self, expression, grounding):
+        self.init_graph()
+        if not isinstance(expression, Expression):
+            expression = self.parse_expression(expression)
+        #print(expression)
+        grounding = grounding if self._grounding is not None else grounding
+
+        with self.with_grounding(grounding):
+            outputs, out_name = self._evaluate(expression)
+
+            self.eval_graph.add_node("outputs", weight = 1.0, inputs = outputs, color = "#0d0d0d", output = outputs)
+            self.eval_graph.add_edge(out_name, "outputs", output = outputs, color = "#0d0d0d")
+
+            return outputs
+        
+     
+    def _evaluate(self, expr : Expression):
+        """Internal implementation of the executor. This method will be called by the public method :meth:`execute`.
+        This function basically implements a depth-first search on the expression tree.
+        Args:
+            expr: the expression to execute.
+
+        Returns:
+            The result of the execution.
+        """
+
+        if isinstance(expr, FunctionApplicationExpression):
+            func_name = expr.func.name
+            
+            # recusive call self.evaluate(arg) to evaluate the args in the subtree
+            args : List[Value] = []
+            arg_names : List[str] = []
+            for arg in expr.args: 
+                arg_value, arg_name = self._evaluate(arg) # A List of Values
+                args.append(arg_value)
+                arg_names.append(arg_name)
+            
+            arg_types : List[TypeBase] = [arg.vtype for arg in args]
+            sign = self.base_executor.signature(func_name, arg_types)
+
+
+            count_func_sign = self.add_count_function_node(sign)
+            self.eval_graph.add_node(count_func_sign)
+
+
+            for arg_n in arg_names:
+                self.eval_graph.add_edge(arg_n, count_func_sign, output = arg_value, color = "#0d0d0d")
+
+            # weight of each rewrite is a basic-rewrite
+            rewrite_distr, rewrite_graph = self.rewriter.rewrite_distr(func_name, args)
+
+            self.add_rewrite_subgraph(rewrite_distr, rewrite_graph, sign)
+            
+            # expected execution over all basic-rewrites
+            expect_output = 0.
+
+            for (t_f, t_args, weight) in rewrite_distr:
+                measure : Value = self.base_executor.execute(t_f.split("#")[0], t_args, grounding = self.grounding)
+
+                expect_output += weight * measure.value
+
+                ### add the output value for the evaluation graph
+                func_sign = t_f
+                node_count = self.node_count[func_sign]
+                func_count_sign = f"{func_sign}_{node_count}"
+                self.eval_graph.nodes[func_count_sign]["output"] = measure          
+
+
+            return Value(measure.vtype, expect_output), count_func_sign
+
+        elif isinstance(expr, ConstantExpression):
+            assert isinstance(expr.const, Value)
+            return expr.const
+        elif isinstance(expr, VariableExpression):
+            assert isinstance(expr.name, Value)
+            return expr.const
+        else:
+            raise NotImplementedError(f'Unknown expression type: {type(expr)}')
+    
+    
+
+    def add_count_function_node(self, sign):
+        nd = sign#self.format(node)
+
+        if sign in self.node_count: self.node_count[sign] += 1
+        else: self.node_count[sign] = 1
+        #self.eval_graph.add_node(f"{nd}#{self.node_count[node]}")
+
+        return f"{nd}_{self.node_count[sign]}"
+
+    def add_rewrite_subgraph(self, distr, rewrite_graph, func_sign):
+        reduce_funcs = distr
+        _, reduce_edges = rewrite_graph
+        node_count = self.node_count[func_sign]
+
+        for reduce_func in reduce_funcs:
+            node_sign, node_args, node_weight = reduce_func
+            if node_sign == func_sign: # attach point is the origion of rewrite
+                func_count_sign = f"{func_sign}_{node_count}"
+
+                self.eval_graph.nodes[func_count_sign]["weight"] = node_weight
+                self.eval_graph.nodes[func_count_sign]["args"]   = node_args
+            
+            else: # create new node for args
+                node_count_sign = self.add_count_function_node(node_sign)
+
+                self.eval_graph.add_node(node_count_sign, weight = node_weight, args = node_args, color = "#048393", text_color = '#0d0d0d')
+            
+        for edge in reduce_edges:
+            src_node = f"{edge[0]}_{self.node_count[edge[0]]}"
+            tgt_node = f"{edge[1]}_{self.node_count[edge[1]]}"
+
+            if src_node != func_sign:
+                    self.eval_graph.add_edge(tgt_node, src_node, weight = float(edge[2].detach()), color = "#048393")
+
+'''

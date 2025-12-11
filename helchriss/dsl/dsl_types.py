@@ -168,6 +168,8 @@ class TypeBase(object):
 
     def __hash__(self) -> int:
         return hash(self.typename)
+    
+    def __repr__(self) -> str: return self.typename
 
 AnyType = TypeBase("AnyType") # the union of all types
 AutoType = TypeBase("AutoType") # the type will be inferred later
@@ -295,6 +297,11 @@ class ListType(UniformSequenceType):
     @property
     def is_list_type(self) -> bool:
         return True
+    
+    def __repr__(self) -> str :
+        return self.typename
+
+
 
 class VectorType(TypeBase, ParamType):
     def __init__(self, elem_type : TypeBase, dim : int):
@@ -407,6 +414,7 @@ INT = TypeBase("int")
 FLOAT = TypeBase("float")
 BOOL = TypeBase("bool")
 TYPE = TypeBase("Type")
+STR  = TypeBase("Str")
 
 class EmbeddingType(TypeBase):
     def __init__(self, space_name : str, dim : int):

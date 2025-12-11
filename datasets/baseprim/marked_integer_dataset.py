@@ -56,16 +56,17 @@ def create_sprite(object_size: int = 32, sprite_type: str = 'number'):
         text_x = (object_size - text_width) // 2
         text_y = (object_size + text_height) // 2
         
-        # Draw the text on the canvas (white color)
+        # draw the text on the canvas (white color)
         cv2.putText(canvas, text, (text_x, text_y), font, font_scale, (255, 255, 255), font_thickness)
         
-        # Return the image and sprite info
+        # return the image and sprite info
         sprite_info = {
             'type': 'number',
             'number': number, 
             'color': color_name,
             'shape': 'circle'
         }
+        #cv2.putText(canvas, text, (text_x, text_y), font, font_scale, (255, 255, 255), font_thickness)
     else:  # shape
         # Choose a random shape
         shape_idx = npr.randint(0, 3)  # 0: circle, 1: triangle, 2: rectangle
@@ -107,10 +108,7 @@ def create_sprite(object_size: int = 32, sprite_type: str = 'number'):
             # For rectangle, center the text
             text_x = (object_size - text_width) // 2
             text_y = (object_size + text_height) // 2
-        
-        # Draw the number on top of the shape
-        cv2.putText(canvas, text, (text_x, text_y), font, font_scale, (255, 255, 255), font_thickness)
-            
+
         # Return the image and sprite info
         sprite_info = {
             'type': 'shape',
@@ -193,7 +191,7 @@ def _gen_random_question(sprites, arity: int):
             
         # Shorter query format
         question = f'{label} exists'
-        program = f'exists:Objects({label_value}:Objects(scene:Objects()))'
+        program = f'exists:Logic( filter:Logic(scene:Objects(), {label_value}:Objects ) )'
         return question, program, answer
         
     else:  # arity == 2
@@ -225,240 +223,11 @@ def _gen_random_question(sprites, arity: int):
         question = f'{label1} {relation} of {label2}'
         #print(question)
         program = f'exists(Object, lambda x: exists(Object, lambda y: {label_value1}(x) and {relation}(x, y) and {label_value2}(y)))'
-        program = f"exists:Objects({label_value1}:Objects({relation}:Objects({label_value2}:Objects(scene:Objects()),scene:Objects())))"
+        program = f"exists:Logic({label_value1}:Objects({relation}:Objects({label_value2}:Objects(scene:Objects()),scene:Objects())))"
         return question, program, answer
 
 
 # Changes to _gen_arithmetic_question function
-def _gen_arithmetic_question(sprites):
-    """Generate arithmetic questions about the sprites with shorter syntax"""
-    question_types = [
-        'sum_color',        # "Sum of red numbers?"
-        'add_value',        # "Red number + 1?"
-        'max_color',        # "Max blue number?"
-        'min_color',        # "Min green number?"
-        'diff_colors',      # "Red number - blue number?"
-        'product_color',    # "Product of green numbers?"
-        'avg_color',        # "Avg red numbers?"
-        'count_shape',      # "Triangle count?"
-        'count_color',      # "Blue object count?"
-        'sum_shape',        # "Sum of triangle numbers?"
-        'sum_red_blue',     # "Red + blue numbers?"
-        'max_number_shape', # "Max triangle number?"
-    ]
-    
-    question_type = npr.choice(question_types)
-    color_choices = ['red', 'green', 'blue']
-    shape_choices = ['circle', 'triangle', 'rectangle']
-    
-    # Handle questions about counting or summing specific shapes
-    if question_type == 'count_shape':
-        shape = npr.choice(shape_choices)
-        # Count all sprites of the specified shape
-        count = sum(1 for sprite in sprites if sprite['type'] == 'shape' and sprite['shape'] == shape)
-        
-        question = f"{shape} count"
-        program = f"count(filter(Object, lambda x: {shape}(x)))"
-        
-        return question, program, count
-        
-    elif question_type == 'count_color':
-        color = npr.choice(color_choices)
-        # Count all sprites of the specified color
-        count = sum(1 for sprite in sprites if sprite['color'] == color)
-        
-        question = f"{color} object count"
-        program = f"count(filter(Object, lambda x: {color}(x)))"
-        
-        return question, program, count
-        
-    elif question_type == 'sum_shape':
-        shape = npr.choice(shape_choices)
-        # Get all sprites of the specified shape
-        shape_sprites = [sprite for sprite in sprites if sprite['type'] == 'shape' and sprite['shape'] == shape]
-        
-        # Calculate the sum of their numbers
-        if shape_sprites:
-            answer = sum(sprite['number'] for sprite in shape_sprites)
-        else:
-            answer = 0
-            
-        question = f"Sum of {shape} numbers"
-        program = f"sum(filter(Object, lambda x: {shape}(x)), lambda x: number(x))"
-        
-        return question, program, answer
-    
-    # Handle color-based arithmetic questions
-    elif question_type == 'sum_color':
-        color = npr.choice(color_choices)
-        # Get all sprites of the specified color
-        color_sprites = [sprite for sprite in sprites if sprite['color'] == color]
-        
-        # Calculate the sum of numbers
-        if color_sprites:
-            answer = sum(sprite['number'] for sprite in color_sprites)
-        else:
-            answer = 0
-            
-        question = f"Sum of {color} numbers"
-        program = f"sum(filter(Object, lambda x: {color}(x)), lambda x: number(x))"
-        
-        return question, program, answer
-        
-    elif question_type == 'add_value':
-        color = npr.choice(color_choices)
-        # Find objects of the specified color
-        color_sprites = [sprite for sprite in sprites if sprite['color'] == color]
-        
-        # If there are no objects of this color, try another color
-        if not color_sprites:
-            # Try to find a color that exists in the sprites
-            for alt_color in color_choices:
-                color_sprites = [sprite for sprite in sprites if sprite['color'] == alt_color]
-                if color_sprites:
-                    color = alt_color
-                    break
-        
-        # Pick a random value to add
-        value = npr.choice([0, 1, 2])
-        
-        # Get the first sprite of the chosen color if it exists
-        if color_sprites:
-            sprite_number = color_sprites[0]['number']
-            answer = sprite_number + value
-        else:
-            # Fallback if somehow no color is found
-            answer = value
-            sprite_number = 0
-            
-        question = f"{color} number + {value}"
-        program = f"add(filter(Object, lambda x: {color}(x))[0].number, {value})"
-        
-        return question, program, answer
-        
-    elif question_type == 'max_color':
-        color = npr.choice(color_choices)
-        # Get all sprites of the specified color
-        color_sprites = [sprite for sprite in sprites if sprite['color'] == color]
-        
-        # Find the maximum number
-        if color_sprites:
-            answer = max(sprite['number'] for sprite in color_sprites)
-        else:
-            # If no sprites of this color, answer is -1 (indicating no such sprite)
-            answer = -1
-            
-        question = f"Max {color} number"
-        program = f"max(filter(Object, lambda x: {color}(x)), lambda x: number(x))"
-        
-        return question, program, answer
-        
-    elif question_type == 'min_color':
-        color = npr.choice(color_choices)
-        # Get all sprites of the specified color
-        color_sprites = [sprite for sprite in sprites if sprite['color'] == color]
-        
-        # Find the minimum number
-        if color_sprites:
-            answer = min(sprite['number'] for sprite in color_sprites)
-        else:
-            # If no sprites of this color, answer is -1 (indicating no such sprite)
-            answer = -1
-            
-        question = f"Min {color} number"
-        program = f"min(filter(Object, lambda x: {color}(x)), lambda x: number(x))"
-        
-        return question, program, answer
-        
-    elif question_type == 'diff_colors':
-        color1, color2 = npr.choice(color_choices, size=2, replace=False)
-        # Get sprites of each color
-        color1_sprites = [sprite for sprite in sprites if sprite['color'] == color1]
-        color2_sprites = [sprite for sprite in sprites if sprite['color'] == color2]
-        
-        # Calculate difference between first sprites of each color
-        if color1_sprites and color2_sprites:
-            answer = color1_sprites[0]['number'] - color2_sprites[0]['number']
-        else:
-            # If either color doesn't exist, answer is 0
-            answer = 0
-            
-        question = f"{color1} number - {color2} number"
-        program = f"subtract(filter(Object, lambda x: {color1}(x))[0].number, filter(Object, lambda x: {color2}(x))[0].number)"
-        
-        return question, program, answer
-        
-    elif question_type == 'product_color':
-        color = npr.choice(color_choices)
-        # Get all sprites of the specified color
-        color_sprites = [sprite for sprite in sprites if sprite['color'] == color]
-        
-        # Calculate the product
-        if color_sprites:
-            answer = 1
-            for sprite in color_sprites:
-                answer *= sprite['number']
-        else:
-            # If no sprites of this color, answer is 0
-            answer = 0
-            
-        question = f"Product of {color} numbers"
-        program = f"product(filter(Object, lambda x: {color}(x)), lambda x: number(x))"
-        
-        return question, program, answer
-        
-    elif question_type == 'avg_color':
-        color = npr.choice(color_choices)
-        # Get all sprites of the specified color
-        color_sprites = [sprite for sprite in sprites if sprite['color'] == color]
-        
-        # Calculate the average
-        if color_sprites:
-            avg = sum(sprite['number'] for sprite in color_sprites) / len(color_sprites)
-            # Round to 1 decimal place for simplicity
-            answer = round(avg, 1)
-        else:
-            # If no sprites of this color, answer is 0
-            answer = 0
-            
-        question = f"Avg {color} numbers"
-        program = f"average(filter(Object, lambda x: {color}(x)), lambda x: number(x))"
-        
-        return question, program, answer
-        
-    elif question_type == 'sum_red_blue':
-        # Get all red and blue sprites
-        red_sprites = [sprite for sprite in sprites if sprite['color'] == 'red']
-        blue_sprites = [sprite for sprite in sprites if sprite['color'] == 'blue']
-        
-        # Calculate sum of both colors
-        red_sum = sum(sprite['number'] for sprite in red_sprites) if red_sprites else 0
-        blue_sum = sum(sprite['number'] for sprite in blue_sprites) if blue_sprites else 0
-        answer = red_sum + blue_sum
-        
-        question = f"Red + blue numbers"
-        program = f"sum(filter(Object, lambda x: red(x) or blue(x)), lambda x: number(x))"
-        
-        return question, program, answer
-        
-    elif question_type == 'max_number_shape':
-        shape = npr.choice(shape_choices)
-        # Get all sprites of the specified shape
-        shape_sprites = [sprite for sprite in sprites if (sprite['type'] == 'shape' and sprite['shape'] == shape) or 
-                                                        (sprite['type'] == 'number' and sprite['shape'] == shape)]
-        
-        # Find the maximum number
-        if shape_sprites:
-            answer = max(sprite['number'] for sprite in shape_sprites)
-        else:
-            # If no sprites of this shape, answer is -1
-            answer = -1
-            
-        question = f"Max {shape} number"
-        program = f"max(filter(Object, lambda x: {shape}(x)), lambda x: number(x))"
-        
-        return question, program, answer
-
 
 def _gen_arithmetic_question(sprites):
     """Generate arithmetic questions about the sprites"""
@@ -476,6 +245,11 @@ def _gen_arithmetic_question(sprites):
         'sum_red_blue',     # "What is the sum of red and blue numbers?"
         'max_number_shape', # "What is the maximum number on a triangle?"
     ]
+    question_types = [
+        'count_shape',      # "How many triangles are there?"
+        'count_color',      # "How many blue objects are there?"
+        #'max_number_shape', # "What is the maximum number on a triangle?"
+    ]
     
     question_type = npr.choice(question_types)
     color_choices = ['red', 'green', 'blue']
@@ -488,7 +262,7 @@ def _gen_arithmetic_question(sprites):
         count = sum(1 for sprite in sprites if sprite['type'] == 'shape' and sprite['shape'] == shape)
         
         question = f"How many {shape}s are there"
-        program = f"count(filter(Object, lambda x: {shape}(x)))"
+        program = f"count:Logic(filter:Logic(scene:Objects(), {shape}:Objects ))"
         
         return question, program, count
         
@@ -498,7 +272,7 @@ def _gen_arithmetic_question(sprites):
         count = sum(1 for sprite in sprites if sprite['color'] == color)
         
         question = f"How many {color} objects are there"
-        program = f"count(filter(Object, lambda x: {color}(x)))"
+        program = f"count:Logic(filter:Logic(scene:Objects(), {color}:Objects ))"
         
         return question, program, count
         
@@ -685,23 +459,22 @@ def _gen_arithmetic_question(sprites):
             answer = -1
             
         question = f"What is the maximum number on a {shape}"
-        program = f"max(filter(Object, lambda x: {shape}(x)), lambda x: number(x))"
-        
+        program = f"max:Integer(filter:Logic(scene:Objects(), {shape}))"
+
         return question, program, answer
 
 
-def gen_mixed_sprites3_dataset(dataset_size):
+def gen_mixed_sprites3_dataset(dataset_size, percent = 1.0):
     """Generate the complete dataset of mixed sprites (numbers and shapes)"""
     images, sprites_info, questions, programs, answers = list(), list(), list(), list(), list()
     
     for i in range(dataset_size):
         # Randomly decide if we want all one type or mixed types
         if npr.rand() < 1.0:  # 100% chance of being all one type
-            sprite_type = "shape"#npr.choice(['number', 'shape'])
+            sprite_type = "number"#npr.choice(['number', 'shape'])
             sprite_types = [sprite_type, sprite_type, sprite_type]
         else:
             # Mixed types
-            print("mixed")
             sprite_types = [npr.choice(['number', 'shape']) for _ in range(3)]
         
         image, sprites = create_mixed_sprites3(sprite_types=sprite_types)
@@ -709,7 +482,7 @@ def gen_mixed_sprites3_dataset(dataset_size):
         sprites_info.append(sprites)
 
         # Choose a question type: boolean (original) or arithmetic (new)
-        question_type = npr.choice(['boolean', ]) # 'arithmetic'
+        question_type = npr.choice(['boolean', 'arithmetic'], p = [percent, 1 - percent]) # 'arithmetic'
         
         if question_type == 'boolean':
             # Original boolean questions
@@ -726,6 +499,7 @@ def gen_mixed_sprites3_dataset(dataset_size):
         else:
             # New arithmetic questions
             question, logical_form, answer = _gen_arithmetic_question(sprites)
+            #print(question)
             questions.append(question)
             programs.append(logical_form)
             answers.append(answer)
@@ -740,9 +514,9 @@ def gen_mixed_sprites3_dataset(dataset_size):
 
 
 class MixedSprites3DatasetUnwrapped(FilterableDatasetUnwrapped):
-    def __init__(self, dataset_size):
+    def __init__(self, dataset_size, regular_percent = 1.0):
         super().__init__()
-        self.data = gen_mixed_sprites3_dataset(dataset_size)
+        self.data = gen_mixed_sprites3_dataset(dataset_size, regular_percent)
 
     def _get_metainfo(self, index):
         return {
@@ -769,10 +543,11 @@ class MixedSprites3DatasetUnwrapped(FilterableDatasetUnwrapped):
 
 
 def _to_image(image):
+
     """Convert image to PyTorch tensor format"""
     image = image.transpose(2, 0, 1) / 255.0
     image = image.astype(np.float32)
-    image = (image - 0.5) * 2
+    #image = (image - 0.5) * 2
     return torch.tensor(image)
 
 class MixedSprites3DatasetFilterableView(FilterableDatasetView):
@@ -828,7 +603,7 @@ class MixedSprites3DatasetFilterableView(FilterableDatasetView):
         return self.filter(filt, f'filter-sprite-types[numbers={has_numbers},shapes={has_shapes}]')
 
 
-def MixedSprites3Dataset(dataset_size) -> MixedSprites3DatasetFilterableView:
+def MixedSprites3Dataset(dataset_size, p) -> MixedSprites3DatasetFilterableView:
     """
     Create a filterable dataset of images with mixed sprites (numbers and shapes).
     
@@ -873,6 +648,6 @@ def MixedSprites3Dataset(dataset_size) -> MixedSprites3DatasetFilterableView:
             batch_size=32, shuffle=True, drop_last=False, nr_workers=4
         )
     """
-    return MixedSprites3DatasetFilterableView(MixedSprites3DatasetUnwrapped(dataset_size))
+    return MixedSprites3DatasetFilterableView(MixedSprites3DatasetUnwrapped(dataset_size, p))
 
 

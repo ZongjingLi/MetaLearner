@@ -1,23 +1,39 @@
-
-import jax
-
-from craftax.craftax_env import make_craftax_env_from_name
-
-rng = jax.random.PRNGKey(0)
-rng, _rng = jax.random.split(rng)
-_rngs = jax.random.split(_rng, 3)
+import gym
+import smartplay
+env_name = "Crafter"
+env = gym.make("smartplay:{}-v0".format(env_name))
+_, info = env.reset()
 
 
-# Create environment
-env = make_craftax_env_from_name("Craftax-Symbolic-v1", auto_reset=True)
-env_params = env.default_params
-
-# Get an initial state and observation
-obs, state = env.reset(_rngs[0], env_params)
-
-# Pick random action
-action = env.action_space(env_params).sample(_rngs[1])
-
-# Step environment
-obs, state, reward, done, info = env.step(_rngs[2], state, action, env_params)
-
+while True:
+    #action = info['action_space'].sample()
+    action = env.action_space.sample()
+    _, reward, done, info = env.step(action)
+    manual, obs, history, score = info['manual'], info['obs'], info['history'], info['score']
+    if not done:
+        completion=0
+    else:
+        completion=info['completed']
+    print(obs)
+"""
+['MessengerL1-v0',
+ 'MessengerL2-v0',
+ 'MessengerL3-v0',
+ 'RockPaperScissorBasic-v0',
+ 'RockPaperScissorDifferentScore-v0',
+ 'BanditTwoArmedDeterministicFixed-v0',
+ 'BanditTwoArmedHighHighFixed-v0',
+ 'BanditTwoArmedHighLowFixed-v0',
+ 'BanditTwoArmedLowLowFixed-v0',
+ 'Hanoi3Disk-v0',
+ 'Hanoi4Disk-v0',
+ 'MinedojoCreative0-v0',
+ 'MinedojoCreative1-v0',
+ 'MinedojoCreative2-v0',
+ 'MinedojoCreative4-v0',
+ 'MinedojoCreative5-v0',
+ 'MinedojoCreative7-v0',
+ 'MinedojoCreative8-v0',
+ 'MinedojoCreative9-v0',
+ 'Crafter-v0']
+"""

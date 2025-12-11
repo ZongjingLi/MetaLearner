@@ -6,6 +6,9 @@ domains:
     objects:
       name: "objects_executor"
       path: "domains.scene.objects_domain"
+    logic:
+      name: "fol_executor"
+      path: "domains.logic.fol_domain"
 
 vocab:
     path: "data/core_vocab.txt"
