@@ -5,7 +5,7 @@ from helchriss.dsl.dsl_types import TypeBase
 from helchriss.dsl.dsl_values import Value
 from typing import List, Tuple,Union, Any, Dict, Tuple, Optional, Callable, Type
 from dataclasses import dataclass, field
-from helchriss.dsl.dsl_types import VectorType, ListType, EmbeddingType, TupleType, FixedListType, ArrowType, BatchedListType
+from helchriss.dsl.dsl_types import VectorType, ListType, EmbeddingType, TupleType, FixedListType, ArrowType, BatchedListType, BOOL
 import copy
 
 __all__ = ["PatternVar","match_pattern", "TransformRule", "RuleBasedTransform", "get_transform_rules"]
@@ -281,13 +281,18 @@ class RuleBasedTransform:
         #    TupleType(input_type),
         #    output_type, rules=self.transform_rules,
         #    max_depth=self.k)
+
+        input_types = TupleType(input_type) if len(input_type) > 1 else input_type[0]
+
         fillers = []
+
+        
         for fill_rule in self.filler_rules:
             #print(TupleType(input_type), output_type)
-            if fill_rule.applicable(TupleType(input_type), output_type):
+            if fill_rule.applicable(input_types, output_type):
 
-                fillers.append( fill_rule.fill_in(TupleType(input_type), output_type) )
-        assert fillers, f"not found for {input_type} to {output_type}"
+                fillers.append( fill_rule.fill_in(input_types, output_type) )
+        assert fillers, f"not found for {input_types} to {output_type}"
         return fillers
         #
     
@@ -302,6 +307,33 @@ import torch
 import torch.nn as nn
 from typing import List, Callable
 
+class ListFloatFiller(nn.Module):
+        def __init__(self,n,m):
+            super().__init__()
+            # Linear layer: n+m input dim → 1 output dim
+            hidden_dim = 128
+            self.linear = nn.Sequential(
+                nn.Linear(n+m, hidden_dim),
+                nn.ReLU(),
+                nn.Linear(hidden_dim, 1),
+                nn.ReLU(),
+            )
+
+        def forward(self, list1: List[torch.Tensor], list2: List[torch.Tensor], **kwargs) -> torch.Tensor:
+            # Step 1: Compute expectation (mean) over each list (collapse list to single tensor)
+            # list1: [B1, 1+n] → mean over list → [1+n]; list2: [B2, 1+m] → mean → [1+m]
+            exp1 = list1.mean(dim=0)  # Expectation over list1
+            exp2 = list2.mean(dim=0)  # Expectation over list2
+            
+            # Step 2: Strip logit dimension (first dim) → [n] and [m]
+            feat1 = exp1[1:]  # Drop logit (1st dim) → shape [n]
+            feat2 = exp2[1:]  # Drop logit (1st dim) → shape [m]
+            
+            combined = torch.cat([feat1, feat2], dim=0)  # Shape [n+m]
+            
+            output = self.linear(combined)  # Shape [1]
+            return Value(FLOAT,output)
+
 def obj_list_to_float_filler(binds: dict) -> Callable[[], nn.Module]:
     """
     Factory function returning a custom nn.Module class that:
@@ -315,34 +347,67 @@ def obj_list_to_float_filler(binds: dict) -> Callable[[], nn.Module]:
     Returns:
         Callable that instantiates the custom nn.Module
     """
-    n = int(binds["n"])
-    m = int(binds["m"])
+    n = int(binds["n"]);m = int(binds["m"])
     
-    class FloatFiller(nn.Module):
-        def __init__(self):
+    return ListFloatFiller(n,m)
+
+
+class FloatFiller(nn.Module):
+        def __init__(self,k):
             super().__init__()
-            # Linear layer: n+m input dim → 1 output dim
-            self.linear = nn.Linear(n + m, 1)
+            # Linear layer: k input dim → 1 output dim
+            hidden_dim = 128
+            self.feat_net = nn.Sequential(
+                nn.Linear(k+0, hidden_dim),
+                nn.Sigmoid(),
+                nn.Linear(hidden_dim, hidden_dim),
 
-        def forward(self, list1: List[torch.Tensor], list2: List[torch.Tensor], **kwargs) -> torch.Tensor:
-            # Step 1: Compute expectation (mean) over each list (collapse list to single tensor)
-            # list1: [B1, 1+n] → mean over list → [1+n]; list2: [B2, 1+m] → mean → [1+m]
-            print(list1.shape)
-            exp1 = list1.mean(dim=0)  # Expectation over list1
-            exp2 = list2.mean(dim=0)  # Expectation over list2
-            
-            # Step 2: Strip logit dimension (first dim) → [n] and [m]
-            feat1 = exp1[1:]  # Drop logit (1st dim) → shape [n]
-            feat2 = exp2[1:]  # Drop logit (1st dim) → shape [m]
-            
-            # Step 3: Concatenate to n+m dim tensor
-            combined = torch.cat([feat1, feat2], dim=0)  # Shape [n+m]
-            
-            # Step 4: Project to 1 dim via linear layer
-            output = self.linear(combined)  # Shape [1]
-            return Value(FLOAT,output)
+            )
+            self.decode_net = nn.Sequential(
+                nn.Linear(hidden_dim, hidden_dim),
+                nn.Sigmoid(),
+                nn.Linear(hidden_dim, 1),
+            )
+              
 
-    return FloatFiller()
+        def forward(self, input_list: List[torch.Tensor], **kwargs) -> Value:
+            # Step 1: Compute expectation (mean) over the input list
+            # input_list: list of [1+k] tensors → stack + mean → [1+k]
+            stacked = input_list  # Shape: [num_tensors, 1+k]
+            #exp = stacked.mean(dim=0)         # Expectation over list → [1+k]
+            
+
+            feat = self.feat_net(stacked[:,1:])  # Drop logit → shape [k]
+            prob = stacked[:,0:1].sigmoid()
+            # Step 3: Project k-dim to 1 dim via linear layer
+            decoded = self.decode_net(feat) * prob
+            #print("prob:", prob.reshape([-1]))
+            #print("num cast:",decoded.reshape([-1]))
+            output_tensor = torch.max(decoded)  # Shape [1]
+
+
+            
+            # Step 4: Wrap in Value (matches your original return)
+            return Value(FLOAT, output_tensor)
+
+
+def single_obj_list_to_float_filler(binds: dict) -> nn.Module:
+    """
+    Factory function returning a custom nn.Module that:
+    - Takes ONE list input (list of [1+k] dim tensors, k = binds["k"])
+    - Computes expectation (mean) over the list
+    - Strips logit dimension (first dim) to get k-dim tensor
+    - Projects k-dim tensor to 1 dim via Linear
+    
+    Args:
+        binds: Dictionary with "k" key (defines tensor dimension: [1+k])
+    
+    Returns:
+        Instantiated nn.Module (matches your original return FloatFiller())
+    """
+    k = int(binds["k"])  # k = dimension after stripping logit (1+k total)
+    # Return INSTANTIATED module (matches your original return FloatFiller())
+    return FloatFiller(k)
 
 def get_transform_rules():
     object_dim = 128
@@ -398,18 +463,25 @@ def get_transform_rules():
 
     obj_list_to_float_fill_rule = FillerRule(
         TupleType([
-            ListType(EmbeddingType("object", PatternVar("n"))),
-            ListType(EmbeddingType("object", PatternVar("m")))
+            ListType(TupleType([BOOL, EmbeddingType("object", PatternVar("n")) ]) ),
+            ListType(TupleType([BOOL, EmbeddingType("object", PatternVar("m")) ]) )
         ]
         ),
        FLOAT,
         obj_list_to_float_filler
+    )
+    #print(ListType(TupleType([BOOL, EmbeddingType("object", PatternVar("k")) ]) ),)
+    single_obj_list_to_float_fill_rule = FillerRule(
+            ListType(TupleType([BOOL, EmbeddingType("object", PatternVar("k")) ]) ),
+            FLOAT,
+            single_obj_list_to_float_filler
     )
 
     filler_rules = [
         emb2emb_fill_rule,
         emb2vector_fill_rule,
         obj_list_to_emb_fill_rule,
-        obj_list_to_float_fill_rule
+        obj_list_to_float_fill_rule,
+        single_obj_list_to_float_fill_rule
     ]
     return transform_rules, filler_rules

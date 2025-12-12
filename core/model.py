@@ -8,6 +8,7 @@ import re
 import yaml
 import torch
 import torch.nn as nn
+import numpy as np
 from typing import List, Union, Any
 from core.metaphors.executor import SearchExecutor, ExecutorGroup, UnificationFailure, value_types
 from core.grammar.ccg_parser import ChartParser
@@ -410,7 +411,9 @@ class MetaLearner(nn.Module):
 
                 if isinstance(answer, bool): answer = Value(BOOL, answer)
 
-                if isinstance(answer, int): answer = Value(INT, answer)
+                if isinstance(answer, (int, np.int64)): answer = Value(INT, answer)
+
+                if isinstance(answer, float): answer = Value(FLOAT, answer)
                     
                 if isinstance(answer, Value) and isinstance(answer.vtype, str):
                     if answer.vtype == "boolean": answer.vtype = BOOL
@@ -427,7 +430,9 @@ class MetaLearner(nn.Module):
                         probs       =  [torch.tensor(1.0)]
                         programs    =  [program]
 
-                    if not results:self.executor.logger.warnning(f"no parsing found for query:{query}")
+                    if not results:
+                        print(results)
+                        self.executor.logger.warning(f"no parsing found for query:{query}")
                 
                     for i, result in enumerate(results):
                         result, internal_loss = result
@@ -448,8 +453,12 @@ class MetaLearner(nn.Module):
                             if predicted == actual: correct += 1 * measure_conf
   
                         elif answer.vtype == FLOAT or answer.vtype == INT:
-                            measure_loss = torch.abs(result.value - answer.value)
+                            #print(answer)
+                            measure_loss = torch.nn.functional.mse_loss(result.value, torch.tensor(float(answer.value)) )
                             if measure_loss < 0.2: correct += 1 * measure_conf
+                            else:
+                                pass
+                                #print(program ,result.value,answer,"loss:",torch.abs(result.value - float(answer.value) ))
 
                         loss += measure_conf * (measure_loss + internal_loss)
                         total_count += 1 * measure_conf
@@ -461,12 +470,12 @@ class MetaLearner(nn.Module):
                     if batch_count == batch_size :#or idx == len(dataset) - 1:
                         batch_loss /= batch_count
                         try:
-                        
-                            optim.zero_grad()
-                            batch_loss.backward()
-                            optim.step()
-                            batch_loss = 0.0
-                            batch_count = 0
+                            if not unify:
+                                optim.zero_grad()
+                                batch_loss.backward()
+                                optim.step()
+                                batch_loss = 0.0
+                                batch_count = 0
                         except: raise RuntimeError("No Valid Parse Found.")
                 except UnificationFailure as Error:
                         if (Error.left_structure,value_types(Error.right_structure)) not in self.executor.ban_list:
@@ -483,7 +492,7 @@ class MetaLearner(nn.Module):
                 avg_loss, avg_acc = -1, -1
                 # Show test_acc even if unify=True
                 epoch_bar.set_postfix({"test_acc": f"{test_acc:.4f}"})
-            self.executor.logger.info(f"acc:{avg_acc}, test_acc: {test_acc}")
+            #self.executor.logger.info(f"acc:{avg_acc}, test_acc: {test_acc}")
         return {"loss": avg_loss, "acc": avg_acc, "test_acc": test_acc}  # Add test_acc to return
 
     def infer_metaphor_expressions(self, meta_exprs: Union[str, Expression,List[Expression], List[str]]):

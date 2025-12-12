@@ -7,7 +7,7 @@ from helchriss.utils.collate import VarLengthCollateV2
 from torch.utils.data import DataLoader
 
 # Constants for all possible sprite types
-g_numbers_to_display = list(range(10))  # 0-9
+g_numbers_to_display = list(range(3))  # 0-9
 g_shapes_index_to_name = {0: 'circle', 1: 'triangle', 2: 'rectangle'}
 g_colors_index_to_name = {0: 'red', 1: 'green', 2: 'blue'}
 
@@ -66,7 +66,7 @@ def create_sprite(object_size: int = 32, sprite_type: str = 'number'):
             'color': color_name,
             'shape': 'circle'
         }
-        #cv2.putText(canvas, text, (text_x, text_y), font, font_scale, (255, 255, 255), font_thickness)
+        
     else:  # shape
         # Choose a random shape
         shape_idx = npr.randint(0, 3)  # 0: circle, 1: triangle, 2: rectangle
@@ -108,7 +108,7 @@ def create_sprite(object_size: int = 32, sprite_type: str = 'number'):
             # For rectangle, center the text
             text_x = (object_size - text_width) // 2
             text_y = (object_size + text_height) // 2
-
+        cv2.putText(canvas, text, (text_x, text_y), font, font_scale, (255, 255, 255), font_thickness)
         # Return the image and sprite info
         sprite_info = {
             'type': 'shape',
@@ -248,7 +248,8 @@ def _gen_arithmetic_question(sprites):
     question_types = [
         'count_shape',      # "How many triangles are there?"
         'count_color',      # "How many blue objects are there?"
-        #'max_number_shape', # "What is the maximum number on a triangle?"
+        'max_color', # "What is the maximum number on a triangle?"
+        'max'
     ]
     
     question_type = npr.choice(question_types)
@@ -263,7 +264,7 @@ def _gen_arithmetic_question(sprites):
         
         question = f"How many {shape}s are there"
         program = f"count:Logic(filter:Logic(scene:Objects(), {shape}:Objects ))"
-        
+
         return question, program, count
         
     elif question_type == 'count_color':
@@ -350,10 +351,27 @@ def _gen_arithmetic_question(sprites):
             answer = max(sprite['number'] for sprite in color_sprites)
         else:
             # If no sprites of this color, answer is -1 (indicating no such sprite)
-            answer = -1
+            answer = 0
             
         question = f"What is the maximum {color} number"
-        program = f"max(filter(Object, lambda x: {color}(x)), lambda x: number(x))"
+        program = f"max:Integer(filter:Logic(scene:Objects(), {color}:Objects ) )"
+        
+        return question, program, answer
+
+    elif question_type == 'max':
+        color = npr.choice(color_choices)
+        # Get all sprites of the specified color
+        color_sprites = [sprite for sprite in sprites ]
+        
+        # Find the maximum number
+        if color_sprites:
+            answer = max(sprite['number'] for sprite in color_sprites)
+        else:
+            # If no sprites of this color, answer is -1 (indicating no such sprite)
+            answer = 0
+            
+        question = f"What is the maximum number"
+        program = f"max:Integer(scene:Objects() )"
         
         return question, program, answer
         
@@ -471,7 +489,7 @@ def gen_mixed_sprites3_dataset(dataset_size, percent = 1.0):
     for i in range(dataset_size):
         # Randomly decide if we want all one type or mixed types
         if npr.rand() < 1.0:  # 100% chance of being all one type
-            sprite_type = "number"#npr.choice(['number', 'shape'])
+            sprite_type = "shape"#npr.choice(['number', 'shape'])
             sprite_types = [sprite_type, sprite_type, sprite_type]
         else:
             # Mixed types

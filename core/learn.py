@@ -86,7 +86,7 @@ class AutoLearnSchedule:
         base_vocab = []#model.learned_vocab
         base_data  = []
         base_dataset = ListDataset(base_data)
-        step_epochs = 10
+        step_epochs = 5
         #model = model.to(device)
 
         new_words, _ = optimal_schedule(self.dataset, base_vocab)
@@ -114,7 +114,8 @@ class AutoLearnSchedule:
         done = False
         # one epoch with suprression just to add the connections
         self.logger.critical("unification structure check, eval run")
-        #info = model.train(slice_dataset, epochs = epochs, lr = lr, unify = True)
+        #with torch.no_grad():
+        info = model.train(slice_dataset, epochs = 1, lr = lr, unify = True)
 
         self.logger.critical("training until converges")
         while not done:

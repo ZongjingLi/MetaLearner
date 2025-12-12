@@ -10,20 +10,21 @@ first_order_logic_domain_str = """
 (def type  ;; define type alias using a - b, meaning a is an alias to type b
     Object - Embedding[object, 64] ;; the type of certain object
     Expr - str
+    ObjSet - List[Tuple[boolean,Embedding[object, 64]]]
 )
 (def function
     ;; by pass is defaulty used to avoid the actual definion of the functions
-    exists (x : List[Object]) : boolean := by pass
-    forall (x : List[Object]) : boolean := by pass
-    iota   (x : List[Object]) : List[Object] := by pass
-    filter (x : List[Tuple[boolean,Object]]) (y : Expr) : List[Object] := by pass
+    exists (x : ObjSet) : boolean := by pass
+    forall (x : ObjSet) : boolean := by pass
+    iota   (x : ObjSet) : ObjSet := by pass
+    filter (x : ObjSet) (y : Expr) : ObjSet := by pass
 
     negate (x : boolean) : boolean := by pass
     logic_and (x y : boolean) : boolean := by pass
     logic_or  (x y : boolean) : boolean := by pass
 
-    count (x : List[Object]) : integer := by pass
-    scene : List[object] := by pass
+    count (x : ObjSet) : integer := by pass
+    scene : ObjSet := by pass
 )
 """
 
@@ -91,7 +92,9 @@ class FOLExecutor(CentralExecutor):
 
     def logic_or(self, logit1, logit2): return torch.max(logit1, logit2)
 
-    def count(self, objects): return torch.sum(torch.sigmoid(objects[:,0]))
+    def count(self, objects):
+        #print("logits",torch.sum(torch.sigmoid(objects[:,0])))
+        return torch.sum(torch.sigmoid(objects[:,0]))
 
 
 fol_executor = FOLExecutor(fol_domain)

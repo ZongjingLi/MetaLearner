@@ -136,6 +136,7 @@ class ExecutorGroup(CentralExecutor):
             torch.save(executor.state_dict(), path / "domains" / f"{executor.domain.domain_name}.pth")
         
         for name, module in self.extended_registry.items():
+            #print(name, isinstance(module, nn.Module))
             torch.save(module, path / "extended" / f"{name}.ckpt")
 
     def load_ckpt(self, path: str):
@@ -147,9 +148,11 @@ class ExecutorGroup(CentralExecutor):
                     executor.load_state_dict(torch.load(executor_file,  weights_only=True))
                     break
 
-        for extended_file in (path / "extended").glob("*.pth"):
+        for extended_file in (path / "extended").glob("*.ckpt"):
             name = extended_file.stem
-            self.extended_registry[name] = torch.load(extended_file,  weights_only=True)
+            print(name)
+            print(extended_file)
+            self.extended_registry[name] = torch.load(extended_file,  weights_only=False)
 
 
     def format(self, function : str, domain : str) -> str: return f"{function}:{domain}"
@@ -195,6 +198,7 @@ class ExecutorGroup(CentralExecutor):
         functions = []
         for sign in self.extended_registry:
             f_sign, in_types, out_type = self.parse_signature(sign)
+
             functions.append([f_sign, in_types, out_type])
         for executor in self.executor_group:
             assert isinstance(executor, CentralExecutor), f"{executor} is not a executor"
@@ -204,22 +208,28 @@ class ExecutorGroup(CentralExecutor):
                     self.format(func_name,executor.domain.domain_name),
                     executor.function_input_types[func_name],
                     executor.function_output_type[func_name]])
-
+        #print("MAX:",list(fn for fn in functions if "max" in fn[0]))
         return functions
 
     def function_signature(self, func : str) -> List[Tuple[List[TypeBase], TypeBase]]:
         hyp_sign = []
         for function in self.functions:
             f_sign, in_types, out_type = function
-            if func == f_sign: hyp_sign.append([in_types, out_type])
+            if func == f_sign:
+                #print("item:",f_sign, in_types)
+                hyp_sign.append([in_types, out_type])
         return hyp_sign
         
     def gather_functions(self, input_types, output_type : Union[TypeBase, bool]) -> List[str]:
         compatible_fns = []
         for function in self.functions:
             fn_sign, in_types, out_type = function
+            #print(fn_sign,"\n  ::", in_types, input_types,in_types == input_types)
+            #print(in_types , input_types, in_types == input_types)
             if in_types == input_types and out_type == output_type:
+                #print("select:",fn_sign, in_types)
                 compatible_fns.append(fn_sign)
+        #print("COMP:", compatible_fns)
         return compatible_fns
 
     def register_extended_function(self, func : str, in_types : List[TypeBase], out_type : TypeBase, implement : nn.Module):
@@ -528,13 +538,17 @@ class SearchExecutor(CentralExecutor):
         src_node.next = []
         src_node.next_weights = []
         rw_nodes : List[SearchNode] = [src_node]
-
+        #print("distr:", query_fn)
         try:
             output_type = self.base_executor.function_signature(query_fn)[0][-1]
+            #print(query_fn, value_types(value))
             functions = self.base_executor.gather_functions(value_types(value), output_type)
+            
+            #print("fns:",functions)
         except:
             raise NotImplementedError(f"{query_fn} is not found")
         for fn in functions:
+
             nd = SearchNode(fn, value, None)
             nd.next = []
             nd.next_weights = []
@@ -588,12 +602,11 @@ class SearchExecutor(CentralExecutor):
         expect_output = 0.
         assert execute_pairs, f"{fn} canont be executed on {value_types(args)}"
         for (f, vargs, weight) in execute_pairs:
+
             measure : Value = self.base_executor.execute(f, vargs, arg_types, self.grounding)
             if isinstance(measure.value, torch.Tensor) and (measure.vtype == INT or measure.vtype == FLOAT):
                 expect_output += measure.value.reshape([-1])[0] * weight
-            else:
-
-                expect_output += measure.value * weight
+            else: expect_output += measure.value * weight
         
         return Value(measure.vtype, expect_output), -torch.log(success_reach)
 
@@ -674,7 +687,7 @@ class SearchExecutor(CentralExecutor):
     
                 caster = self.inferer.infer_args_caster(src_tps, tgt_tps)
                 learn0_frame = Frame(src_tps, tgt_tps, caster)
-                #print(learn0_frame)
+                #(learn0_frame)
                 learn0_frame.matches[(f"{gn}@{fn}")] = torch.tensor(0.)
 
                 src_sig = 'x'.join([str(tp) for tp in src_tps])
@@ -697,7 +710,7 @@ class SearchExecutor(CentralExecutor):
             max_filler = fillers[0]
             assert isinstance(self.base_executor, ExecutorGroup), "not a group executor"
             self.base_executor.register_extended_function(fn, value_types(args), out_tps, max_filler)
-            #print("added")
+            #print("added",fn, value_types(args))
 
         return self
     
