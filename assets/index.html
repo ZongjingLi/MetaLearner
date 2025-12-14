@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tree Visualization Interface</title>
+    <style>
+        /* Base Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+        }
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        /* Layout */
+        .main-container {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            gap: 20px;
+            height: calc(100vh - 40px);
+        }
+
+        /* Panels */
+        .panel {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        /* Left Panel (File Upload) */
+        .upload-panel h3 {
+            color: #00629B;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+        }
+        .upload-btn {
+            background-color: #00629B;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+        .upload-btn:hover {
+            background-color: #004c73;
+        }
+        #file-input {
+            display: none;
+        }
+        .file-preview-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .file-block {
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            position: relative;
+        }
+        /* New: Delete button style */
+        .file-delete-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+        .file-delete-btn:hover {
+            background-color: #bb2d3b;
+        }
+        .file-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 5px;
+        }
+        .file-tag {
+            padding: 5px;
+            border: 1px solid #00629B;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            outline: none;
+            flex: 1;
+        }
+        .file-preview-media {
+            max-width: 100%;
+            max-height: 150px;
+            object-fit: contain;
+            border-radius: 4px;
+        }
+
+        /* Middle Panel (Tree Visualization) */
+        .tree-panel h3 {
+            color: #00629B;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+        }
+        .query-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        #query-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        #query-submit {
+            background-color: #00629B;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        #query-submit:hover {
+            background-color: #004c73;
+        }
+        .tree-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            height: calc(100% - 80px);
+        }
+        .tree-view {
+            width: 100%;
+            height: 100%;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            position: relative;
+            background: #fafafa;
+            overflow: hidden;
+        }
+        .tree-node {
+            position: absolute;
+            padding: 8px 12px;
+            background: white;
+            border: 1px solid #00629B;
+            border-radius: 6px;
+            cursor: move;
+            user-select: none;
+            z-index: 2;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            font-size: 0.85rem;
+            text-align: center;
+            min-width: 80px;
+        }
+        #paths-tree .tree-node {
+            border-color: #00BFFF;
+            background-color: #f0fcff;
+        }
+        .tree-node:hover {
+            background-color: #f0f7ff;
+            border-color: #004c73;
+        }
+        .tree-node.dragging {
+            opacity: 0.8;
+            z-index: 10;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .tree-edge {
+            position: absolute;
+            height: 2px;
+            z-index: 1;
+            cursor: pointer;
+            transition: all 0.1s ease;
+        }
+        .tree-edge.selected {
+            box-shadow: 0 0 8px 2px #00BFFF;
+        }
+        .tree-edge:hover {
+            opacity: 0.8;
+        }
+
+        /* Right Panel (Details) */
+        .details-panel h3 {
+            color: #00629B;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+        }
+        .details-content {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            height: calc(100% - 40px);
+            background: #fafafa;
+            overflow-y: auto;
+        }
+        .node-image {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #e0e0e0;
+        }
+        .details-text {
+            font-family: monospace;
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #00629B;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Left Panel: File Upload -->
+        <div class="panel upload-panel">
+            <h3>File Upload</h3>
+            <button class="upload-btn" id="add-file-btn">Add File</button>
+            <input type="file" id="file-input" multiple>
+            <div class="file-preview-container" id="file-preview-container"></div>
+        </div>
+
+        <!-- Middle Panel: Tree Visualization -->
+        <div class="panel tree-panel">
+            <h3>Tree Visualization</h3>
+            <div class="query-section">
+                <input type="text" id="query-input" placeholder="Enter query (e.g., 'Show tree')">
+                <button id="query-submit">
+                    <span id="submit-text">Submit</span>
+                    <span class="spinner" id="submit-spinner" style="display: none;"></span>
+                </button>
+            </div>
+            <div class="tree-container">
+                <div class="tree-view" id="program-tree">Program Tree</div>
+                <div class="tree-view" id="paths-tree">Paths Tree</div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Details (With Image Display) -->
+        <div class="panel details-panel">
+            <h3>Node/Edge Details</h3>
+            <div class="details-content" id="details-content">
+                <!-- Node Image Container -->
+                <div id="node-image-container"></div>
+                <!-- Details Text -->
+                <div class="details-text" id="details-text">
+                    Click a node or edge to view details...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global State
+        let uploadedFiles = []; // Now stores: file, name, url, tag, deleted (boolean)
+        let draggingNode = null;
+        let selectedEdge = null;
+
+        // DOM Elements
+        const fileInput = document.getElementById('file-input');
+        const addFileBtn = document.getElementById('add-file-btn');
+        const filePreviewContainer = document.getElementById('file-preview-container');
+        const queryInput = document.getElementById('query-input');
+        const querySubmitBtn = document.getElementById('query-submit');
+        const submitText = document.getElementById('submit-text');
+        const submitSpinner = document.getElementById('submit-spinner');
+        const programTree = document.getElementById('program-tree');
+        const pathsTree = document.getElementById('paths-tree');
+        const detailsContent = document.getElementById('details-content');
+        const nodeImageContainer = document.getElementById('node-image-container');
+        const detailsText = document.getElementById('details-text');
+
+        // ------------------------------
+        // File Upload Logic (UPDATED)
+        // ------------------------------
+        addFileBtn.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', async (e) => {
+            const files = Array.from(e.target.files);
+            for (const file of files) {
+                // Create file entry with extended metadata
+                const fileEntry = {
+                    file: file,
+                    name: file.name,
+                    url: URL.createObjectURL(file),
+                    tag: file.name, // Default tag = filename
+                    deleted: false,
+                    // Optional: Read file content (text/blob) if needed
+                    content: await readFileContent(file) 
+                };
+                uploadedFiles.push(fileEntry);
+
+                // Create file preview block
+                createFilePreviewBlock(fileEntry);
+            }
+            // Clear input to allow re-uploading the same file
+            fileInput.value = '';
+        });
+
+        // Helper: Read file content (returns text/blob based on type)
+        function readFileContent(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                if (file.type.startsWith('text/')) {
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.readAsText(file);
+                } else {
+                    reader.onload = (e) => resolve(e.target.result); // Blob for binary files
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        // Helper: Create file preview block with delete button and tag input
+        function createFilePreviewBlock(fileEntry) {
+            const fileBlock = document.createElement('div');
+            fileBlock.className = 'file-block';
+            fileBlock.dataset.fileName = fileEntry.name; // Link block to file entry
+
+            // Add delete button
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'file-delete-btn';
+            deleteBtn.textContent = '×';
+            deleteBtn.title = 'Delete this file';
+            deleteBtn.addEventListener('click', () => deleteFileBlock(fileBlock, fileEntry));
+
+            // File header (name + tag)
+            const fileHeader = document.createElement('div');
+            fileHeader.className = 'file-header';
+            fileHeader.innerHTML = `<strong>${fileEntry.name}</strong>`;
+
+            // Tag input (persists to fileEntry)
+            const tagInput = document.createElement('input');
+            tagInput.className = 'file-tag';
+            tagInput.value = fileEntry.tag;
+            tagInput.placeholder = 'Edit tag...';
+            tagInput.addEventListener('input', (e) => {
+                // Update tag in fileEntry when input changes
+                fileEntry.tag = e.target.value.trim();
+            });
+
+            fileHeader.appendChild(tagInput);
+            fileBlock.appendChild(deleteBtn);
+            fileBlock.appendChild(fileHeader);
+
+            // Add media preview (image/video)
+            if (fileEntry.file.type.startsWith('image/')) {
+                const img = document.createElement('img');
+                img.src = fileEntry.url;
+                img.className = 'file-preview-media';
+                img.alt = fileEntry.name;
+                fileBlock.appendChild(img);
+            } else if (fileEntry.file.type.startsWith('video/')) {
+                const video = document.createElement('video');
+                video.src = fileEntry.url;
+                video.className = 'file-preview-media';
+                video.controls = true;
+                video.alt = fileEntry.name;
+                fileBlock.appendChild(video);
+            }
+
+            filePreviewContainer.appendChild(fileBlock);
+        }
+
+        // Helper: Delete file block and clean up
+        function deleteFileBlock(fileBlock, fileEntry) {
+            // Mark file as deleted (for API submission filtering)
+            fileEntry.deleted = true;
+            
+            // Revoke ObjectURL to free memory
+            URL.revokeObjectURL(fileEntry.url);
+            
+            // Remove block from DOM
+            fileBlock.remove();
+            
+            // Optional: Filter out deleted files from uploadedFiles (if needed)
+            // uploadedFiles = uploadedFiles.filter(f => !f.deleted);
+        }
+
+        // ------------------------------
+        // Color Helper (Weight → RGB)
+        // ------------------------------
+        function getEdgeColor(weight) {
+            const w = Math.max(0, Math.min(1, weight || 0));
+            const g = Math.floor(w * 191);
+            const b = Math.floor(w * 255);
+            return {
+                rgb: `rgb(0, ${g}, ${b})`,
+                g: g,
+                b: b,
+                weight: w
+            };
+        }
+
+        // ------------------------------
+        // Tree Rendering Core
+        // ------------------------------
+        function renderTree(data, container) {
+            // Clear container
+            container.innerHTML = '';
+            if (!data || !data.nodes || !data.edges) return;
+
+            // Render nodes
+            data.nodes.forEach(node => {
+                const nodeEl = document.createElement('div');
+                console.log(nodeEl)
+                nodeEl.className = 'tree-node';
+                nodeEl.dataset.id = node.id;
+                nodeEl.textContent = `${node.fn}\n(${node.type})`;
+                nodeEl.style.left = `${node.coordinate[0]}px`;
+                nodeEl.style.top = `${node.coordinate[1]}px`;
+
+                // Add drag handlers
+                initDragHandlers(nodeEl, container);
+                
+                // Node click handler
+                nodeEl.addEventListener('click', async () => {
+                    if (!draggingNode) {
+                        await fetchNodeDetails(node.id);
+                    }
+                });
+
+                container.appendChild(nodeEl);
+            });
+
+            // Render edges
+            renderEdges(data, container);
+        }
+
+        function renderEdges(data, container) {
+            // Remove existing edges
+            container.querySelectorAll('.tree-edge').forEach(edge => edge.remove());
+
+            // Create new edges
+            data.edges.forEach(([fromId, toId, edgeData]) => {
+                const fromNode = container.querySelector(`[data-id="${fromId}"]`);
+                const toNode = container.querySelector(`[data-id="${toId}"]`);
+                
+                if (!fromNode || !toNode) return;
+
+                const weight = edgeData?.weight || Math.random();
+                const color = getEdgeColor(weight);
+
+                const edgeEl = document.createElement('div');
+                edgeEl.className = 'tree-edge';
+                edgeEl.dataset.from = fromId;
+                edgeEl.dataset.to = toId;
+                edgeEl.dataset.weight = weight;
+                edgeEl.style.backgroundColor = color.rgb;
+
+                // Update edge position
+                updateEdgePosition(edgeEl, fromNode, toNode, container);
+
+                // Edge click handler
+                edgeEl.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    // Deselect previous edge
+                    if (selectedEdge) selectedEdge.classList.remove('selected');
+                    selectedEdge = edgeEl;
+                    selectedEdge.classList.add('selected');
+                    
+                    // Clear node image when clicking edge
+                    nodeImageContainer.innerHTML = '';
+                    // Update details text
+                    detailsText.textContent = JSON.stringify({
+                        type: 'edge',
+                        id: `${fromId}→${toId}`,
+                        from: fromId,
+                        to: toId,
+                        weight: weight.toFixed(2),
+                        color: color.rgb,
+                        container: container.id
+                    }, null, 2);
+
+                    // Load path tree if clicking program edge
+                    if (container.id === 'program-tree') {
+                        fetchEdgePaths(`${fromId}_${toId}`);
+                    }
+                });
+
+                container.appendChild(edgeEl);
+            });
+        }
+
+        function updateEdgePosition(edgeEl, fromNode, toNode, container) {
+            const containerRect = container.getBoundingClientRect();
+            
+            // Get node positions relative to container
+            const fromRect = fromNode.getBoundingClientRect();
+            const toRect = toNode.getBoundingClientRect();
+
+            const fromX = fromRect.left - containerRect.left + fromRect.width / 2;
+            const fromY = fromRect.top - containerRect.top + fromRect.height / 2;
+            const toX = toRect.left - containerRect.left + toRect.width / 2;
+            const toY = toRect.top - containerRect.top + toRect.height / 2;
+
+            // Calculate edge geometry
+            const length = Math.hypot(toX - fromX, toY - fromY);
+            const angle = Math.atan2(toY - fromY, toX - fromX) * 180 / Math.PI;
+
+            // Apply styles
+            edgeEl.style.width = `${length}px`;
+            edgeEl.style.left = `${fromX}px`;
+            edgeEl.style.top = `${fromY}px`;
+            edgeEl.style.transform = `rotate(${angle}deg)`;
+            edgeEl.style.transformOrigin = '0 0';
+        }
+
+        // ------------------------------
+        // Drag Handler Core (Fixed)
+        // ------------------------------
+        function initDragHandlers(nodeEl, container) {
+            nodeEl.addEventListener('mousedown', (e) => {
+                if (e.button !== 0) return;
+                
+                // Set drag state
+                draggingNode = {
+                    el: nodeEl,
+                    container: container,
+                    offsetX: e.clientX - nodeEl.getBoundingClientRect().left,
+                    offsetY: e.clientY - nodeEl.getBoundingClientRect().top
+                };
+
+                // Add global drag listeners
+                document.addEventListener('mousemove', handleDragMove);
+                document.addEventListener('mouseup', handleDragEnd);
+                
+                // Add dragging class
+                nodeEl.classList.add('dragging');
+                e.preventDefault();
+            });
+        }
+
+        function handleDragMove(e) {
+            if (!draggingNode) return;
+
+            const { el, container, offsetX, offsetY } = draggingNode;
+            const containerRect = container.getBoundingClientRect();
+
+            // Calculate new position (constrain to container)
+            const x = Math.max(0, Math.min(
+                e.clientX - containerRect.left - offsetX,
+                containerRect.width - el.offsetWidth
+            ));
+            const y = Math.max(0, Math.min(
+                e.clientY - containerRect.top - offsetY,
+                containerRect.height - el.offsetHeight
+            ));
+
+            // Update node position
+            el.style.left = `${x}px`;
+            el.style.top = `${y}px`;
+
+            // Reconstruct tree data from DOM
+            const treeData = {
+                nodes: Array.from(container.querySelectorAll('.tree-node')).map(node => ({
+                    id: node.dataset.id,
+                    fn: node.textContent.split('\n')[0],
+                    type: node.textContent.split('\n')[1].replace(/[()]/g, ''),
+                    coordinate: [parseInt(node.style.left), parseInt(node.style.top)]
+                })),
+                edges: Array.from(container.querySelectorAll('.tree-edge')).map(edge => [
+                    edge.dataset.from,
+                    edge.dataset.to,
+                    { weight: parseFloat(edge.dataset.weight) }
+                ])
+            };
+
+            // Re-render edges (critical fix)
+            renderEdges(treeData, container);
+        }
+
+        function handleDragEnd() {
+            // Clean up drag state
+            if (draggingNode) {
+                draggingNode.el.classList.remove('dragging');
+            }
+            draggingNode = null;
+            
+            // Remove global listeners
+            document.removeEventListener('mousemove', handleDragMove);
+            document.removeEventListener('mouseup', handleDragEnd);
+        }
+
+        // ------------------------------
+        // API Calls
+        // ------------------------------
+
+        async function submitQuery() {
+    const query = queryInput.value.trim();
+    if (!query) {
+        alert('Please enter a query!');
+        return;
+    }
+
+    // Show loading state
+    querySubmitBtn.disabled = true;
+    submitText.textContent = 'Submitting...';
+    submitSpinner.style.display = 'inline-block';
+
+    try {
+        const formData = new FormData();
+        formData.append('query', query);
+        
+        // Only add NON-DELETED files + their tags to FormData
+        const activeFiles = uploadedFiles.filter(f => !f.deleted);
+        activeFiles.forEach(({ file, tag }) => {
+            formData.append('files', file); // Append file
+            formData.append('file_tags', tag); // Append corresponding tag
+        });
+
+        const response = await fetch('/api/model', {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+        const result = await response.json();
+
+        // Render program tree
+        const programTree = document.getElementById('program-tree');
+        renderTree(result.tree, programTree);
+        // Clear paths tree
+        pathsTree.innerHTML = 'Select an edge in Program Tree to view paths';
+        // Reset selected edge
+        if (selectedEdge) selectedEdge.classList.remove('selected');
+        selectedEdge = null;
+
+    } catch (error) {
+        console.error('Submit Error:', error);
+        alert(`Failed to submit query: ${error.message}`);
+    } finally {
+        // Reset loading state
+        querySubmitBtn.disabled = false;
+        submitText.textContent = 'Submit';
+        submitSpinner.style.display = 'none';
+    }
+}
+
+        // ------------------------------
+        // Updated: Fetch Node Details (Displays Image)
+        // ------------------------------
+        async function fetchNodeDetails(nodeId) {
+            try {
+                const response = await fetch(`/api/visualize-node?node_id=${encodeURIComponent(nodeId)}`);
+                if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+                
+                const result = await response.json();
+                
+                // Clear previous image
+                nodeImageContainer.innerHTML = '';
+                
+                // Display node image if available
+                if (result.image_url) {
+                    const img = document.createElement('img');
+                    img.src = result.image_url;
+                    img.className = 'node-image';
+                    img.alt = `Visualization for node ${nodeId}`;
+                    nodeImageContainer.appendChild(img);
+                } else {
+                    nodeImageContainer.innerHTML = '<div class="details-text">No image available for this node</div>';
+                }
+                
+                // Display node details text
+                detailsText.textContent = JSON.stringify({
+                    type: 'node',
+                    ...result.node_info
+                }, null, 2);
+
+            } catch (error) {
+                console.error('Node Details Error:', error);
+                alert(`Failed to load node details: ${error.message}`);
+                nodeImageContainer.innerHTML = '<div class="details-text">Error loading image</div>';
+                detailsText.textContent = `Error: ${error.message}`;
+            }
+        }
+
+        async function fetchEdgePaths(edgeId) {
+            try {
+                const response = await fetch(`/api/edge-paths?edge_id=${encodeURIComponent(edgeId)}`);
+                if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+                
+                const result = await response.json();
+                renderTree(result.path_tree, pathsTree);
+
+            } catch (error) {
+                console.error('Edge Paths Error:', error);
+                alert(`Failed to load paths: ${error.message}`);
+            }
+        }
+
+        // ------------------------------
+        // Initialization
+        // ------------------------------
+        window.addEventListener('load', async () => {
+            // Clear image container on load
+            nodeImageContainer.innerHTML = '';
+            detailsText.textContent = 'Click a node or edge to view details...';
+            
+            // Load default tree
+            try {
+                const response = await fetch('/api/default-tree');
+                if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+                
+                const defaultTree = await response.json();
+                renderTree(defaultTree, programTree);
+
+            } catch (error) {
+                console.error('Default Tree Error:', error);
+                //alert(`Failed to load default tree: ${error.message}`);
+            }
+        });
+
+        // Query submit handler
+        querySubmitBtn.addEventListener('click', submitQuery);
+        queryInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') submitQuery();
+        });
+    </script>
+</body>
+</html>

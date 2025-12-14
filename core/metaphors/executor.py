@@ -288,6 +288,7 @@ class SearchNode:
     next_weights = []
     distr : None = None                    # the distribution value on the search node
     reachable : None  = None           # whether the node is reachable
+    name : str = None
 
 
 class SearchVisualizer:
@@ -378,6 +379,8 @@ class SearchExecutor(CentralExecutor):
         self.inferer = RuleBasedTransform(*get_transform_rules())
         self.logger = get_logger(name = "SearchExecutor")
         self.ban_list = []
+        self.eval_tree = {}
+        self.node_count = 0
 
     """stupid formatting stuff"""
     def gather_format(self, name, domain): return self._gather_format.format(name, domain)
@@ -534,17 +537,25 @@ class SearchExecutor(CentralExecutor):
         Return:
             a distribution over search nodes
         """
-        src_node = SearchNode("super_source", None, None, None, reachable = 1.)
+        
+
+
+
+        src_node = SearchNode("node_0", None, None, None, reachable = 1.)
         src_node.next = []
         src_node.next_weights = []
         rw_nodes : List[SearchNode] = [src_node]
         #print("distr:", query_fn)
+
+        """vertex of the rewrite search path"""
+        self.vertex_count = -1
+        rw_edges = []
+
         try:
             output_type = self.base_executor.function_signature(query_fn)[0][-1]
             #print(query_fn, value_types(value))
             functions = self.base_executor.gather_functions(value_types(value), output_type)
-            
-            #print("fns:",functions)
+
         except:
             raise NotImplementedError(f"{query_fn} is not found")
         for fn in functions:
@@ -564,7 +575,13 @@ class SearchExecutor(CentralExecutor):
                 rw_nodes.extend(subtree_nodes)
 
 
-        def dfs(node : SearchNode, success_reach):
+
+        def dfs(node : SearchNode, success_reach, prev = None):
+            self.vertex_count += 1
+            if prev is not None:
+               node.name = f"vertex{self.vertex_count}"
+               rw_edges.append((prev, f"vertex{self.vertex_count}",success_reach))
+            
             # the node is reachable and have no applicable rewrite.
             if node.next_weights:
                 node.distr = node.reachable * (1. - torch.max(torch.tensor(node.next_weights)))
@@ -575,14 +592,15 @@ class SearchExecutor(CentralExecutor):
                 son.reachable = node.reachable * weight
                 if son.fn == query_fn :
                     success_reach = max(success_reach, son.reachable)
-                success_reach = max(success_reach,dfs(son, success_reach))
+                
+                success_reach = max(success_reach,dfs(son, success_reach, f"vertex{self.vertex_count}"))
             return success_reach
 
-        success_reach = dfs(src_node, 0.) # dfs on the super source node
+        success_reach = dfs(src_node, 0., None) # dfs on the super source node
 
         #self.storage.log(query_fn, value, rw_nodes, mode)
 
-        return [(node.fn, node.value, node.distr) for node in rw_nodes], success_reach
+        return [(node.name,node.fn, node.value, node.distr) for node in rw_nodes], success_reach, rw_nodes, rw_edges
 
     def reduction_call(self, fn : str , args : List[Value], arg_types : List[TypeBase]):
         """ evaluate the fn calls on the distribution over all possible rewrites
@@ -590,25 +608,46 @@ class SearchExecutor(CentralExecutor):
         1. locate each node that terminates, find the subtree that trace back to the init_node
         2. for the subtree, evaluate the expectation over the subtree distribution
         """
-        rewrite_pairs, success_reach = self.rewrite_distr(args, fn, mode = "eval")
+        rewrite_pairs, success_reach, rw_nodes, serial_edges = self.rewrite_distr(args, fn, mode = "eval")
         execute_pairs = rewrite_pairs[1:]
         if not isinstance(success_reach, torch.Tensor): success_reach = torch.tensor(success_reach)
         if success_reach < self.unification_p and not self.supressed:
             raise UnificationFailure(f"failed to unify {fn}({args}->{success_reach})", 
                                      left_structure = fn,
                                      right_structure = args)
+        #print("fn",fn,success_reach)
+        serial_nodes = [
+            {       
+                    "id":"vertex0",
+                    "fn": "super",
+                    "value":"super start",
+                    "type":"start type",
+                    "weight": 1.0}
+        ]
+
 
         """expectation over all the possible rewrite pairs"""
         expect_output = 0.
         assert execute_pairs, f"{fn} canont be executed on {value_types(args)}"
-        for (f, vargs, weight) in execute_pairs:
+        for i,(node, fn, vargs, weight) in enumerate(execute_pairs):
 
-            measure : Value = self.base_executor.execute(f, vargs, arg_types, self.grounding)
+            measure : Value = self.base_executor.execute(fn, vargs, arg_types, self.grounding)
             if isinstance(measure.value, torch.Tensor) and (measure.vtype == INT or measure.vtype == FLOAT):
                 expect_output += measure.value.reshape([-1])[0] * weight
             else: expect_output += measure.value * weight
-        
-        return Value(measure.vtype, expect_output), -torch.log(success_reach)
+
+            serial_nodes.append(
+                {   "id":node,
+                    "fn": fn,
+                    "value":str(measure.value),
+                    "type": str(value_types(args))+"->"+str(measure.vtype),
+                    "weight": weight}
+                )
+
+
+        search_tree = {"nodes": serial_nodes, "edges":serial_edges}
+        #print("fn",fn,success_reach)
+        return Value(measure.vtype, expect_output), -torch.log(success_reach), search_tree
 
     """Evaluate Chain of Expressions"""
     def evaluate(self, expression, grounding):
@@ -618,35 +657,62 @@ class SearchExecutor(CentralExecutor):
 
         grounding = grounding if grounding is not None else {}
 
-        with self.with_grounding(grounding):
-                outputs, loss = self._evaluate(expression)
+        self.node_count = 0
+        self.prev_node  = {"id":"node0","fn" : "output_fn", "value": "output", "type": "type"}
+                         
+        self.eval_info = {
+            "tree":{"nodes":[], "edges": []},
+            "paths":{}} # tree, paths
 
+
+        with self.with_grounding(grounding):
+            outputs, loss, _ = self._evaluate(expression)
+
+        #print("eval",self.eval_info)
         return outputs, loss
     
     def _evaluate(self, expr : Expression) -> Tuple[Value, str]:
+        #print("ct:", self.node_count)
+        self.node_count += 1
+        node_id = f"node{self.node_count}"
         if isinstance(expr, FunctionApplicationExpression):
+            
             # recusive call self.evaluate(arg) to evaluate the args in the subtree
             fn = expr.func.name
             args : List[Value] = []
             arg_loss  = []
 
             for arg in expr.args: 
-                arg_value, subloss = self._evaluate(arg) # A List of Values
+                arg_value, subloss, son_id = self._evaluate(arg) # A List of Values
                 args.append(arg_value)
                 arg_loss.append(subloss)
+
+                edge_info = (node_id, son_id, {"weight":float(torch.exp(torch.tensor(-subloss)) )})
+
+                self.eval_info["tree"]["edges"].append(edge_info)
+
             arg_types : List[TypeBase] = [arg.vtype for arg in args]
-            output, loss = self.reduction_call(fn, args, arg_types)
-            return output, sum(arg_loss) + loss
+            output, loss, paths = self.reduction_call(fn, args, arg_types)
+
+            # node info loggers
+            node_info = {"id":node_id, "fn" : fn, "value": str(output.value), "type": str(output.vtype)}
+            self.eval_info["tree"]["nodes"].append(node_info)
+            
+            self.eval_info["paths"][f"{node_id}"] = paths
+
+            self.prev_node = node_info
+
+            return output, sum(arg_loss) + loss, node_id
 
         elif isinstance(expr, ConstantExpression):
             assert isinstance(expr.const, Value)
-            return expr.const, 0.
+            return expr.const, 0., node_id
         elif isinstance(expr, VariableExpression):
             from helchriss.dsl.dsl_types import STR
-            if isinstance(expr.name, Value): return expr.name, 0.
-            elif isinstance(expr.name, str) : return Value(STR,str(expr.name)), 0.
+            if isinstance(expr.name, Value): return expr.name, 0., node_id
+            elif isinstance(expr.name, str) : return Value(STR,str(expr.name)), 0., node_id
 
-            return expr.name, 0.
+            return expr.name, 0., node_id
         else:
             raise NotImplementedError(f'Unknown expression type: {type(expr)}')
     
@@ -671,7 +737,7 @@ class SearchExecutor(CentralExecutor):
             fn   : str as the input function name (specific to domain tag)
         """
         # 1. add rewriters that locate from the value node to the fn node.
-        execute_pairs, reach_loss = self.rewrite_distr(args, fn, mode = "update")
+        execute_pairs, reach_loss, paths = self.rewrite_distr(args, fn, mode = "update")
         execute_pairs = execute_pairs[1:]
 
         if not execute_pairs: self.logger.info(f"execution not found for {fn}({value_types(args)})")

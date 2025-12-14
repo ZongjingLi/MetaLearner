@@ -566,3 +566,93 @@ class MetaLearner(nn.Module):
     def eval_graph(self):
         from core.metaphors.executor import convert_graph_to_visualization_data
         return convert_graph_to_visualization_data(self.executor.eval_graph)
+    
+    """for interact and visualization purpose"""
+
+    def process_query(self, query, grounding):
+        results = self.executor.evaluate(query, grounding = grounding)
+
+        eval_info = self.executor.eval_info
+        #print(grounding.keys())
+        add_and_center_coordinates(eval_info)
+        self.path_trees = eval_info["paths"]
+        print("result",results[0])
+        return eval_info
+    
+    def get_edge_paths(self, edge_id):
+        """get path tree for a specific edge (with weights)"""
+        path_tree = self.path_trees[edge_id.split("_")[0]]
+
+        edges = []
+        for u,v,w in path_tree["edges"]:
+            edges.append([u,v,{"weight":w}])
+
+
+        bind = {
+            "nodes": path_tree["nodes"],
+            "edges": edges
+        }
+        return bind
+
+import random
+
+def add_and_center_coordinates(eval_info):
+    """
+    1. Add 'coordinate' key to all nodes (tree + paths) (random if missing)
+    2. Center the FIRST tree node (super node) at (0, 0)
+    3. Adjust all other nodes relative to the root to maintain layout
+    
+    Args:
+        eval_info (dict): Input dict with tree (nodes/edges) and paths (dict of path entries)
+    
+    Returns:
+        dict: Updated eval_info with centered coordinates
+    """
+    # Helper: Generate random (x,y) coordinates (0-1000, 2 decimal places)
+    def _generate_random_coords():
+        return (round(random.uniform(200, 300), 2), round(random.uniform(200, 600), 2))
+
+    # --------------------------
+    # Step 1: Add coordinates to ALL tree nodes (if missing)
+    # --------------------------
+    tree_nodes = eval_info.get('tree', {}).get('nodes', [])
+    for node in tree_nodes:
+        if 'coordinate' not in node:
+            node['coordinate'] = _generate_random_coords()
+
+    # --------------------------
+    # Step 2: Center FIRST tree node (super node) at (0, 0)
+    # --------------------------
+    offset_x, offset_y = 0, 0
+    if tree_nodes:  # Only if there are tree nodes
+        # Get root node (first node = node2 in your example)
+        root_node = tree_nodes[-1]
+        root_x, root_y = root_node['coordinate']
+        
+        # Calculate offset to shift root to (0,0)
+        offset_x = -root_x + 100
+        offset_y = -root_y + 300
+        
+        # Shift ALL tree nodes by the offset (preserve relative positions)
+        for node in tree_nodes:
+            curr_x, curr_y = node['coordinate']
+            node['coordinate'] = (round(curr_x + offset_x, 2), round(curr_y + offset_y, 2))
+
+    # --------------------------
+    # Step 3: Add coordinates to ALL path nodes (if missing) + shift to match root
+    # --------------------------
+    paths_dict = eval_info.get('paths', {})  # Paths are a dict (not list) in your new data
+    for path_key in paths_dict:
+        path_data = paths_dict[path_key]
+        path_nodes = path_data.get('nodes', [])
+        
+        # Add missing coordinates + shift by root offset
+        for node in path_nodes:
+            if 'coordinate' not in node:
+                node['coordinate'] = _generate_random_coords()
+            
+            # Shift path node to align with centered tree
+            curr_x, curr_y = node['coordinate']
+            node['coordinate'] = (round(curr_x + offset_x, 2), round(curr_y + offset_y, 2))
+
+    return eval_info
