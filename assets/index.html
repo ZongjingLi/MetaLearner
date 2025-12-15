@@ -158,6 +158,20 @@
             position: relative;
             background: #fafafa;
             overflow: hidden;
+            /* Add cursor for pan */
+            cursor: grab;
+        }
+        .tree-view.panning {
+            cursor: grabbing;
+        }
+        /* Inner canvas container for pan/zoom */
+        .tree-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 200%; /* Allow space for pan */
+            height: 200%;
+            transform-origin: 0 0;
         }
         .tree-node {
             position: absolute;
@@ -200,33 +214,6 @@
             opacity: 0.8;
         }
 
-        /* Right Panel (Details) */
-        .details-panel h3 {
-            color: #00629B;
-            margin-bottom: 20px;
-            font-size: 1.2rem;
-        }
-        .details-content {
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 15px;
-            height: calc(100% - 40px);
-            background: #fafafa;
-            overflow-y: auto;
-        }
-        .node-image {
-            max-width: 100%;
-            max-height: 200px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            border: 1px solid #e0e0e0;
-        }
-        .details-text {
-            font-family: monospace;
-            font-size: 0.9rem;
-            white-space: pre-wrap;
-        }
-
         /* Loading Spinner */
         .spinner {
             border: 3px solid #f3f3f3;
@@ -265,8 +252,12 @@
                 </button>
             </div>
             <div class="tree-container">
-                <div class="tree-view" id="program-tree">Program Tree</div>
-                <div class="tree-view" id="paths-tree">Paths Tree</div>
+                <div class="tree-view" id="program-tree">
+                    <div class="tree-canvas">Program Tree</div>
+                </div>
+                <div class="tree-view" id="paths-tree">
+                    <div class="tree-canvas">Paths Tree</div>
+                </div>
             </div>
         </div>
 
@@ -289,6 +280,12 @@
         let uploadedFiles = []; // Now stores: file, name, url, tag, deleted (boolean)
         let draggingNode = null;
         let selectedEdge = null;
+        // New: Canvas pan state
+        let panningCanvas = null;
+        const canvasPanState = {
+            "program-tree": { x: 0, y: 0, startX: 0, startY: 0 },
+            "paths-tree": { x: 0, y: 0, startX: 0, startY: 0 }
+        };
 
         // DOM Elements
         const fileInput = document.getElementById('file-input');
@@ -429,45 +426,51 @@
         // Tree Rendering Core
         // ------------------------------
         function renderTree(data, container) {
-            // Clear container
-            container.innerHTML = '';
+            // Get inner canvas container
+            const canvas = container.querySelector('.tree-canvas');
+            if (!canvas) return;
+            
+            // Clear canvas
+            canvas.innerHTML = '';
             if (!data || !data.nodes || !data.edges) return;
 
             // Render nodes
             data.nodes.forEach(node => {
                 const nodeEl = document.createElement('div');
-                console.log(nodeEl)
                 nodeEl.className = 'tree-node';
                 nodeEl.dataset.id = node.id;
                 nodeEl.textContent = `${node.fn}\n(${node.type})`;
-                nodeEl.style.left = `${node.coordinate[0]}px`;
-                nodeEl.style.top = `${node.coordinate[1]}px`;
+                // Adjust position relative to canvas pan
+                const pan = canvasPanState[container.id];
+                nodeEl.style.left = `${node.coordinate[0] - pan.x}px`;
+                nodeEl.style.top = `${node.coordinate[1] - pan.y}px`;
 
                 // Add drag handlers
-                initDragHandlers(nodeEl, container);
+                initDragHandlers(nodeEl, canvas, container);
                 
                 // Node click handler
-                nodeEl.addEventListener('click', async () => {
+                nodeEl.addEventListener('click', async (e) => {
+                    e.stopPropagation(); // Prevent canvas pan
                     if (!draggingNode) {
                         await fetchNodeDetails(node.id);
                     }
                 });
 
-                container.appendChild(nodeEl);
+                canvas.appendChild(nodeEl);
             });
 
             // Render edges
-            renderEdges(data, container);
+            renderEdges(data, canvas, container);
         }
 
-        function renderEdges(data, container) {
+        function renderEdges(data, canvas, container) {
             // Remove existing edges
-            container.querySelectorAll('.tree-edge').forEach(edge => edge.remove());
+            canvas.querySelectorAll('.tree-edge').forEach(edge => edge.remove());
 
             // Create new edges
             data.edges.forEach(([fromId, toId, edgeData]) => {
-                const fromNode = container.querySelector(`[data-id="${fromId}"]`);
-                const toNode = container.querySelector(`[data-id="${toId}"]`);
+                const fromNode = canvas.querySelector(`[data-id="${fromId}"]`);
+                const toNode = canvas.querySelector(`[data-id="${toId}"]`);
                 
                 if (!fromNode || !toNode) return;
 
@@ -482,11 +485,11 @@
                 edgeEl.style.backgroundColor = color.rgb;
 
                 // Update edge position
-                updateEdgePosition(edgeEl, fromNode, toNode, container);
+                updateEdgePosition(edgeEl, fromNode, toNode, canvas);
 
                 // Edge click handler
                 edgeEl.addEventListener('click', (e) => {
-                    e.stopPropagation();
+                    e.stopPropagation(); // Prevent canvas pan
                     // Deselect previous edge
                     if (selectedEdge) selectedEdge.classList.remove('selected');
                     selectedEdge = edgeEl;
@@ -511,21 +514,19 @@
                     }
                 });
 
-                container.appendChild(edgeEl);
+                canvas.appendChild(edgeEl);
             });
         }
 
-        function updateEdgePosition(edgeEl, fromNode, toNode, container) {
-            const containerRect = container.getBoundingClientRect();
-            
-            // Get node positions relative to container
+        function updateEdgePosition(edgeEl, fromNode, toNode, canvas) {
             const fromRect = fromNode.getBoundingClientRect();
             const toRect = toNode.getBoundingClientRect();
+            const canvasRect = canvas.getBoundingClientRect();
 
-            const fromX = fromRect.left - containerRect.left + fromRect.width / 2;
-            const fromY = fromRect.top - containerRect.top + fromRect.height / 2;
-            const toX = toRect.left - containerRect.left + toRect.width / 2;
-            const toY = toRect.top - containerRect.top + toRect.height / 2;
+            const fromX = fromRect.left - canvasRect.left + fromRect.width / 2;
+            const fromY = fromRect.top - canvasRect.top + fromRect.height / 2;
+            const toX = toRect.left - canvasRect.left + toRect.width / 2;
+            const toY = toRect.top - canvasRect.top + toRect.height / 2;
 
             // Calculate edge geometry
             const length = Math.hypot(toX - fromX, toY - fromY);
@@ -540,15 +541,105 @@
         }
 
         // ------------------------------
-        // Drag Handler Core (Fixed)
+        // Canvas Pan/Drag Functionality (NEW)
         // ------------------------------
-        function initDragHandlers(nodeEl, container) {
+        function initCanvasPanHandlers(container) {
+            const canvas = container.querySelector('.tree-canvas');
+            if (!canvas) return;
+
+            // Start pan
+            container.addEventListener('mousedown', (e) => {
+                // Ignore if node is being dragged
+                if (draggingNode) return;
+                
+                panningCanvas = container.id;
+                container.classList.add('panning');
+                
+                // Store start position
+                canvasPanState[container.id].startX = e.clientX;
+                canvasPanState[container.id].startY = e.clientY;
+                
+                // Add global listeners
+                document.addEventListener('mousemove', handleCanvasPan);
+                document.addEventListener('mouseup', handleCanvasPanEnd);
+                e.preventDefault();
+            });
+        }
+
+        function handleCanvasPan(e) {
+            if (!panningCanvas) return;
+            
+            const container = document.getElementById(panningCanvas);
+            const canvas = container.querySelector('.tree-canvas');
+            const state = canvasPanState[panningCanvas];
+            
+            // Calculate pan delta
+            const deltaX = e.clientX - state.startX;
+            const deltaY = e.clientY - state.startY;
+            
+            // Update pan position
+            state.x += deltaX;
+            state.y += deltaY;
+            
+            // Update canvas transform
+            canvas.style.transform = `translate(${state.x}px, ${state.y}px)`;
+            
+            // Update start position for next frame
+            state.startX = e.clientX;
+            state.startY = e.clientY;
+            
+            // Re-render tree to update node positions
+            // (Optional: If you have the tree data stored, use it instead of re-fetching)
+            const treeData = getTreeDataFromCanvas(canvas);
+            if (treeData) {
+                renderEdges(treeData, canvas, container);
+            }
+        }
+
+        function handleCanvasPanEnd() {
+            if (!panningCanvas) return;
+            
+            const container = document.getElementById(panningCanvas);
+            container.classList.remove('panning');
+            panningCanvas = null;
+            
+            // Remove global listeners
+            document.removeEventListener('mousemove', handleCanvasPan);
+            document.removeEventListener('mouseup', handleCanvasPanEnd);
+        }
+
+        // Helper: Get tree data from canvas DOM
+        function getTreeDataFromCanvas(canvas) {
+            const nodes = Array.from(canvas.querySelectorAll('.tree-node')).map(node => ({
+                id: node.dataset.id,
+                fn: node.textContent.split('\n')[0],
+                type: node.textContent.split('\n')[1].replace(/[()]/g, ''),
+                coordinate: [
+                    parseInt(node.style.left) + canvasPanState[canvas.parentElement.id].x,
+                    parseInt(node.style.top) + canvasPanState[canvas.parentElement.id].y
+                ]
+            }));
+            
+            const edges = Array.from(canvas.querySelectorAll('.tree-edge')).map(edge => [
+                edge.dataset.from,
+                edge.dataset.to,
+                { weight: parseFloat(edge.dataset.weight) }
+            ]);
+            
+            return { nodes, edges };
+        }
+
+        // ------------------------------
+        // Drag Handler Core (Updated for Canvas)
+        // ------------------------------
+        function initDragHandlers(nodeEl, canvas, container) {
             nodeEl.addEventListener('mousedown', (e) => {
                 if (e.button !== 0) return;
                 
                 // Set drag state
                 draggingNode = {
                     el: nodeEl,
+                    canvas: canvas,
                     container: container,
                     offsetX: e.clientX - nodeEl.getBoundingClientRect().left,
                     offsetY: e.clientY - nodeEl.getBoundingClientRect().top
@@ -561,47 +652,40 @@
                 // Add dragging class
                 nodeEl.classList.add('dragging');
                 e.preventDefault();
+                e.stopPropagation(); // Prevent canvas pan
             });
         }
 
+        
         function handleDragMove(e) {
-            if (!draggingNode) return;
+    if (!draggingNode) return;
 
-            const { el, container, offsetX, offsetY } = draggingNode;
-            const containerRect = container.getBoundingClientRect();
+    const { el, canvas, container, offsetX, offsetY } = draggingNode;
+    const containerRect = container.getBoundingClientRect();
+    const canvasRect = canvas.getBoundingClientRect();
+    const pan = canvasPanState[container.id];
 
-            // Calculate new position (constrain to container)
-            const x = Math.max(0, Math.min(
-                e.clientX - containerRect.left - offsetX,
-                containerRect.width - el.offsetWidth
-            ));
-            const y = Math.max(0, Math.min(
-                e.clientY - containerRect.top - offsetY,
-                containerRect.height - el.offsetHeight
-            ));
+    // ✅ LOOSE CONSTRAINTS - allow nodes to go beyond viewport but stay in canvas
+    const x = Math.max(-canvasRect.width/2, Math.min(
+        canvasRect.width - el.offsetWidth/2,
+        e.clientX - containerRect.left - offsetX - pan.x
+    ));
+    const y = Math.max(-canvasRect.height/2, Math.min(
+        canvasRect.height - el.offsetHeight/2,
+        e.clientY - containerRect.top - offsetY - pan.y
+    ));
 
-            // Update node position
-            el.style.left = `${x}px`;
-            el.style.top = `${y}px`;
+    // Update node position
+    el.style.left = `${x}px`;
+    el.style.top = `${y}px`;
 
-            // Reconstruct tree data from DOM
-            const treeData = {
-                nodes: Array.from(container.querySelectorAll('.tree-node')).map(node => ({
-                    id: node.dataset.id,
-                    fn: node.textContent.split('\n')[0],
-                    type: node.textContent.split('\n')[1].replace(/[()]/g, ''),
-                    coordinate: [parseInt(node.style.left), parseInt(node.style.top)]
-                })),
-                edges: Array.from(container.querySelectorAll('.tree-edge')).map(edge => [
-                    edge.dataset.from,
-                    edge.dataset.to,
-                    { weight: parseFloat(edge.dataset.weight) }
-                ])
-            };
+    // Reconstruct tree data from DOM
+    const treeData = getTreeDataFromCanvas(canvas);
+    
+    // Re-render edges
+    renderEdges(treeData, canvas, container);
+}
 
-            // Re-render edges (critical fix)
-            renderEdges(treeData, container);
-        }
 
         function handleDragEnd() {
             // Clean up drag state
@@ -618,57 +702,56 @@
         // ------------------------------
         // API Calls
         // ------------------------------
-
         async function submitQuery() {
-    const query = queryInput.value.trim();
-    if (!query) {
-        alert('Please enter a query!');
-        return;
-    }
+            const query = queryInput.value.trim();
+            if (!query) {
+                alert('Please enter a query!');
+                return;
+            }
 
-    // Show loading state
-    querySubmitBtn.disabled = true;
-    submitText.textContent = 'Submitting...';
-    submitSpinner.style.display = 'inline-block';
+            // Show loading state
+            querySubmitBtn.disabled = true;
+            submitText.textContent = 'Submitting...';
+            submitSpinner.style.display = 'inline-block';
 
-    try {
-        const formData = new FormData();
-        formData.append('query', query);
-        
-        // Only add NON-DELETED files + their tags to FormData
-        const activeFiles = uploadedFiles.filter(f => !f.deleted);
-        activeFiles.forEach(({ file, tag }) => {
-            formData.append('files', file); // Append file
-            formData.append('file_tags', tag); // Append corresponding tag
-        });
+            try {
+                const formData = new FormData();
+                formData.append('query', query);
+                
+                // Only add NON-DELETED files + their tags to FormData
+                const activeFiles = uploadedFiles.filter(f => !f.deleted);
+                activeFiles.forEach(({ file, tag }) => {
+                    formData.append('files', file); // Append file
+                    formData.append('file_tags', tag); // Append corresponding tag
+                });
 
-        const response = await fetch('/api/model', {
-            method: 'POST',
-            body: formData
-        });
+                const response = await fetch('/api/model', {
+                    method: 'POST',
+                    body: formData
+                });
 
-        if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
-        const result = await response.json();
+                if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+                const result = await response.json();
 
-        // Render program tree
-        const programTree = document.getElementById('program-tree');
-        renderTree(result.tree, programTree);
-        // Clear paths tree
-        pathsTree.innerHTML = 'Select an edge in Program Tree to view paths';
-        // Reset selected edge
-        if (selectedEdge) selectedEdge.classList.remove('selected');
-        selectedEdge = null;
+                // Render program tree
+                renderTree(result.tree, programTree);
+                // Clear paths tree
+                const pathsCanvas = pathsTree.querySelector('.tree-canvas');
+                pathsCanvas.innerHTML = 'Select an edge in Program Tree to view paths';
+                // Reset selected edge
+                if (selectedEdge) selectedEdge.classList.remove('selected');
+                selectedEdge = null;
 
-    } catch (error) {
-        console.error('Submit Error:', error);
-        alert(`Failed to submit query: ${error.message}`);
-    } finally {
-        // Reset loading state
-        querySubmitBtn.disabled = false;
-        submitText.textContent = 'Submit';
-        submitSpinner.style.display = 'none';
-    }
-}
+            } catch (error) {
+                console.error('Submit Error:', error);
+                alert(`Failed to submit query: ${error.message}`);
+            } finally {
+                // Reset loading state
+                querySubmitBtn.disabled = false;
+                submitText.textContent = 'Submit';
+                submitSpinner.style.display = 'none';
+            }
+        }
 
         // ------------------------------
         // Updated: Fetch Node Details (Displays Image)
@@ -726,6 +809,10 @@
         // Initialization
         // ------------------------------
         window.addEventListener('load', async () => {
+            // Initialize canvas pan handlers for both tree views
+            initCanvasPanHandlers(programTree);
+            initCanvasPanHandlers(pathsTree);
+            
             // Clear image container on load
             nodeImageContainer.innerHTML = '';
             detailsText.textContent = 'Click a node or edge to view details...';

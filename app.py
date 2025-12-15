@@ -98,7 +98,6 @@ class Model:
                 for u, v in path_tree.edges
             ]
         }
-        print("bind", bind["edges"])
         return bind
 
 # ------------------------------
@@ -120,18 +119,26 @@ class Visualizer:
         draw.text((10, 40), f"Node: {node_id}", fill='black')
         draw.rectangle([10, 10, 190, 90], outline='#00629B', width=2)
 
+        #if not (node_id in data[-1]["tree"]['nodes']):
+        #    print( f"{node_id} not in {data[-1]['tree']['nodes'].keys()}")
+        query_node = None
+        for node in data[-1]["tree"]["nodes"]:
+            if node["id"] == node_id: query_node = node
+        
+        for path in data[-1]["paths"]:
+            for node in data[-1]["paths"][path]["nodes"]:
+                if node["id"] == node_id: query_node = node
+        
         # Convert image to base64 URL
         buffer = io.BytesIO()
         img.save(buffer, format='PNG')
         img_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
         img_url = f"data:image/png;base64,{img_base64}"
-
         node_info = {
             "id": node_id,
-            "fn": f"function_{node_id}",
-            "value": f"value_{node_id}",
-            "type": f"type_{node_id[-1]}",
-            "coordinate": (100 + int(node_id[-1])*50, 100 + int(node_id[-1])*30),
+            "fn": f"function_{query_node['fn']}",
+            "type": f"type_{query_node['type']}",
+            "value": f"value : {query_node['value']}",
             "metadata": "Sample metadata for demo"
         }
 
@@ -206,11 +213,13 @@ class ModelHandler(BaseHandler):
                     img = Image.open(io.BytesIO(files[i]['body'])).convert('RGB')
                     grounding[tag] = torch.tensor(np.array(img)).permute(2,0,1) / 255.0 
 
+                    #import matplotlib.pyplot as plt
+                    #plt.imshow(torch.tensor(np.array(img)) / 255.0 )
+                    #plt.show()
 
 
             result = self.model.process_query(query, grounding)
             data.append(result)
-
             self.write(result)
             
         except Exception as e:
@@ -237,13 +246,13 @@ class EdgePathsHandler(BaseHandler):
 
 class VisualizeNodeHandler(BaseHandler):
     def initialize(self, model):
+
         self.model = model
 
     def get(self):
         try:
-            print(self.model.result)
             node_id = self.get_argument('node_id', '')
-            visualization = self.visualizer.visualize_node(node_id)
+            visualization = self.model.visualize_node(node_id)
             self.write(visualization)
         except Exception as e:
             self.set_status(500)
@@ -258,7 +267,7 @@ def make_app(model, visualizer):
         (r"/api/default-tree", DefaultTreeHandler, {"model": model}),
         (r"/api/model", ModelHandler, {"model": model}),
         (r"/api/edge-paths", EdgePathsHandler, {"model": model}),
-        (r"/api/visualize-node", VisualizeNodeHandler, {"model": model}),
+        (r"/api/visualize-node", VisualizeNodeHandler, {"model": visualizer}),
     ],
     template_path=os.path.dirname(__file__),
     static_path=os.path.join(os.path.dirname(__file__), "static"),
@@ -274,11 +283,10 @@ if __name__ == "__main__":
     visualizer = DomainVisualizer()
     visualizer = Visualizer() 
 
-    learner.visualizer = visualizer
 
     #learner = Model()
 
-    app = make_app(learner)
+    app = make_app(learner, visualizer)
     app.listen(8888)
     print("Tornado app running at http://localhost:8888")
 

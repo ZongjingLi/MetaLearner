@@ -570,11 +570,13 @@ class MetaLearner(nn.Module):
     """for interact and visualization purpose"""
 
     def process_query(self, query, grounding):
+        from helchriss import stprint
         results = self.executor.evaluate(query, grounding = grounding)
-
         eval_info = self.executor.eval_info
-        #print(grounding.keys())
+
+        eval_info = add_coordinates_to_eval_info(eval_info)
         add_and_center_coordinates(eval_info)
+
         self.path_trees = eval_info["paths"]
         print("result",results[0])
         return eval_info
@@ -594,7 +596,7 @@ class MetaLearner(nn.Module):
         }
         return bind
 
-import random
+
 
 def add_and_center_coordinates(eval_info):
     """
@@ -631,7 +633,7 @@ def add_and_center_coordinates(eval_info):
         
         # Calculate offset to shift root to (0,0)
         offset_x = -root_x + 100
-        offset_y = -root_y + 300
+        offset_y = -root_y + 100
         
         # Shift ALL tree nodes by the offset (preserve relative positions)
         for node in tree_nodes:
@@ -655,4 +657,71 @@ def add_and_center_coordinates(eval_info):
             curr_x, curr_y = node['coordinate']
             node['coordinate'] = (round(curr_x + offset_x, 2), round(curr_y + offset_y, 2))
 
+    return eval_info
+
+import random
+from .utils import radial_tree_pos, balanced_tree_pos, hierarchy_pos
+import networkx as nx
+
+def add_coordinates_to_eval_info(eval_info, scale=50):
+    """
+    Convert eval_info to NetworkX DiGraph, compute radial positions,
+    and add coordinates back to original data structure.
+    
+    Args:
+        eval_info: Your custom data structure containing tree and paths
+        scale: Scaling factor for radial layout
+        
+    Returns:
+        eval_info with added 'coords' key for each node/vertex
+    """
+    # 1. Extract tree structure and create DiGraph
+    tree_data = eval_info['tree']
+    G = nx.DiGraph()
+    
+    # Add nodes to graph
+    for node in tree_data['nodes']:
+        G.add_node(node['id'])
+    
+    # Add edges to graph (preserve weight attribute)
+    for edge in tree_data['edges']:
+        source, target, attrs = edge
+        G.add_edge(source, target, **attrs)
+    
+    # 2. Compute radial positions for tree nodes
+    #tree_pos = radial_tree_pos(G, scale=scale)
+    #tree_pos = balanced_tree_pos(G)
+    tree_pos = hierarchy_pos(G, width = 550, vert_gap=200)
+
+    # 3. Add coordinates to tree nodes
+    for node in tree_data['nodes']:
+        node_id = node['id']
+        if node_id in tree_pos:
+            node['coordinate'] = tree_pos[node_id]  # (x, y) tuple
+    
+    # 4. Process paths (each path has its own vertices)
+    paths_data = eval_info['paths']
+    for path_node_id, path_data in paths_data.items():
+        # Create subgraph for path vertices
+        path_G = nx.DiGraph()
+        
+        # Add path vertices as nodes
+        for vertex in path_data['nodes']:
+            path_G.add_node(vertex['id'])
+        
+        # Add path edges
+        for edge in path_data['edges']:
+            source, target, weight = edge
+            path_G.add_edge(source, target, weight=weight)
+        
+        if path_data['nodes']:
+        # Compute radial positions for path vertices (scale down for paths)
+           path_pos = hierarchy_pos(path_G, width = 500, vert_gap= 150)  # smaller scale for paths
+        
+        # Add coordinates to path vertices
+        for vertex in path_data['nodes']:
+            vertex_id = vertex['id']
+            if vertex_id in path_pos:
+                vertex['coordinate'] = path_pos[vertex_id]
+    
     return eval_info

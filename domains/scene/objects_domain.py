@@ -143,9 +143,9 @@ class ObjectsExecutor(CentralExecutor):
             import matplotlib.pyplot as plt
             for i in range(len(sub_images)):
                 plt.subplot(1,3,i+1)
-                plt.imshow(sub_images[i].permute(1,2,0))
+                plt.imshow(sub_images[i].permute(1,2,0).numpy()[...,::-1])
             plt.show()
-
+        #print(torch.stack(sub_images).shape)
         result = self.object_encoder(torch.stack(sub_images))
 
         result = torch.cat([
@@ -216,7 +216,7 @@ class ObjectsExecutor(CentralExecutor):
         #output_ref_logits = torch.einsum("nnk,nk -> nk",left_logits, anchor_dist)  # [n, 1]  expectation of ref logits over the anchor object distribution (first dimension)
         output_ref_logits = torch.sum(left_logits * anchor_dist.unsqueeze(0).repeat(n,1,1), dim = 0)
         output_ref_logits = torch.min(output_ref_logits, ref_logits)
-        #stprint(output_ref_logits)
+
 
         output_ref_objects = torch.cat(
             [output_ref_logits, ref_objects[:, 1:]], dim = -1

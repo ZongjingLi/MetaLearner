@@ -47,6 +47,10 @@ class FOLExecutor(CentralExecutor):
         objects = []
         local_loss = 0.
 
+        ancestor_executor = self.ancestor_executor()
+        node_id = f"node{ancestor_executor.node_count}"
+        fn = "Eval"
+
         for var in vars:
             vtp = kwargs["arg_types"][0]
             assert isinstance(vtp, ListType), f"{vtp}"
@@ -58,17 +62,30 @@ class FOLExecutor(CentralExecutor):
 
             logic_expr = FunctionApplicationExpression(VariableExpression(expr), [ VariableExpression(Value(obj_tp,obj)) ] )
 
-            class_logit, loss = self.ancestor_executor().evaluate(logic_expr, self.grounding)
+            class_logit, subloss, son_id, paths = ancestor_executor._evaluate(logic_expr)
+
+
+
+            edge_info = (node_id, son_id, {"weight":float(torch.exp(torch.tensor(-subloss)) )})
+            ancestor_executor.eval_info["tree"]["edges"].append(edge_info)
+            
 
             logits.append(torch.min(class_logit.value, var_logit))
             objects.append(obj)
 
-            local_loss += loss
+            local_loss += subloss
+
+
         logits = torch.stack(logits)
         objects = torch.cat(objects, dim = 0)
-
         reference_set = torch.cat([logits, objects], dim = 1)
+        output, _, paths = reference_set, 0.0, {"nodes":[], "edges":[]}
 
+        """add the edge node and eval node"""
+        node_info = {"id":node_id, "fn" : fn, "value": str(output), "type": "List"}
+        ancestor_executor.eval_info["tree"]["nodes"].append(node_info)
+        ancestor_executor.eval_info["paths"][f"{node_id}"] = paths # no rewrite 
+        ancestor_executor.prev_node = node_info
 
         return reference_set#, local_loss
     
