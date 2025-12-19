@@ -432,11 +432,12 @@ def _rasterize_triangle(xx: torch.Tensor, yy: torch.Tensor, vertices: torch.Tens
     return mask
 
 
-def generate_constrained_scene(executor: EuclidExecutor) -> Tuple[torch.Tensor, Dict]:
+def generate_constrained_scene(executor: EuclidExecutor, dsl_program = None) -> Tuple[torch.Tensor, Dict]:
     """End-to-end pipeline: DSL → Solve → Render."""
     # Step 1: Generate random DSL constraint program
-    dsl_program = generate_dsl_program()
-    print(f"Generated DSL Program: {dsl_program}")
+    dsl_program = generate_dsl_program() if dsl_program is None else dsl_program
+    dsl_repr = dsl_program.replace(';','\n')
+    print(f"Generated DSL Program:\n{dsl_repr}")
     
     # Step 2: Solve constraints for object configs
     solver = DSLConstraintSolver(executor)

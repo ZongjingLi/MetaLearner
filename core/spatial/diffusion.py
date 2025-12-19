@@ -167,13 +167,17 @@ def training_loop(loader      : DataLoader,
         for sample in loader:
             model.train()
             optimizer.zero_grad()
-            x0 = sample["data"]
-            conditional = sample["cond"]
+            from typing import Dict
+            if isinstance(sample,Dict):
+                x0 = sample["data"]
+                x0 = x0.unsqueeze(0)
+                conditional = sample["cond"]
+            else:
+                x0 = sample
+                conditional = None
+
+            
             batchsize = x0.shape[0]
-
-
-            x0 = x0.unsqueeze(0)
-            b, n, d = x0.shape
 
             x0, sigma, eps, cond = generate_train_sample(x0, schedule, conditional)
 
@@ -185,7 +189,7 @@ def training_loop(loader      : DataLoader,
             optimizer.step()
 
 
-        if count % 100 == 0: torch.save(model.state_dict(),"checkpoints/state.pth")
+        if count % 100 == 0: torch.save(model.state_dict(),"outputs/checkpoints/state.pth")
 
 # Generalizes most commonly-used samplers:
 #   DDPM       : gam=1, mu=0.5

@@ -20,6 +20,7 @@ from core.metaphors.rewrite import NeuralRewriter, RewriteRule, Frame, pth_file
 from helchriss.domain import Domain
 from .rewrite import NeuralRewriter, LocalFrame
 from helchriss.logger import get_logger
+from core.grammar.tree_parser import TreeParser
 import inspect
 
 
@@ -132,11 +133,9 @@ class ExecutorGroup(CentralExecutor):
         (path / "extended").mkdir(parents=True, exist_ok=True)
         
         for executor in self.executor_group:
-            #print(executor.domain.domain_name)
             torch.save(executor.state_dict(), path / "domains" / f"{executor.domain.domain_name}.pth")
         
         for name, module in self.extended_registry.items():
-            #print(name, isinstance(module, nn.Module))
             torch.save(module, path / "extended" / f"{name}.ckpt")
 
     def load_ckpt(self, path: str):
@@ -150,8 +149,8 @@ class ExecutorGroup(CentralExecutor):
 
         for extended_file in (path / "extended").glob("*.ckpt"):
             name = extended_file.stem
-            print(name)
-            print(extended_file)
+
+
             self.extended_registry[name] = torch.load(extended_file,  weights_only=False)
 
 
@@ -208,7 +207,7 @@ class ExecutorGroup(CentralExecutor):
                     self.format(func_name,executor.domain.domain_name),
                     executor.function_input_types[func_name],
                     executor.function_output_type[func_name]])
-        #print("MAX:",list(fn for fn in functions if "max" in fn[0]))
+
         return functions
 
     def function_signature(self, func : str) -> List[Tuple[List[TypeBase], TypeBase]]:
@@ -216,7 +215,6 @@ class ExecutorGroup(CentralExecutor):
         for function in self.functions:
             f_sign, in_types, out_type = function
             if func == f_sign:
-                #print("item:",f_sign, in_types)
                 hyp_sign.append([in_types, out_type])
         return hyp_sign
         
@@ -224,12 +222,9 @@ class ExecutorGroup(CentralExecutor):
         compatible_fns = []
         for function in self.functions:
             fn_sign, in_types, out_type = function
-            #print(fn_sign,"\n  ::", in_types, input_types,in_types == input_types)
-            #print(in_types , input_types, in_types == input_types)
+
             if in_types == input_types and out_type == output_type:
-                #print("select:",fn_sign, in_types)
                 compatible_fns.append(fn_sign)
-        #print("COMP:", compatible_fns)
         return compatible_fns
 
     def register_extended_function(self, func : str, in_types : List[TypeBase], out_type : TypeBase, implement : nn.Module):
@@ -382,6 +377,10 @@ class SearchExecutor(CentralExecutor):
         self.eval_tree = {}
         self.node_count = 0
 
+        self.parser = TreeParser()
+
+        self.parser.load_entries(self.functions)
+
     """stupid formatting stuff"""
     def gather_format(self, name, domain): return self._gather_format.format(name, domain)
     
@@ -421,6 +420,7 @@ class SearchExecutor(CentralExecutor):
         return self
 
     def load_ckpt(self, ckpt_path) -> int:
+
         # load the mapping frames learned
         frames_dir = f"{ckpt_path}/frames"
         for filename in os.listdir(frames_dir):
@@ -428,7 +428,9 @@ class SearchExecutor(CentralExecutor):
             if os.path.isfile(file_path) and pth_file(filename):
                 self.frames[filename[:-4]] = torch.load(file_path, weights_only = False)
         # load the domain specific executor parameters learned
+
         self.base_executor.load_ckpt(ckpt_path)
+
         return self
 
     def add_frame(self,name : str, frame : Frame):
@@ -545,7 +547,7 @@ class SearchExecutor(CentralExecutor):
         src_node.next = []
         src_node.next_weights = []
         rw_nodes : List[SearchNode] = [src_node]
-        #print("distr:", query_fn)
+
 
         """vertex of the rewrite search path"""
         self.vertex_count = -1
@@ -553,7 +555,7 @@ class SearchExecutor(CentralExecutor):
 
         try:
             output_type = self.base_executor.function_signature(query_fn)[0][-1]
-            #print(query_fn, value_types(value))
+
             functions = self.base_executor.gather_functions(value_types(value), output_type)
 
         except:
@@ -615,7 +617,7 @@ class SearchExecutor(CentralExecutor):
             raise UnificationFailure(f"failed to unify {fn}({args}->{success_reach})", 
                                      left_structure = fn,
                                      right_structure = args)
-        #print("fn",fn,success_reach)
+
         serial_nodes = [
             {       
                     "id":"vertex0",
@@ -646,7 +648,7 @@ class SearchExecutor(CentralExecutor):
 
 
         search_tree = {"nodes": serial_nodes, "edges":serial_edges}
-        #print("fn",fn,success_reach)
+
         return Value(measure.vtype, expect_output), -torch.log(success_reach), search_tree
 
     """Evaluate Chain of Expressions"""
@@ -668,11 +670,11 @@ class SearchExecutor(CentralExecutor):
         with self.with_grounding(grounding):
             outputs, loss, _, _ = self._evaluate(expression)
 
-        #print("eval",self.eval_info)
+
         return outputs, loss
     
     def _evaluate(self, expr : Expression) -> Tuple[Value, str]:
-        #print("ct:", self.node_count)
+
         self.node_count += 1
         node_id = f"node{self.node_count}"
         paths = {"nodes":[], "edges":[]}
@@ -775,7 +777,7 @@ class SearchExecutor(CentralExecutor):
         # 2. add the filler that defined on the value node.
         
         for (in_tps, out_tps) in self.base_executor.function_signature(fn):
-            #print(value_types(args), out_tps)
+
             fillers = self.inferer.infer_fn_prototypes(value_types(args), out_tps)
             assert fillers, f"failed to create fillers {fillers} for {fn}"
             max_filler = fillers[0]

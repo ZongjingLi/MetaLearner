@@ -117,8 +117,7 @@ def parse_from_string(input_str):
     func_name, _, has_args, args_str = match.groups()
     
     if not has_args: return SemProgram(func_name, [])
-    
-    # 解析参数列表
+
     args = []
     current_pos = 0
     depth = 0

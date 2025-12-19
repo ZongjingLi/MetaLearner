@@ -147,13 +147,10 @@ class FunctionExecutor(nn.Module):
         """
 
         if isinstance(expr, FunctionApplicationExpression):
-            print(expr.func.name)
-            print(self._function_registry)
             func = self._function_registry[expr.func.name]
 
             # wrap this as the lambda function
-            #f"lambda {', '.join(params)}: {body}"
-            print(func)
+
             
 
             args = [self._evaluate(arg) for arg in expr.args]

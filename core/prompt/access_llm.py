@@ -3,6 +3,7 @@ import time
 from openai.error import RateLimitError, Timeout, APIError, APIConnectionError, OpenAIError
 
 #`pip install openai==0.28`
+openai.api_key = "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"
 
 def run_gpt(questions, prompts, temperature: float = 1.0, use_user_message: bool = False):
     query_str = '\n'.join([  # Format the questions into a query string
@@ -41,8 +42,7 @@ def run_gpt(questions, prompts, temperature: float = 1.0, use_user_message: bool
     }
 
 
-
-if __name__  == "__main__":
+def llm_parse(questions):
     prompt = """core/prompt/metalearn_prompts.txt"""
     with open(prompt) as f:
         prompts_str = f.read()
@@ -52,8 +52,12 @@ if __name__  == "__main__":
             'user': user_prompt.strip()
         }
 
-    questions = ["Explain to me what is Han-Banach theorem in metaphors."]
     
     res = run_gpt(questions, prompts)
+    return res
+
+if __name__  == "__main__":
+    question = ["the red mob at right of you is minotaur", "the blue mob is fungus"]
+    res = llm_parse(question)
     print(res["questions"])
     print(res["response"])

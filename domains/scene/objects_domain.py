@@ -13,7 +13,7 @@ from helchriss.utils import stprint
 objects_domain_str = """
 (domain :: Objects)
 (def type  ;; define type alias using a - b, meaning a is an alias to type b
-    Object -  Embedding[object, 64]
+    Object -  Embedding[object, 96]
     Shape  - Embedding[shape, 32]
     Color - Embedding[color, 3]
 )
@@ -32,8 +32,8 @@ objects_domain_str = """
     rectangle  (x : Object) : boolean := by pass
     triangle   (x : Object) : boolean := by pass
 
-    left  (x : Object) (y : Object) : boolean := by pass
-    right (x : Object) (y : Object) : boolean := by pass
+    left  (x y : Object): boolean := by pass
+    right (x y : Object): boolean := by pass
 )
 """
 
@@ -112,8 +112,9 @@ class ObjectsExecutor(CentralExecutor):
 
     def __init__(self, domain):
         super().__init__(domain)
+        
+        spatial_dim = 32
         feature_dim = 64
-        spatial_dim = 0
         obj_dim = feature_dim + spatial_dim
         self.red_mlp    = FCBlock(obj_dim,1) #nn.Linear(obj_dim, 1)
         self.green_mlp  = FCBlock(obj_dim,1) #nn.Linear(obj_dim, 1)
@@ -139,13 +140,6 @@ class ObjectsExecutor(CentralExecutor):
         images = self.grounding["image"]
         sub_images = torch.chunk(images, 3, dim=2)
 
-        if 0:
-            import matplotlib.pyplot as plt
-            for i in range(len(sub_images)):
-                plt.subplot(1,3,i+1)
-                plt.imshow(sub_images[i].permute(1,2,0).numpy()[...,::-1])
-            plt.show()
-        #print(torch.stack(sub_images).shape)
         result = self.object_encoder(torch.stack(sub_images))
 
         result = torch.cat([
@@ -160,7 +154,6 @@ class ObjectsExecutor(CentralExecutor):
         green_logits   = self.green_mlp(objects)
         blue_logits    = self.blue_mlp(objects)
         color_logits = torch.cat([red_logits, green_logits, blue_logits], dim = -1)
-        #color_logits = torch.logit(stable_softmax(color_logits, dim = 1), eps = 1e-6)
         return color_logits
 
     def red(self, objects):        
@@ -202,48 +195,9 @@ class ObjectsExecutor(CentralExecutor):
         return feature_matrix
 
     def left(self, anchor_object, ref_objects):
-        ref_logits = ref_objects[:, 0:1] 
-        anchor_logits = anchor_object[:,0:1]
-
-        relation_features = self.relation_features(anchor_object, ref_objects)
-        left_logits = self.left_mlp(relation_features)
-
-        anchor_dist = torch.sigmoid(anchor_logits)
-
-        n = ref_logits.shape[0]
-
-
-        #output_ref_logits = torch.einsum("nnk,nk -> nk",left_logits, anchor_dist)  # [n, 1]  expectation of ref logits over the anchor object distribution (first dimension)
-        output_ref_logits = torch.sum(left_logits * anchor_dist.unsqueeze(0).repeat(n,1,1), dim = 0)
-        output_ref_logits = torch.min(output_ref_logits, ref_logits)
-
-
-        output_ref_objects = torch.cat(
-            [output_ref_logits, ref_objects[:, 1:]], dim = -1
-        )
-
-        return output_ref_objects
+        return self.left_mlp(torch.cat([anchor_object, ref_objects], dim = -1))
     
     def right(self, anchor_object, ref_objects):
-        ref_logits = ref_objects[:, 0:1] 
-        anchor_logits = anchor_object[:,0:1]
-        n = ref_logits.shape[0]
-
-        relation_features = self.relation_features(anchor_object, ref_objects)
-        right_logits = self.right_mlp(relation_features)
-
-        anchor_dist = torch.sigmoid(anchor_logits)
-
-
-        #output_ref_logits = torch.einsum("nnk,nk -> nk",right_logits, anchor_dist)  # [n, 1]  expectation of ref logits over the anchor object distribution (first dimension)
-        output_ref_logits = torch.sum(right_logits * anchor_dist.unsqueeze(0).repeat(n,1,1), dim = 0)
-
-        output_ref_logits = torch.min(output_ref_logits, ref_logits)
-
-
-        output_ref_objects = torch.cat(
-            [output_ref_logits, ref_objects[:, 1:]], dim = -1
-        )
-        return output_ref_objects
+        return self.right_mlp(torch.cat([anchor_object, ref_objects], dim = -1))
 
 objects_executor = ObjectsExecutor(objects_domain)

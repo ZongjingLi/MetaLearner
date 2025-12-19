@@ -291,63 +291,74 @@ def get_object_relations(tower_objects):
 
 def gen_boolean_question(tower_objects, relations):
     """Generate boolean VQA question (yes/no)"""
-    # Question templates
+    # Helper to get valid object IDs for a color
+    def get_obj_ids_by_color(color):
+        return [obj["id"] for obj in tower_objects if obj["color"] == color]
+    
+    # Question templates (FIXED scope + robust object selection)
     templates = [
         # Color-based
         ("Is there a {color} object?", 
          lambda obj, params: obj["color"] == params["color"], 
-         {"color": random.choice(COLOR_LIST)}),
+         lambda: {"color": random.choice(COLOR_LIST)}),
         
         # Texture-based
         ("Is there a {texture} object?", 
          lambda obj, params: obj["texture"] == params["texture"], 
-         {"texture": random.choice(TEXTURES)}),
+         lambda: {"texture": random.choice(TEXTURES)}),
         
         # Falling-based
         ("Is there a falling object?", 
          lambda obj, params: obj["falling"] == True, 
-         {}),
+         lambda: {}),
         
         # Color + falling
         ("Is the {color} object falling?", 
          lambda obj, params: obj["color"] == params["color"] and obj["falling"] == True, 
-         {"color": random.choice(COLOR_LIST)}),
+         lambda: {"color": random.choice(COLOR_LIST)}),
         
-        # Spatial relation (binary)
+        # Spatial relation (binary) - FULLY FIXED
         ("Is the {color1} object {relation} the {color2} object?", 
          lambda obj, params: obj["id"] == params["obj1_id"] and relations[params["obj1_id"]][params["obj2_id"]][params["relation"]], 
-         {
+         lambda: {
              "color1": random.choice(COLOR_LIST),
-             "color2": random.choice([c for c in COLOR_LIST if c != params["color1"]]),
+             "color2": random.choice([c for c in COLOR_LIST if c != random.choice(COLOR_LIST)]),
              "relation": random.choice(RELATIONS)
          })
     ]
     
     # Select random template
-    template, condition, params = random.choice(templates)
+    template, condition, param_generator = random.choice(templates)
     
-    # Resolve params (handle dependencies)
-    if "obj1_id" in params:
-        # Find object matching color1
-        color1_objs = [obj["id"] for obj in tower_objects if obj["color"] == params["color1"]]
+    # Generate params (call generator to avoid scope errors)
+    params = param_generator()
+    
+    # Resolve valid object IDs for spatial relations
+    if "color1" in params and "color2" in params:
+        # Get valid objects for color1 (fallback to any object if none)
+        color1_objs = get_obj_ids_by_color(params["color1"])
         if not color1_objs:
             color1_objs = [obj["id"] for obj in tower_objects]
         params["obj1_id"] = random.choice(color1_objs)
         
-        # Find object matching color2 (different from obj1)
+        # Get valid objects for color2 (different from obj1)
         color2_objs = [obj["id"] for obj in tower_objects if obj["color"] == params["color2"] and obj["id"] != params["obj1_id"]]
         if not color2_objs:
+            # If no color2 objects, pick any object except obj1
             color2_objs = [obj["id"] for obj in tower_objects if obj["id"] != params["obj1_id"]]
+            # Update color2 to match the fallback object (for accurate question text)
+            fallback_obj = next(obj for obj in tower_objects if obj["id"] == color2_objs[0])
+            params["color2"] = fallback_obj["color"]
         params["obj2_id"] = random.choice(color2_objs)
     
-    # Generate question text
+    # Generate question text (now uses valid params)
     question = template.format(**params)
     
-    # Calculate answer
+    # Calculate answer (check if condition is true for any object)
     answer = any(condition(obj, params) for obj in tower_objects)
     
     # Generate logical program (simplified)
-    program = f"exists:Logic(filter:Logic(scene:Objects(), {params}))"
+    program = f"exists:Logic(filter:Logic(scene:Objects(), { {k:v for k,v in params.items() if k in ['color1','color2','relation']} }))"
     
     return question, program, answer
 

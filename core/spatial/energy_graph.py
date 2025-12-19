@@ -10,6 +10,9 @@ from torch import nn
 from einops import rearrange, repeat
 from typing import Dict, Tuple, List, Union
 
+import time; timer=lambda f:lambda *a,**k: (t:=time.time(), r:=f(*a,**k), print(f"{f.__name__} took {time.time()-t:.4f}s"))[1]
+
+
 def pairwise(iterable):
     # pairwise('ABCDEFG') → AB BC CD DE EF FG
     iterator = iter(iterable)
@@ -29,8 +32,9 @@ class ModelMixin:
 
     # Currently predicts eps, override following methods to predict, for example, x0
     def get_loss(self, x0, sigma, eps, cond=None, loss=nn.MSELoss):
-
-        return loss()(eps, self(x0 + sigma * eps, sigma, cond=cond)["gradient"])
+        pred = self(x0 + sigma * eps, sigma, cond=cond)
+        if isinstance(pred, Dict): pred = pred["gradient"]
+        return loss()(eps, pred)
 
     def predict_eps(self, x, sigma, cond=None):
         return self(x, sigma, cond=cond)["gradient"]
@@ -51,6 +55,7 @@ class ModelMixin:
         return eps_cond + cfg_scale * (eps_cond - eps_uncond)
 
 def sigma_log_scale(batches, sigma, scaling_factor):
+    #print("Batch Sigma",batches, sigma.shape)
     if sigma.shape == torch.Size([]):
         sigma = sigma.unsqueeze(0).repeat(batches)
     else:
@@ -58,7 +63,9 @@ def sigma_log_scale(batches, sigma, scaling_factor):
     return torch.log(sigma)*scaling_factor
 
 def get_sigma_embeds(batches, sigma, scaling_factor=0.5):
+   # print("start")
     s = sigma_log_scale(batches, sigma, scaling_factor).unsqueeze(1)
+    #print("end")
     return torch.cat([torch.sin(s), torch.cos(s)], dim=1)
 
 # A simple embedding that works just as well as usual sinusoidal embedding
@@ -163,7 +170,7 @@ class TimeInputMLP(nn.Module, ModelMixin):
 
         self.net = nn.Sequential(*layers)
         self.input_dims = (dim,)
-
+    #@timer 0.0005s
     def forward(self, x, sigma, cond=None):
         # x     shape: b x dim
         # sigma shape: b x 1 or scalar
@@ -181,17 +188,21 @@ class TimeInputEnergyMLP(nn.Module, ModelMixin):
 
         self.net = nn.Sequential(*layers)
         self.input_dims = (dim,)
-
-    def forward(self, x, sigma, cond=None, energy_only = True):
+    #@timer
+    def forward(self, x, sigma_embeds, sigma = None, cond=None, energy_only = True):
         # x     shape: b x dim
         # sigma shape: b x 1 or scalar
         if not energy_only:
             x.requires_grad = True
-        sigma_embeds = get_sigma_embeds(x.shape[0], sigma.squeeze()) # shape: b x 2
+        b, n, d = x.shape
+        #sigma_embeds = get_sigma_embeds(x.shape[0], sigma.squeeze()) # shape: b x 2
+        #print(x.shape, sigma_embeds.shape)
+        sigma_embeds = sigma_embeds.unsqueeze(1).repeat(1,n,1)
+        nn_input = torch.cat([x, sigma_embeds], dim=-1).to(next(self.parameters()).device)              # shape: b x (dim + 2)
 
-        nn_input = torch.cat([x, sigma_embeds], dim=1).to(next(self.parameters()).device)              # shape: b x (dim + 2)
+        #print(nn_input.shape)
+        energy = self.net(nn_input).squeeze(-1)
 
-        energy = self.net(nn_input)
         
         if not energy_only:
             grad = torch.autograd.grad(energy.flatten().sum(), x,
@@ -219,6 +230,7 @@ class PointEnergyMLP(nn.Module, ModelMixin):
             input_dim = int(input_dim / arity)
         self.input_dims = (input_dim, )
 
+    #@timer
     def forward(self, x, sigma, attr = None, cond = None):
 
         assert cond is not None, """cond requires edge parameters"""
@@ -232,25 +244,39 @@ class PointEnergyMLP(nn.Module, ModelMixin):
         else:
             attr_cond_inputs = x
 
-        for edge in cond["edges"]:
-            obj_idx = edge[:-1]
-            type_name = edge[-1]
 
-            x_inputs = attr_cond_inputs[:, obj_idx, :]#x[:,obj_idx, :]
+        combine_edges = lambda e: {t: [v for x in e if x[-1]==t for v in (x[:-1] if len(x[:-1])>1 else [x[:-1][0]])] for t in set(x[-1] for x in e)}
+        edges = combine_edges(cond["edges"])
+       
 
-            b, n, d= x_inputs.shape
+        for type_name, obj_idx_list in edges.items():
+            #print(type_name, obj_idx_list)
+            energy_fn = self.energies[type_name]
 
-            x_inputs = x_inputs.reshape([1, n * d])
+            x_inputs = attr_cond_inputs[:, obj_idx_list, :]
 
-            sigma_inputs = sigma
+            b = x_inputs.shape[0]
+
+            sigma_embeds =  get_sigma_embeds(b, sigma.squeeze()) 
+
+            comp = energy_fn(x_inputs, sigma_embeds)
+            #print("Enegy:",comp["energy"].shape)
 
 
-            comp = self.energies[type_name](x_inputs, sigma_inputs)
+            total_energy += (torch.sum(comp["energy"]) / len(obj_idx_list))
+            #print(total_energy)
 
-            total_energy = total_energy + comp["energy"]
-        total_energy /= len(cond["edges"])
+        #total_energy /= len(cond["edges"])
 
+        
+        
+        #t_start = time.perf_counter()
+    
         grad = torch.autograd.grad(total_energy.flatten().sum(), x,retain_graph = True, create_graph=True)[0]
+        
+        #t_elapsed = time.perf_counter() - t_start
+        #print(f"✅ Noise computation took {t_elapsed:.4f} seconds")
+        
         return {"energy" : total_energy, "gradient" : grad}
 
 

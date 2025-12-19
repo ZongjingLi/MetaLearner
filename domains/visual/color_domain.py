@@ -6,14 +6,14 @@ from helchriss.knowledge.executor import CentralExecutor
 from domains.utils import BatchVisualizer
 
 color_domain_str = """
-(domain Colors)
-(:type
-    color - vector[float, 1] ;; unnormalized distribution over a list of objects
+(domain :: Color)
+(def type
+    color - Embedding[color_wheel, 1] ;; unnormalized distribution over a list of objects
 )
-(:predicate
-    red ?x-color -> boolean
-    green ?x-color -> boolean
-    blue ?x-color -> boolean
+(def function
+    red     (x : color) : boolean := by pass
+    green   (x : color) : boolean := by pass
+    blue    (x : color) : boolean := by pass
 )
 """
 color_domain = load_domain_string(color_domain_str)
@@ -110,4 +110,6 @@ class ColorDomain(CentralExecutor, BatchVisualizer):
             plt.show()
 
 color_executor = ColorDomain(color_domain)
+
+
 

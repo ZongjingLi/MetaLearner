@@ -8,9 +8,9 @@ from helchriss.knowledge.symbolic import FunctionApplicationExpression, Variable
 first_order_logic_domain_str = """
 (domain :: Logic)
 (def type  ;; define type alias using a - b, meaning a is an alias to type b
-    Object - Embedding[object, 64] ;; the type of certain object
+    Object - Embedding[object, 96] ;; the type of certain object
     Expr - str
-    ObjSet - List[Tuple[boolean,Embedding[object, 64]]]
+    ObjSet - List[Tuple[boolean,Embedding[object, 96]]]
 )
 (def function
     ;; by pass is defaulty used to avoid the actual definion of the functions
@@ -18,6 +18,7 @@ first_order_logic_domain_str = """
     forall (x : ObjSet) : boolean := by pass
     iota   (x : ObjSet) : ObjSet := by pass
     filter (x : ObjSet) (y : Expr) : ObjSet := by pass
+    relate (x y : ObjSet) (y : Expr) : ObjSet := by pass
 
     negate (x : boolean) : boolean := by pass
     logic_and (x y : boolean) : boolean := by pass
@@ -61,18 +62,14 @@ class FOLExecutor(CentralExecutor):
             if len(obj.shape) == 1: obj = obj[None,...]
 
             logic_expr = FunctionApplicationExpression(VariableExpression(expr), [ VariableExpression(Value(obj_tp,obj)) ] )
-
             class_logit, subloss, son_id, paths = ancestor_executor._evaluate(logic_expr)
-
 
 
             edge_info = (node_id, son_id, {"weight":float(torch.exp(torch.tensor(-subloss)) )})
             ancestor_executor.eval_info["tree"]["edges"].append(edge_info)
-            
 
             logits.append(torch.min(class_logit.value, var_logit))
             objects.append(obj)
-
             local_loss += subloss
 
 
@@ -89,12 +86,79 @@ class FOLExecutor(CentralExecutor):
 
         return reference_set#, local_loss
     
-    def relate(self, anchor_vars, ref_vars, expr):
-        return
 
-    def exists(self, objects):
+    def relate(self, anchor_vars, ref_vars, expr, **kwargs):
+        logits = []     # logits of reference in the scene.
+        relations = []  # 
+        local_loss = 0. # the loss by executing the function
 
-        return torch.max(objects[: ,0])
+        n, m = anchor_vars.size(0), ref_vars.size(0)
+        ancestor_executor = self.ancestor_executor()
+        node_id = f"node{ancestor_executor.node_count}"
+        fn = "Tensor"
+
+        for anchor_var in anchor_vars:
+            for ref_var in ref_vars:
+                vtp = kwargs["arg_types"][0]
+                assert isinstance(vtp, ListType), f"{vtp}"
+                assert isinstance(vtp.element_type, TupleType), f"{vtp.element_type}"
+                anchor_tp = vtp.element_type.element_types[1]
+                refer_tp =  kwargs["arg_types"][1].element_type.element_types[1]
+
+
+                anchor_var_logit, anchor_feature = anchor_var[:1], anchor_var[1:]
+                refer_var_logit , refer_feature  = ref_var[:1],    ref_var[1:]
+
+                relation_feature = torch.cat([anchor_feature, refer_feature], dim = -1)
+                relation_type    = TupleType([anchor_tp, refer_tp])
+    
+                if len(relation_feature.shape) == 1: relation_feature = relation_feature[None,...]
+
+                logic_expr = FunctionApplicationExpression(VariableExpression(expr), 
+                                        [ VariableExpression(Value(anchor_tp,anchor_feature)),
+                                          VariableExpression(Value(refer_tp,refer_feature)) ] )
+                class_logit, subloss, son_id, paths = ancestor_executor._evaluate(logic_expr)
+
+
+                #edge_info = (node_id, son_id, {"weight":float(torch.exp(torch.tensor(-subloss)) )})
+                #ancestor_executor.eval_info["tree"]["edges"].append(edge_info)
+
+                logits.append(class_logit.value )
+                relations.append(relation_feature)
+                local_loss += subloss
+
+
+        matrix  = torch.stack(logits).reshape([n,m])
+        #print(expr)
+        #print((matrix > 0).detach().numpy())
+
+
+
+        anchor_expanded = anchor_vars[:,0:1].T.repeat(n,1)  # [n,m] (repeat anchor logit for all j)
+        ref_expanded = ref_vars[:,0:1].repeat(1,m)       # [n,m] (repeat reference logit for all i)
+
+        joint_validity = torch.min(torch.min(anchor_expanded, matrix), ref_expanded)  # [n,m]
+        
+        logits = joint_validity.max(dim=1).values[..., None]  # [m,1]
+        objects = ref_vars[:,1:]
+
+        #print("anchor:",anchor_vars[:,0:1].flatten() > 0)
+        #print("refere:", ref_vars[:,0:1].flatten() > 0)
+        #print((logits > 0).detach().numpy())
+
+
+        reference_set = torch.cat([logits, objects], dim = 1)
+        output, _, paths = reference_set, 0.0, {"nodes":[], "edges":[]}
+
+        """add the edge node and eval node"""
+        #node_info = {"id":node_id, "fn" : fn, "value": str(output), "type": "List"}
+        #ancestor_executor.eval_info["tree"]["nodes"].append(node_info)
+        #ancestor_executor.eval_info["paths"][f"{node_id}"] = paths # no rewrite 
+        #ancestor_executor.prev_node = node_info
+
+        return reference_set#, local_loss
+
+    def exists(self, objects): return torch.max(objects[: ,0])
 
     def forall(self, objects): return torch.min(objects[:, 0])
     

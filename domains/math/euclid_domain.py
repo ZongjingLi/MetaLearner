@@ -38,6 +38,7 @@ integer_domain_str = """
     intersect_line_circle (x : line) (y : circle) : boolean := by pass ;; Does line intersect circle
     tangent (x : line) (y : circle) : boolean := by pass           ;; Is line tangent to circle
     contained_line (x : line) (y : circle) : boolean := by pass     ;; Is entire line inside circle
+
 )
 """
 

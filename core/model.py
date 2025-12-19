@@ -157,8 +157,10 @@ class MetaLearner(nn.Module):
             domain_executors.append(eval(name))
         
         self._domain = domain_executors
+
         self.executor = SearchExecutor(ExecutorGroup(domain_executors))
         self.executor.load_ckpt(ckpt_path)
+
 
         # load the vocabulary
         vocab_path = model_config["vocab"]["path"]
@@ -453,12 +455,11 @@ class MetaLearner(nn.Module):
                             if predicted == actual: correct += 1 * measure_conf
   
                         elif answer.vtype == FLOAT or answer.vtype == INT:
-                            #print(answer)
+
                             measure_loss = torch.nn.functional.mse_loss(result.value, torch.tensor(float(answer.value)) )
                             if measure_loss < 0.2: correct += 1 * measure_conf
                             else:
                                 pass
-                                #print(program ,result.value,answer,"loss:",torch.abs(result.value - float(answer.value) ))
 
                         loss += measure_conf * (measure_loss + internal_loss)
                         total_count += 1 * measure_conf
