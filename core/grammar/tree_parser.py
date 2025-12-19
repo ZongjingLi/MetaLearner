@@ -12,11 +12,12 @@ from helchriss.dsl.dsl_types import TypeBase
 from helchriss.knowledge.symbolic import Expression, FunctionApplicationExpression, VariableExpression, ConstantExpression
 
 class FunctionEntry:
-    def __init__(self , word, fn : str, types : List[TypeBase],weight = 0.0):
+    def __init__(self , word, fn : str, types : List[TypeBase],weight = 0.0, compat = True):
         self.word   = word
         self.fn     = fn
         self.types  = types
         self.weight = weight
+        self.compat = compat
     
     def __repr__(self)-> str:return f"Entry[{self.word}:{self.fn},{self.types},{self.weight}]"
 
