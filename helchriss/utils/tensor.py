@@ -7,6 +7,10 @@ from torch import nn
 
 from .misc import EPS
 
+def freeze(module: nn.Module, freeze = True) -> None:
+    for param in module.parameters():
+        param.requires_grad = not freeze
+
 class Id(nn.Module):
     def __init__(self):super().__init__()
     def forward(self,x):return x

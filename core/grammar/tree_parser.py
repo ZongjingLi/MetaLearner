@@ -19,28 +19,32 @@ class FunctionEntry:
         self.weight = weight
         self.compat = compat
     
-    def __repr__(self)-> str:return f"Entry[{self.word}:{self.fn},{self.types},{self.weight}]"
+    def __repr__(self)-> str:return f"Entry[{self.word}->{self.fn},{self.types},{self.weight},{self.compat}]"
 
     def __eq__(self, other)-> bool: return (self.word == other.word) and (self.fn == other.fn) and (self.types == other.types)
 
 class TreeParser:
     def __init__(self, entries: List[FunctionEntry] = []):
         self._entries = entries
-        self.supress = 1
+        self.supress = 1 # supress the mismatch
 
     def load_entries(self, functions : List[Tuple[str, List[TypeBase], TypeBase]]):
         for function in functions:
             fn, arg_types, out_type = function
             if ":" in fn: word, _ = fn.split(":")
             else: word = fn
+            #print(fn, word)
             entry = FunctionEntry(word, fn, arg_types + [out_type], 1.0)
             if entry not in self._entries:
 
                 self._entries.append(entry)
 
     def get_function_entry(self, word: str) -> List[FunctionEntry]:
-
-        return [entry for entry in self._entries if entry.word == word]
+        if ":" in word: 
+            #print(word,"->",[entry for entry in self._entries if entry.word == word])
+            return [entry for entry in self._entries if entry.fn == word]
+        else:
+            return [entry for entry in self._entries if entry.word == word]
 
     def parse_program_string(self, program: str):
         return Expression.parse_program_string(program)
@@ -48,7 +52,7 @@ class TreeParser:
     def parse(self, program : str):
         program = program.replace(" ", "")
         tree = Expression.parse_program_string(program)
-        supress = self.supress
+        supress = self.supress # supree the mismatch
 
 
         def dp(x : Expression) -> List[FunctionEntry]:
@@ -89,14 +93,14 @@ class TreeParser:
                                 f"{entry.word}({words})",
                                 f"{entry.fn}({vars})",
                                 [arg.types[-1] for arg in arg_pair] + [entry.types[-1]],
-                                composite_weight + entry.weight
+                                composite_weight + entry.weight,
+                                compat = sum(not_compat) == 0
                             )
                         programs.append(composite_entry)
-                        
-
+    
                 return programs
             if isinstance(x, VariableExpression):
-                return self.get_function_entry(x)
+                return self.get_function_entry(x.name)
             raise Exception(f"unknown node type {x}")
         
         programs : List[FunctionEntry] = dp(tree)

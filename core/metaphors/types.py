@@ -1,487 +1,596 @@
+import copy
 import torch
 import torch.nn as nn
+import numpy as np
 from abc import abstractmethod
-from helchriss.dsl.dsl_types import TypeBase
-from helchriss.dsl.dsl_values import Value
-from typing import List, Tuple,Union, Any, Dict, Tuple, Optional, Callable, Type
 from dataclasses import dataclass, field
-from helchriss.dsl.dsl_types import VectorType, ListType, EmbeddingType, TupleType, FixedListType, ArrowType, BatchedListType, BOOL
-import copy
-
-__all__ = ["PatternVar","match_pattern", "TransformRule", "RuleBasedTransform", "get_transform_rules"]
-
-"""Match the Pattern for Tree Regular Language"""
-class PatternVar(TypeBase):
-    """variable in the pattern"""
-    def __init__(self, var_name: str):
-        super().__init__(f"${var_name}")  # $ as the mark for the variable
-        self.var_name = var_name
-
-    def __eq__(self, other: TypeBase) -> bool:  return True 
-
-class TransformRule:
-    def __init__(self, 
-                 source_pattern: TypeBase,
-                 transform_func: Callable[[Dict[str, TypeBase]],TypeBase],
-                 target_pattern: TypeBase = None):
-        self.source_pattern = source_pattern
-        self.target_pattern = target_pattern
-        self.transform_func = transform_func
-
-    def apply(self, source_type, target_type):
-        source_vars = match_pattern(source_type, self.source_pattern)
-        if source_vars is None : return None
-        if self.target_pattern is not None and not match_pattern(target_type, self.target_pattern): return None
-        return self.fill_in_func(source_vars)
-
-class FillerRule:
-    def __init__(self,
-                 source_pattern : TypeBase,
-                 target_pattern : TypeBase,
-                 filler):
-        self.source_pattern = source_pattern
-        self.target_pattern = target_pattern
-        self.filler = filler
-        assert self.filler is not None, f"filler {source_pattern} -> {target_pattern} is None"
-    
-    def applicable(self, source_type : TypeBase, target_type):
-        source_vars = match_pattern(source_type, self.source_pattern)
-        #print(source_vars, source_type, self.source_pattern)
-        target_vars = match_pattern(target_type, self.target_pattern)
-        #print(target_vars, target_type, self.target_pattern)
-        return source_vars is not None and target_vars is not None
-    
-    def fill_in(self, source_type : TypeBase, target_type : TypeBase):
-        source_vars = match_pattern(source_type, self.source_pattern)
-        #print(source_vars, source_type, self.source_pattern)
-        target_vars = match_pattern(target_type, self.target_pattern)
-        #print(target_vars, target_type, self.target_pattern)
-        
-        return self.filler({**source_vars, ** target_vars})
-
-import copy
-from typing import Optional, Dict, Type
-
-
-def match_pattern(
-    target_type: TypeBase,
-    pattern: TypeBase,
-    bindings: Optional[Dict[str, TypeBase]] = None
-) -> Optional[Dict[str, TypeBase]]:
-    """Match target type against pattern and return consistent variable bindings."""
-    bindings = bindings or {}
-
-    # Case 1: Pattern is a variable -> bind and check consistency
-    if isinstance(pattern, PatternVar):
-        var_name = pattern.var_name
-        if var_name in bindings:
-            if bindings[var_name] != target_type:
-                return None
-        else:
-            bindings[var_name] = target_type
-        return bindings
-
-    # Case 2: List/FixedList/Vector types (uniform sequence types)
-    target_is_seq = isinstance(target_type, (ListType, FixedListType, VectorType))
-    pattern_is_seq = isinstance(pattern, (ListType, FixedListType, VectorType))
-    
-    if target_is_seq and pattern_is_seq:
-        # 1. Validate sequence type compatibility (e.g., List ↔ FixedList is allowed only if intentional)
-        # Strict check: same sequence subclass (adjust if you want loose matching)
-        if type(target_type) != type(pattern):
-            return None
-
-        # 2. Match element type recursively
-        elem_bindings = match_pattern(
-            target_type.element_type,
-            pattern.element_type,
-            copy.deepcopy(bindings)
-        )
-        #print("Elem:", elem_bindings)
-        if elem_bindings is None:
-            return None
-
-        # 3. Handle FixedList-specific length check (supports PatternVar)
-
-        if isinstance(target_type, ListType):
-
-            length_bindings = match_pattern(
-                target_type.element_type,
-                pattern.element_type,
-                copy.deepcopy(elem_bindings)
-            )
-            return length_bindings
-            #elem_bindings = length_bindings
-            #print("LEN",elem_bindings)
-
-
-        # 4. Handle Vector-specific dim check (supports PatternVar)
-        if isinstance(target_type, VectorType):
-            dim_bindings = match_pattern(
-                target_type.dim,
-                pattern.dim,
-                copy.deepcopy(elem_bindings)
-            )
-            if dim_bindings is None:
-                return None
-            elem_bindings = dim_bindings
-
-
-        return elem_bindings
-
-    # Case 3: TupleType (multiple element types)
-    if isinstance(target_type, TupleType) and isinstance(pattern, TupleType):
-        if len(target_type.element_types) != len(pattern.element_types):
-            return None
-        
-        new_bindings = copy.deepcopy(bindings)
-        #print("start:", target_type.element_types, pattern.element_types)
-        for t_elem, p_elem in zip(target_type.element_types, pattern.element_types):
-            #print("enter tuple",t_elem, p_elem, new_bindings)
-
-            elem_bindings = match_pattern(t_elem, p_elem, new_bindings)
-            #print("tuple pair:",t_elem, p_elem)
-            if elem_bindings is None:
-                #print("EXIT")
-                return None
-            new_bindings.update(elem_bindings)
-            #print('tuple:',elem_bindings)
-        return new_bindings
-
-    # Case 4: EmbeddingType (fixed to support PatternVar)
-    if isinstance(target_type, EmbeddingType) and isinstance(pattern, EmbeddingType):
-        # Match space_name (supports PatternVar)
-        space_bindings = match_pattern(
-            target_type.space_name,
-            pattern.space_name,
-            copy.deepcopy(bindings)
-        )
-        if space_bindings is None:
-            return None
-        
-        # Match dim (supports PatternVar)
-        dim_bindings = match_pattern(
-            target_type.dim,
-            pattern.dim,
-            copy.deepcopy(space_bindings)
-        )
-
-        return dim_bindings if dim_bindings is not None else None
-
-    # Case 5: ArrowType (function/arrow types)
-    if isinstance(target_type, ArrowType) and isinstance(pattern, ArrowType):
-        first_bindings = match_pattern(target_type.first, pattern.first, copy.deepcopy(bindings))
-        if first_bindings is None:
-            return None
-        second_bindings = match_pattern(target_type.second, pattern.second, first_bindings)
-        return second_bindings
-
-    # Case 6: Exact match for primitive types
-    return bindings if target_type == pattern else None
-def find_transform_path(
-    initial_type: TypeBase, 
-    target_type: TypeBase,
-    rules: List[TransformRule],
-    max_depth: int = 5
-) -> Optional[List[Tuple[TransformRule, Dict[str, TypeBase]]]]:
-    """    
-    Args:
-        initial_type: the initial type to transform
-        target_type:  the taraget type to transform
-        rules:        rules to transform
-        max_depth:    depth constraints
-    
-    Returns:
-        return the possible (rules, bindings) tuples
-    """
-    # the bfs queue of transform rules
-    queue = [(initial_type, [], 0)]
-    visited = set()
-
-    while queue:
-        current_type, path, depth = queue.pop(0)
-        if current_type == target_type: return path
-
-        if depth >= max_depth: continue
-        type_key = current_type.typename
-        if type_key in visited: continue
-        visited.add(type_key)
-        
-        for rule in rules:
-            bindings = match_pattern(current_type, rule.source_pattern)
-            if bindings is None: continue
-            new_type = rule.transform_func(bindings)
-            new_path = path + [(rule, bindings)]
-            queue.append((new_type, new_path, depth + 1))
-    return None
-
-class MLPArgumentCaster(nn.Module):
-    def __init__(self, input_dims : List[int], output_dims : List[int]):
-        super().__init__()
-        self.input_dims = input_dims
-        self.output_dims = output_dims
-        self.total_input_dim = sum(input_dims)
-        self.total_output_dim = sum(output_dims)
-        
-        self.net = nn.Sequential(
-            nn.Linear(self.total_input_dim, 64),
-            nn.ReLU(),
-            nn.Linear(64, 64),
-            nn.ReLU(),
-            nn.Linear(64, self.total_output_dim)
-        )
-        self.logit_net = nn.Sequential(
-            nn.Linear(self.total_input_dim, 64),
-            nn.ReLU(),
-            nn.Linear(64, 64),
-            nn.ReLU(),
-            nn.Linear(64, 1)
-        )
-    
-    def forward(self, *args):
-        flat_args = [arg.value.reshape(-1) for arg in args[0]]
-        cat_args = torch.cat(flat_args, dim=0)
-        output = self.net(cat_args)
-        outputs = [t.reshape([d]) for t, d in zip(torch.split(output, self.output_dims), self.output_dims)]
-        logit_output = self.logit_net(cat_args)
-        args = [o for i,o in enumerate(outputs)]
-        logits = torch.sum(logit_output)
-        return args, logits
-
-def type_dim(tp : TypeBase) -> int:
-    if isinstance(tp, TypeBase) and tp.typename in ["int", "float", "boolean", "bool"]: return 1
-    elif isinstance(tp, VectorType): return int(tp.dim)
-    elif isinstance(tp, EmbeddingType): return int(tp.dim)
-    elif isinstance(tp, ListType): type_dim(tp.element_type)
-    elif isinstance(tp, TupleType):return sum(type_dim(elem) for elem in tp.element_types)
-    elif isinstance(tp, FixedListType):
-        length = tp.length if isinstance(tp.length, int) else 10  # 默认长度
-        return length * type_dim(tp.element_type)
-    raise NotImplementedError(f"dim of type {tp} cannot be inferred")
-
-
-
+from helchriss.dsl.dsl_values import Value
 from helchriss.dsl.dsl_types import FLOAT, ListType, VectorType, EmbeddingType, TypeBase
+from helchriss.dsl.dsl_types import VectorType, ListType, EmbeddingType, TupleType, FixedListType, ArrowType, BatchedListType, BOOL
+from typing import List, Tuple,Union, Any, Dict, Tuple, Optional, Callable, Type
 
-class RuleBasedTransform:
+#from .rules import default_constructor_rules, TypeTransformRule, TypeTransformRuleBackward, PatternVar, match_pattern
 
-    def __init__(self, transform_rules : List[TransformRule], filler_rules : List[FillerRule]):
-        self.transform_rules = transform_rules
-        self.filler_rules = filler_rules
-        self.k = 3
-    
-    def add_rule(self, rule : TransformRule): self.transform_rules.append(rule)
+try:
+    from .rules import default_constructor_rules, TypeTransformRule, TypeTransformRuleBackward, PatternVar, match_pattern
+except:
+    from rules import default_constructor_rules, TypeTransformRule, TypeTransformRuleBackward, PatternVar, match_pattern
+
+import graphviz
+
+__all__ = ["PatternVar","match_pattern", "Constructor", "default_constructor_rules"]
 
 
-    """infer the possible set of fillers from signature """
-    def infer_fn_prototypes(self,input_type : List[TypeBase], output_type : TypeBase):
-        #print( TupleType(input_type), output_type)
-        
-        #paths = find_transform_path(
-        #    TupleType(input_type),
-        #    output_type, rules=self.transform_rules,
-        #    max_depth=self.k)
-
-        input_types = TupleType(input_type) if len(input_type) > 1 else input_type[0]
-
-        fillers = []
-
-        
-        for fill_rule in self.filler_rules:
-            #print(TupleType(input_type), output_type)
-            if fill_rule.applicable(input_types, output_type):
-
-                fillers.append( fill_rule.fill_in(input_types, output_type) )
-        assert fillers, f"not found for {input_types} to {output_type}"
-        return fillers
-        #
-    
-
-    """infer argument transformation using the predefined transformation rules"""
-    def infer_args_caster(input_type : List[TypeBase], output_types : List[TypeBase]) -> nn.Module:
-        input_dims = [type_dim(tp) for tp in input_type]
-        output_dims = [type_dim(tp) for tp in output_types]
-        return MLPArgumentCaster(input_dims, output_dims)
 
 import torch
 import torch.nn as nn
-from typing import List, Callable
+from typing import List, Union, Callable, Any, Optional
 
-class ListFloatFiller(nn.Module):
-        def __init__(self,n,m):
-            super().__init__()
-            # Linear layer: n+m input dim → 1 output dim
-            hidden_dim = 128
-            self.linear = nn.Sequential(
-                nn.Linear(n+m, hidden_dim),
-                nn.ReLU(),
-                nn.Linear(hidden_dim, 1),
-                nn.ReLU(),
-            )
-
-        def forward(self, list1: List[torch.Tensor], list2: List[torch.Tensor], **kwargs) -> torch.Tensor:
-            # Step 1: Compute expectation (mean) over each list (collapse list to single tensor)
-            # list1: [B1, 1+n] → mean over list → [1+n]; list2: [B2, 1+m] → mean → [1+m]
-            exp1 = list1.mean(dim=0)  # Expectation over list1
-            exp2 = list2.mean(dim=0)  # Expectation over list2
-            
-            # Step 2: Strip logit dimension (first dim) → [n] and [m]
-            feat1 = exp1[1:]  # Drop logit (1st dim) → shape [n]
-            feat2 = exp2[1:]  # Drop logit (1st dim) → shape [m]
-            
-            combined = torch.cat([feat1, feat2], dim=0)  # Shape [n+m]
-            
-            output = self.linear(combined)  # Shape [1]
-            return Value(FLOAT,output)
-
-def obj_list_to_float_filler(binds: dict) -> Callable[[], nn.Module]:
+class ConvexConstruct(nn.Module):
     """
-    Factory function returning a custom nn.Module class that:
-    - Takes two list inputs (list of [1+n] and [1+m] dim tensors)
-    - Computes expectation (mean) over each list
-    - Combines to n+m dim tensor, then projects to 1 dim via Linear
+    A learnable convex combination module for functions or nested ConvexConstruct instances.
+    This module maintains non-negative weights that sum to 1 (convex combination constraints)
+    and supports end-to-end gradient-based optimization.
+
+    Attributes:
+        functions (List[Union[Callable, "ConvexConstruct"]]): List of base functions or nested ConvexConstruct modules
+        num_functions (int): Number of functions in the convex combination
+        log_weights (nn.Parameter): Log-space learnable weights (to ensure non-negativity via softmax)
+    """
+
+    def __repr__(self)-> str:
+        return f"convex_construct {self.num_functions}"
+
+
+    def __init__(self, functions: List[Union[Callable, "ConvexConstruct"]], weights: torch.Tensor = None, input_types = None, output_type = None):
+        super(ConvexConstruct, self).__init__()
+        
+        # Validate input functions
+        self.functions = functions  # Changed: Use regular list instead of ModuleList to support non-nn.Module
+        self.num_functions = len(self.functions)
+        assert self.num_functions > 0, "Function list cannot be empty"
+        self.input_types = input_types
+        self.output_type = output_type
+
+        # Initialize learnable weights: use log-space parameters for non-negativity constraint
+        if weights is None:
+            # Default to uniform distribution
+            init_weights = torch.ones(self.num_functions, dtype=torch.float32) / self.num_functions
+        else:
+            # Validate provided weights
+            assert weights.ndim == 1, f"Weights must be 1D tensor (got {weights.ndim}D)"
+            assert len(weights) == self.num_functions, \
+                f"Weight count ({len(weights)}) must match function count ({self.num_functions})"
+            assert torch.all(weights >= 0), "All weights must be non-negative"
+            init_weights = weights / torch.sum(weights)  # Normalize to sum to 1
+
+        # Store log-weights as parameter (softmax will convert to valid convex weights)
+        self.log_weights = nn.Parameter(torch.log(init_weights + 1e-8))  # Add epsilon to avoid log(0)
+
+    def get_normalized_weights(self) -> torch.Tensor:
+        """
+        Convert log-weights to valid convex combination weights (non-negative, sum to 1)
+        using softmax activation.
+
+        Returns:
+            torch.Tensor: Normalized weights of shape (num_functions,)
+        """
+        return torch.softmax(self.log_weights, dim=0)
+
+    def forward(self, x) -> Any:
+        """
+        Forward pass: compute convex combination of function outputs.
+
+        Args:
+            *args: Positional arguments to pass to each function
+            **kwargs: Keyword arguments to pass to each function
+
+        Returns:
+            Any: Weighted sum of function outputs (matches output type of base functions)
+        """
+        # Get normalized convex weights
+
+        weights = self.get_normalized_weights()
+
+        outputs = []
+        for func in self.functions:
+            val = func(x)
+            if isinstance(val, Value): val = val.value
+            outputs.append(val)
+ 
+
+
+        assert len(outputs) > 0, "No function outputs to combine"
+        first_output = outputs[0]
+        for output in outputs[1:]:
+            assert type(output) == type(first_output), \
+                f"All function outputs must have the same type (got {type(output)} and {type(first_output)})"
+
+        if isinstance(first_output, torch.Tensor):
+            weighted_sum = torch.zeros_like(first_output)
+        else:
+            #print(first_output,outputs)
+            # Handle non-tensor outputs (e.g., numpy arrays, scalars)
+            weighted_sum = type(first_output)(0)
+
+
+        for weight, output in zip(weights, outputs):
+            weighted_sum += weight * output
+
+        return Value(self.output_type,  weighted_sum)
+
+    def normalize_weights(self) -> None:
+        """
+        Explicitly re-normalize weights (in-place) to ensure they satisfy convex constraints.
+        Useful for post-optimization calibration (though softmax maintains this during training).
+        """
+        with torch.no_grad():
+            normalized = self.get_normalized_weights()
+            self.log_weights.data = torch.log(normalized + 1e-8)
+
+    def get_top_p_functions(self, p: float) -> "ConvexConstruct":
+        """
+        Prune the module to retain only the top P proportion of functions with highest weights,
+        returning a new ConvexConstruct instance with these top functions.
+
+        Args:
+            p (float): Proportion of top functions to retain (must be in (0, 1])
+
+        Returns:
+            ConvexConstruct: New instance with top P functions and their normalized weights
+        """
+        assert 0 < p <= 1, f"p must be in (0, 1] (got {p})"
+        
+        weights = self.get_normalized_weights()
+        
+        top_k = int(self.num_functions * p)
+        top_k = max(top_k, 1)  # Ensure at least 1 function is retained
+
+        top_indices = torch.argsort(weights, descending=True)[:top_k]
+
+        top_functions = [self.functions[i] for i in top_indices]
+        top_weights = weights[top_indices]
+
+        return ConvexConstruct(top_functions, top_weights)
+
+
+class ConvexComposer(nn.Module):
+    def __init__(self, fn: Callable, convex: ConvexConstruct):
+        super().__init__()
+        self.fn = fn
+        self.convex = convex
+
+    def forward(self, *args, **kwargs):
+        return self.convex(self.fn(*args, **kwargs))
+
+class BackwardCombinedFn(nn.Module):
+    def __init__(self, sub_convex_list: List[ConvexConstruct], combine_fn: Callable):
+        super().__init__()
+        self.sub_convex_list = nn.ModuleList(sub_convex_list)
+        self.combine_fn = combine_fn
+
+    def forward(self, *args, **kwargs) -> Any:
+        sub_results = [sub_convex(*args, **kwargs) for sub_convex in self.sub_convex_list]
+        return self.combine_fn(*sub_results)
+
+
+class ConvexRewriter(nn.Module):
+    def __init__(self, rewrites : List[ConvexConstruct], conds : List[ConvexConstruct]):
+        super().__init__()
+        self.rewrites = rewrites # take arg to another arg as rewrite
+        self.conditions = conds # take arg to float as logit of rewrite
+ 
+    def forward(self, x : List[TypeBase]):
+        rewrite_values = []
+        rewrite_probs = []
+        for i,arg in enumerate(x):
+            if isinstance(arg, Value): arg = arg.value
+            rw_value    = self.rewrites[i](arg)
+            rw_weight   = self.rewrites[i](arg)
+            rewrite_values.append(rw_value)
+            rewrite_probs.append(rw_weight)
+    
+        return rewrite_values, rewrite_probs
+
+class Constructor:
+
+    def __init__(self, rules = []):
+        self.max_depth = 4 # maximum recursion depth
+
+        self.backward_rules = []
+        self.forward_rules = []
+
+        for rule in rules:
+            self.add_rule(rule)
+
+    def add_rule(self, rule: TypeTransformRule):
+        if isinstance(rule, TypeTransformRule):
+            self.forward_rules.append(rule)
+        elif isinstance(rule, TypeTransformRuleBackward):
+
+            self.backward_rules.append(rule)
+        else: raise TypeError(f"Unsupported rule type: {type(rule)}. Only TypeTransformRule and TypeTransformRuleBackward are allowed.")
+
+    def create_convex_construct(self, src_type : TypeBase,  tgt_type : TypeBase, function_registry):
+        #print(len(self.forward_rules), len(self.backward_rules))
+        def bfs(src_type : TypeBase, tgt_type : TypeBase, depth = 1):
+            if depth > self.max_depth : return None
+
+            direct_functions = function_registry.get_functions(src_type, tgt_type)
+            if not direct_functions and depth == self.max_depth: return None
+
+            functions = [] # get non fill in function
+            """get all the functions that can be directly computed"""
+            functions.extend(function_registry.get_functions(src_type, tgt_type))
+
+            #print(len(functions))
+
+            intermediate_functions = []
+            for rule in self.forward_rules:
+                match_success, var_binds = rule.match(src_type)
+                #if match_success:
+                #    print(rule.pattern_type, src_type,match_success, var_binds)
+                if not match_success: continue
+                inter_type, inter_fn = rule.apply(var_binds)
+                
+                
+                if inter_type == tgt_type:
+                    intermediate_functions.append(inter_fn)
+                    continue
+                else:
+                    
+                    inter_convex = bfs(inter_type, tgt_type, depth = depth+1)
+                    
+            
+                    
+
+                    if inter_convex is not None:
+
+                        #print("Applyed:", src_type,"->",inter_type, "->", tgt_type)
+                        #print(rule.name, inter_fn, inter_convex)
+
+                        intermediate_functions.append(ConvexComposer(inter_fn, inter_convex))
+            
+            functions = functions + intermediate_functions
+
+            """Intermediate Backward Function Subgoal Search"""
+            intermediate_backward_functions = []
+            # traverse all the subgoals
+            for backward_rule in self.backward_rules:
+                # 3.1 the match target type cooresponds to the pattern
+                match_success, var_binds = backward_rule.match(tgt_type)
+                #print(match_success,backward_rule.name, tgt_type)
+                
+                if not match_success: continue
+                # 3.2 create subgoals to learn with
+                
+                sub_goal_types = backward_rule.sub_goals(tgt_type)
+                #print(sub_goal_types[0],"->",tgt_type)
+
+
+                # 3.3 recursively solve each subgoal
+                sub_goal_convex_list = []
+                valid_sub_goals = True
+                for sub_goal_type in sub_goal_types:
+                    
+                    sub_convex = bfs(src_type, sub_goal_type, depth=depth+1)
+                    if sub_convex:
+                        pass
+                        #print(src_type, sub_goal_type, tgt_type)
+                    #print(src_type, sub_goal_type, sub_convex)
+                    if sub_convex is None:
+                        valid_sub_goals = False
+                        break
+
+                    sub_goal_convex_list.append(sub_convex)
+            
+                if not valid_sub_goals: continue 
+
+
+                backward_combine_fn = backward_rule.apply(var_binds)
+
+
+                #print(backward_rule.name)
+                combined_fn = BackwardCombinedFn(sub_goal_convex_list, backward_combine_fn)
+                intermediate_backward_functions.append(combined_fn)
+
+
+            functions.extend(intermediate_backward_functions)
+            weights = None # default as uniform distribution
+
+            if not functions: return None
+
+            #print(src_type, tgt_type, len(functions))
+            return ConvexConstruct(functions, weights, src_type, tgt_type)
+    
+        return bfs(src_type, tgt_type, depth=0)
+    
+    def create_convex_arg_rewriter(self, src_types : List[TypeBase], tgt_types : List[TypeBase], function_registry):
+        assert len(src_types) == len(tgt_types), f"{len(src_types)} != {len(tgt_types)}"
+        rewrites = []
+        conds    = []
+
+        for i in range(len(src_types)):
+            rewrite = self.create_convex_construct(src_types[i], tgt_types[i], function_registry)
+            cond    = self.create_convex_construct(src_types[i], FLOAT, function_registry)
+            #print(src_types[i], tgt_types[i], isinstance(src_types[i], TypeBase),isinstance(tgt_types[i], TypeBase))
+            #print(rewrite, cond, self.max_depth)
+            assert rewrite, f"rewrite is None {src_types[i]}, {tgt_types[i]}"
+            assert cond,    f"cond is None {src_types[i]}, {tgt_types[i]}"
+            rewrites.append(rewrite)
+            conds.append(cond)
+
+        return ConvexRewriter(rewrites, conds)
+
+
+class FunctionRegistry:
+
+    def __init__(self):
+        self.functions: Dict[Tuple[TypeBase, TypeBase], List[Callable]] = {}
+
+    def register_function(self, input_type: TypeBase, output_type: TypeBase, func: Callable):
+
+        key = (input_type, output_type)
+        if key not in self.functions:
+            self.functions[key] = []
+        self.functions[key].append(func)
+
+    def get_functions(self,  input_type: TypeBase, output_type: TypeBase) -> List[Callable]:
+
+        key = (input_type, output_type)
+        return self.functions.get(key, [])
+
+
+
+import graphviz
+from typing import Union, Optional
+
+def visualize_convex_construct(
+    convex: "ConvexConstruct",
+    graph_name: str = "ConvexConstruct_Dependency"
+) -> graphviz.Digraph:
+    """
+    可视化 ConvexConstruct 的函数依赖关系，自动展开嵌套的 ConvexConstruct 和 ConvexComposer 节点。
     
     Args:
-        binds: Dictionary with "n" and "m" keys (defines tensor dimensions)
+        convex: 待可视化的 ConvexConstruct 实例 
+        graph_name: 可视化图的名称
     
     Returns:
-        Callable that instantiates the custom nn.Module
+        graphviz.Digraph: 生成的可视化图对象（可调用 .render() 保存为图片，.view() 直接查看）
     """
-    n = int(binds["n"]);m = int(binds["m"])
+    # 初始化有向图，设置样式
+    dot = graphviz.Digraph(
+        name=graph_name,
+        format="png",
+        node_attr={"shape": "box", "style": "filled", "fillcolor": "lightblue"},
+        edge_attr={"color": "gray"}
+    )
     
-    return ListFloatFiller(n,m)
+    # 记录已处理的节点（避免循环引用重复绘制，实际中 ConvexConstruct 一般无循环）
+    processed_nodes = set()
 
+    def _recursive_add_nodes(
+        current_module: Union["ConvexConstruct", "ConvexComposer"],
+        parent_node_id: str,
+        parent_weights: float = None
+    ):
+        # 生成当前模块的唯一标识
+        module_id = id(current_module)
+        if module_id in processed_nodes:
+            # 已处理过的节点，仅添加边不重复展开
+            if parent_node_id:
+                dot.edge(parent_node_id, f"{type(current_module).__name__}_{module_id}")
+            return
+        processed_nodes.add(module_id)
 
-class FloatFiller(nn.Module):
-        def __init__(self,k):
-            super().__init__()
-            # Linear layer: k input dim → 1 output dim
-            hidden_dim = 128
-            self.feat_net = nn.Sequential(
-                nn.Linear(k+0, hidden_dim),
-                nn.Sigmoid(),
-                nn.Linear(hidden_dim, hidden_dim),
-
-            )
-            self.decode_net = nn.Sequential(
-                nn.Linear(hidden_dim, hidden_dim),
-                nn.Sigmoid(),
-                nn.Linear(hidden_dim, 1),
-            )
-              
-
-        def forward(self, input_list: List[torch.Tensor], **kwargs) -> Value:
-            # Step 1: Compute expectation (mean) over the input list
-            # input_list: list of [1+k] tensors → stack + mean → [1+k]
-            stacked = input_list  # Shape: [num_tensors, 1+k]
-            #exp = stacked.mean(dim=0)         # Expectation over list → [1+k]
+        # ------------------------------
+        # 1. 处理 ConvexConstruct 模块
+        # ------------------------------
+        if isinstance(current_module, ConvexConstruct):
+            # 添加 ConvexConstruct 节点（标注权重、输入输出类型信息）
+            weights = current_module.get_normalized_weights().detach().cpu().numpy()
             
-
-            feat = self.feat_net(stacked[:,1:])  # Drop logit → shape [k]
-            prob = stacked[:,0:1].sigmoid()
-            # Step 3: Project k-dim to 1 dim via linear layer
-            decoded = self.decode_net(feat) * prob
-            #print("prob:", prob.reshape([-1]))
-            #print("num cast:",decoded.reshape([-1]))
-            output_tensor = torch.max(decoded)  # Shape [1]
-
-
+            # 拼接输入输出类型信息
+            input_types_repr =  f"\n{current_module.input_types}"
+            output_type_repr = str(current_module.output_type)
             
-            # Step 4: Wrap in Value (matches your original return)
-            return Value(FLOAT, output_tensor)
+            # 构建节点标签
+            convex_label = (
+                f"ConvexConstruct\n"
+                f"Input Types:\n{input_types_repr}\n"
+                f"Output Type:\n{output_type_repr}\n"
+                f"Weight Sum=1.0"
+            )
+            if parent_weights is not None:
+                convex_label = (
+                    f"ConvexConstruct\n"
+                    f"Parent Weight={parent_weights:.3f}\n"
+                    f"Input Types:\n{input_types_repr}\n"
+                    f"Output Type:\n{output_type_repr}\n"
+                    f"Internal Sum=1.0"
+                )
+            
+            dot.node(
+                f"ConvexConstruct_{module_id}",
+                label=convex_label,
+                fillcolor="lightcoral"
+            )
+
+            # 连接父节点与当前 ConvexConstruct 节点
+            if parent_node_id:
+                dot.edge(parent_node_id, f"ConvexConstruct_{module_id}")
+
+            # 遍历所有函数，递归添加子节点
+            for idx, func in enumerate(current_module.functions):
+                func_id = id(func)
+                func_weight = weights[idx]
+                
+                # 优先使用 __repr__，其次 __str__，最后默认标识
+                if hasattr(func, '__repr__'):
+                    func_repr = func.__repr__()
+                    # 简化过长的repr输出，避免节点标签溢出
+                    func_display_name = func_repr[:50] + "..." if len(func_repr) > 50 else func_repr
+                elif hasattr(func, '__str__'):
+                    func_str = func.__str__()
+                    func_display_name = func_str[:50] + "..." if len(func_str) > 50 else func_str
+                else:
+                    func_display_name = f"Func_{idx}"
+
+                # 函数节点标签（包含显示名称和权重）
+                func_label = f"{func_display_name}\nWeight={func_weight:.3f}"
+
+                # 子函数是 ConvexConstruct：递归展开
+                if isinstance(func, ConvexConstruct):
+                    dot.node(f"Func_{func_id}", label=func_label, fillcolor="lightgreen")
+                    dot.edge(f"ConvexConstruct_{module_id}", f"Func_{func_id}")
+                    _recursive_add_nodes(func, f"Func_{func_id}", parent_weights=func_weight)
+                
+                # 子函数是 ConvexComposer：递归展开
+                elif isinstance(func, ConvexComposer):
+                    dot.node(f"Func_{func_id}", label=func_label, fillcolor="gold")
+                    dot.edge(f"ConvexConstruct_{module_id}", f"Func_{func_id}")
+                    _recursive_add_nodes(func, f"Func_{func_id}", parent_weights=func_weight)
+                
+                # 普通函数：直接添加节点
+                else:
+                    dot.node(f"Func_{func_id}", label=func_label)
+                    dot.edge(f"ConvexConstruct_{module_id}", f"Func_{func_id}")
+
+        # ------------------------------
+        # 2. 处理 ConvexComposer 模块
+        # ------------------------------
+        elif isinstance(current_module, ConvexComposer):
+            # 添加 ConvexComposer 节点（若有输入输出类型也可添加，此处保持原有基础上补充）
+            composer_label = "ConvexComposer\n(fn → ConvexConstruct)"
+            if parent_weights is not None:
+                composer_label = f"ConvexComposer\nParent Weight={parent_weights:.3f}\n(fn → ConvexConstruct)"
+            
+            # 若 ConvexComposer 也有 input_types 和 output_type，可补充如下
+            if hasattr(current_module, 'input_types') and hasattr(current_module, 'output_type'):
+                input_types_repr = "\n".join([str(t) for t in current_module.input_types])
+                output_type_repr = str(current_module.output_type)
+                composer_label = (
+                    f"ConvexComposer\n"
+                    f"Parent Weight={parent_weights:.3f}\n"
+                    f"Input Types:\n{input_types_repr}\n"
+                    f"Output Type:\n{output_type_repr}\n"
+                    f"(fn → ConvexConstruct)"
+                ) if parent_weights is not None else (
+                    f"ConvexComposer\n"
+                    f"Input Types:\n{input_types_repr}\n"
+                    f"Output Type:\n{output_type_repr}\n"
+                    f"(fn → ConvexConstruct)"
+                )
+
+            dot.node(
+                f"ConvexComposer_{module_id}",
+                label=composer_label,
+                fillcolor="gold"
+            )
+
+            # 连接父节点与当前 ConvexComposer 节点
+            if parent_node_id:
+                dot.edge(parent_node_id, f"ConvexComposer_{module_id}")
+
+            # 添加 fn 节点（使用 __repr__/__str__ 作为名称）
+            fn = current_module.fn
+            fn_id = id(fn)
+            
+            # 优先使用 __repr__，其次 __str__，最后默认名称
+            if hasattr(fn, '__repr__'):
+                fn_display_name = fn.__repr__()[:50] + "..." if len(fn.__repr__()) > 50 else fn.__repr__()
+            elif hasattr(fn, '__str__'):
+                fn_display_name = fn.__str__()[:50] + "..." if len(fn.__str__()) > 50 else fn.__str__()
+            else:
+                fn_name = getattr(fn, "__name__", "UnknownFn")
+                fn_display_name = fn_name
+
+            fn_label = f"Pre-Process\n{fn_display_name}"
+            dot.node(f"Fn_{fn_id}", label=fn_label, fillcolor="lightcyan")
+            dot.edge(f"ConvexComposer_{module_id}", f"Fn_{fn_id}")
+
+            # 递归处理嵌套的 ConvexConstruct
+            nested_convex = current_module.convex
+            _recursive_add_nodes(nested_convex, f"ConvexComposer_{module_id}")
+            # 绘制 fn → nested_convex 的逻辑边（展示数据流向）
+            nested_convex_id = id(nested_convex)
+            dot.edge(f"Fn_{fn_id}", f"ConvexConstruct_{nested_convex_id}", style="dashed", color="darkblue")
+
+    _recursive_add_nodes(convex, parent_node_id="")
+
+    return dot
 
 
-def single_obj_list_to_float_filler(binds: dict) -> nn.Module:
-    """
-    Factory function returning a custom nn.Module that:
-    - Takes ONE list input (list of [1+k] dim tensors, k = binds["k"])
-    - Computes expectation (mean) over the list
-    - Strips logit dimension (first dim) to get k-dim tensor
-    - Projects k-dim tensor to 1 dim via Linear
+if __name__ == "__main__":
+    VAR = TupleType([BOOL, EmbeddingType("object", 96)] )
+
+    # 1. 初始化构造器并添加默认规则
+    constructor = Constructor(default_constructor_rules)
+
+    #for rule in default_constructor_rules:
+    #    constructor.add_rule(rule)
+    function_registry = FunctionRegistry()
+    constructor.max_depth = 4
+
+
+    def dummy_embed_to_float(embed: torch.Tensor) -> torch.Tensor:
+        return torch.mean(embed, dim = -1, keepdim=True)
+    #constructor.function_registry.register_function(
+    #    input_type=EmbeddingType("Latent",128),
+    #    output_type=FLOAT,
+    #    func=dummy_embed_to_float
+    #)
+
+
+    src_type = EmbeddingType("object", 96)
+    tgt_type = EmbeddingType("color_wheel", 1)
+
+    src_type = ListType(VAR)
+    tgt_type = FLOAT
+
+
+    convex = constructor.create_convex_construct(src_type, tgt_type, function_registry)
+    #[print(fn,"\n\n\n\n") for fn in convex.functions]
+
+    print("done")
+    rewrite = constructor.create_convex_arg_rewriter(
+        (src_type,), (tgt_type,), function_registry)
+    #print(src_type, tgt_type, rewrite)
+    if convex:
+        print("ConvexConstruct built successfully!")
+        print(f"Number of functions: {convex.num_functions}")
+        #print(convex.functions)
+        
+        visualize_convex_construct(convex, "vis").view()
+        test_embed = torch.randn([2,97])
+        output = convex(test_embed)
+
+
+        print(f"Test output: {output}")
+    else:
+        print("Failed to build ConvexConstruct.")
+
+if __name__ == "___main__":
+
+    class Id(nn.Module):
+        def forward(self, x): return x
+
+    class Quad(nn.Module):
+        def forward(self, x): return x ** 2
+
+    fns = [Id(), Quad()]
+    ws = torch.tensor([1., 1.])
+    conv = ConvexConstruct(fns, ws)
+
+    print(conv(torch.tensor([4.])))
     
-    Args:
-        binds: Dictionary with "k" key (defines tensor dimension: [1+k])
-    
-    Returns:
-        Instantiated nn.Module (matches your original return FloatFiller())
-    """
-    k = int(binds["k"])  # k = dimension after stripping logit (1+k total)
-    # Return INSTANTIATED module (matches your original return FloatFiller())
-    return FloatFiller(k)
+    optim = torch.optim.Adam(conv.parameters(), lr = 1e-1)
 
-def get_transform_rules():
-    object_dim = 128
-    def obj_tuple_to_embedding_tp(binding):
+    for epoch in range(100):
+        loss = torch.abs(conv(torch.tensor([4.])) - 16)
+        optim.zero_grad()
+        loss.backward()
+        optim.step()
 
-        return EmbeddingType("object", binding["n1"] + binding["n2"])
-
-    rule_obj_tuple_to_embedding_transform = TransformRule(
-        source_pattern = TupleType([
-            ListType(EmbeddingType("object", PatternVar("n1"))),
-            ListType(EmbeddingType("object", PatternVar("n2")))
-        ]
-        ),
-        transform_func =obj_tuple_to_embedding_tp,
-    )
-
-
-
-
-    transform_rules = [
-        rule_obj_tuple_to_embedding_transform
-    ]
-
-    def emb2emb_filler(binds):
-        return nn.Linear(binds["n"], binds["m"])
-    emb2emb_fill_rule = FillerRule(
-        EmbeddingType(PatternVar("K"), PatternVar("n")),
-        EmbeddingType(PatternVar("C"), PatternVar("m")),
-        emb2emb_filler
-    )
-
-    def emb2vector_filler(binds):
-        return nn.Linear(binds["n"], binds["m"])
-    emb2vector_fill_rule = FillerRule(
-        EmbeddingType(PatternVar("K"), PatternVar("n")),
-        VectorType(PatternVar("C"), PatternVar("m")),
-        emb2vector_filler
-    )
-
-    def obj_list_to_emb_filler(binds):
-
-        return nn.Linear(int(binds["n1"]) + int(binds["n2"]), int(binds["m"]))
-    obj_list_to_emb_fill_rule = FillerRule(
-        TupleType([
-            ListType(EmbeddingType("object", PatternVar("n1"))),
-            ListType(EmbeddingType("object", PatternVar("n2")))
-        ]
-        ),
-        EmbeddingType(PatternVar("name"), PatternVar("m")),
-        obj_list_to_emb_filler
-    )
-
-
-    obj_list_to_float_fill_rule = FillerRule(
-        TupleType([
-            ListType(TupleType([BOOL, EmbeddingType("object", PatternVar("n")) ]) ),
-            ListType(TupleType([BOOL, EmbeddingType("object", PatternVar("m")) ]) )
-        ]
-        ),
-       FLOAT,
-        obj_list_to_float_filler
-    )
-    #print(ListType(TupleType([BOOL, EmbeddingType("object", PatternVar("k")) ]) ),)
-    single_obj_list_to_float_fill_rule = FillerRule(
-            ListType(TupleType([BOOL, EmbeddingType("object", PatternVar("k")) ]) ),
-            FLOAT,
-            single_obj_list_to_float_filler
-    )
-
-    filler_rules = [
-        emb2emb_fill_rule,
-        emb2vector_fill_rule,
-        obj_list_to_emb_fill_rule,
-        obj_list_to_float_fill_rule,
-        single_obj_list_to_float_fill_rule
-    ]
-    return transform_rules, filler_rules
+    print(conv.log_weights)

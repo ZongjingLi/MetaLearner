@@ -20,22 +20,24 @@ color_domain = load_domain_string(color_domain_str)
 
 class ColorDomain(CentralExecutor, BatchVisualizer):
     """here we consider color as some element on the color wheel"""
+
+
     def red(self, color):
         # Red is centered at 0/1 on the color wheel
         redness = 0.5 * (torch.cos(2 * torch.pi * color) + 1)
-        return redness
+        return torch.logit(redness)
 
     def green(self, color):
         # Green is centered at 1/3 on the color wheel
         # Shift the cosine function by 1/3
         greenness = 0.5 * (torch.cos(2 * torch.pi * (color - 1/3)) + 1)
-        return greenness
+        return torch.logit(greenness)
 
     def blue(self, color):
         # Blue is centered at 2/3 on the color wheel
         # Shift the cosine function by 2/3
         blueness = 0.5 * (torch.cos(2 * torch.pi * (color - 2/3)) + 1)
-        return blueness
+        return torch.logit(blueness)
 
     def visualize(self, batched_data, save_path=None):
         import matplotlib.pyplot as plt
@@ -62,9 +64,9 @@ class ColorDomain(CentralExecutor, BatchVisualizer):
             y = np.sin(angle)
             
             # Get RGB values for this color
-            r = float(self.red(torch.tensor(color_val)).item())
-            g = float(self.green(torch.tensor(color_val)).item())
-            b = float(self.blue(torch.tensor(color_val)).item())
+            r = float(torch.sigmoid(self.red(torch.tensor(color_val))))
+            g = float(torch.sigmoid(self.green(torch.tensor(color_val))))
+            b = float(torch.sigmoid(self.blue(torch.tensor(color_val))))
             
             # Plot the point with its index
             ax1.scatter(x, y, color=(r, g, b), s=100, edgecolor='black')

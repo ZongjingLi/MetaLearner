@@ -98,9 +98,10 @@ class AutoLearnSchedule:
             self.logger.info(f"start to learn the words {new_words}, add corpus size {len(slice_data)}")
             [base_dataset.add(data) for data in slice_data]
 
-            model, info = self.train_phase(model, base_dataset, epochs = step_epochs, eps = eps, lr = lr)
-            avg_loss = info["loss"]
-            avg_acc = info["acc"]
+            if len(new_words) > 0:
+                model, info = self.train_phase(model, base_dataset, epochs = step_epochs, eps = eps, lr = lr)
+                avg_loss = info["loss"]
+                avg_acc = info["acc"]
             
             self.logger.info(f"learned words : {new_words} avg_acc:{avg_acc} avg_loss:{avg_loss}")
         

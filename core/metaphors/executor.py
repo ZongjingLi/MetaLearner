@@ -5,35 +5,30 @@
  # @Modified time: 2025-03-23 00:19:35
  # @Description:
 '''
+from typing import List, Union, Mapping, Dict, Any, Tuple, Callable
 
 import os
-from typing import List, Union, Mapping, Dict, Any, Tuple, Callable
 import torch
 import torch.nn as nn
 from helchriss.knowledge.executor import CentralExecutor, CentralExecutor
 from helchriss.knowledge.symbolic import Expression,FunctionApplicationExpression, ConstantExpression, VariableExpression
-from helchriss.knowledge.symbolic import LogicalAndExpression, LogicalNotExpression,LogicalOrExpression
-from helchriss.knowledge.symbolic import TensorState, concat_states
 from helchriss.dsl.dsl_values import Value
-from helchriss.dsl.dsl_types import TypeBase, AnyType, INT, FLOAT
-from core.metaphors.rewrite import NeuralRewriter, RewriteRule, Frame, pth_file
-from helchriss.domain import Domain
-from .rewrite import NeuralRewriter, LocalFrame
+from helchriss.dsl.dsl_types import TypeBase, AnyType, INT, FLOAT, TupleType
+from helchriss.dsl.dsl_values import value_types
+from core.metaphors.rewrite import Frame, pth_file
 from helchriss.logger import get_logger
 from core.grammar.tree_parser import TreeParser
-import inspect
 
 
 # this is the for type space, basically a wrapper class
-from .types import RuleBasedTransform, get_transform_rules
+from .types import Constructor, FunctionRegistry, ConvexConstruct
+from .rules import default_constructor_rules
+from .group import ExecutorGroup
 from dataclasses import dataclass
 import networkx as nx
-from pathlib import Path
 
 __all__ = ["ExecutorGroup", "RewriteExecutor"]
 
-def clamp_list(values, min_val=0.3, max_val=1.0):
-    return [max(min(v, max_val), min_val) for v in values]
 
 class UnificationFailure(Exception):
     """
@@ -107,169 +102,8 @@ class UnificationFailure(Exception):
                 type(left_val) != type(right_val))
 
 
-def value_types(values : List[Value]): return [v.vtype for v in values]
-
-class ExecutorGroup(CentralExecutor):
-    """Storage of Domain Executors or some Extention Functions"""
-    def __init__(self, domains : List[Union[CentralExecutor, Domain]]):
-        super().__init__(None)  
-
-        self.executor_group = nn.ModuleList([])
-        for domain_executor in domains:
-            if isinstance(domain_executor, CentralExecutor):
-                executor = domain_executor
-            elif isinstance(domain_executor, Domain):
-                executor = CentralExecutor(domain_executor)
-            else : raise Exception(f"input {domain_executor} is not a Domain or FunctionExecutor")
-            executor.refs["executor_parent"] = self
-            self.executor_group.append(executor)
-
-        self.extended_registry = nn.ModuleDict({})
-
-    
-    def save_ckpt(self, path: str):
-        path = Path(path)
-        (path / "domains").mkdir(parents=True, exist_ok=True)
-        (path / "extended").mkdir(parents=True, exist_ok=True)
-        
-        for executor in self.executor_group:
-            torch.save(executor.state_dict(), path / "domains" / f"{executor.domain.domain_name}.pth")
-        
-        for name, module in self.extended_registry.items():
-            torch.save(module, path / "extended" / f"{name}.ckpt")
-
-    def load_ckpt(self, path: str):
-        path = Path(path)
-        for executor_file in (path / "domains").glob("*.pth"):
-            name = executor_file.stem
-            for executor in self.executor_group:
-                if executor.domain.domain_name == name:
-                    executor.load_state_dict(torch.load(executor_file,  weights_only=True))
-                    break
-
-        for extended_file in (path / "extended").glob("*.ckpt"):
-            name = extended_file.stem
-
-
-            self.extended_registry[name] = torch.load(extended_file,  weights_only=False)
-
-
-    def format(self, function : str, domain : str) -> str: return f"{function}:{domain}"
-
-    @staticmethod
-    def signature(function : str, types : List[TypeBase]):
-        typenames = [f"{tp.typename}" for tp in types]
-        type_sign = "->".join(typenames)
-        return f"{function}#{type_sign}"
-
-    @staticmethod
-    def parse_signature(signature: str) ->Tuple[str, List[TypeBase],TypeBase]:
-        parts = signature.split('#')
-        if len(parts) != 2: raise ValueError(f"Invalid signature format: {signature}")
-    
-        function_name = parts[0]
-        type_signature = parts[1]
-    
-        type_specs = type_signature.split('->')
-        all_types = []
-        
-        for type_spec in type_specs:
-            type_parts = type_spec.split('-')
-            if len(type_parts) != 1: raise ValueError(f"Invalid type specification: {type_spec}")
-        
-            typename = type_parts[0]
-            all_types.append(TypeBase(typename))
-    
-        input_types = all_types[:-1]
-
-
-        output_types = all_types[-1]  # Return as list as requested
-        return function_name, input_types, output_types
-
-    def domain_function(self, func : str) -> bool: return ":" in func
-
-    def freeze_extended(self, freeze = True):
-        for param in self.extended_registry.parameters():
-            param.requires_grad = freeze
-
-    @property
-    def functions(self) -> List[Tuple[str, List[TypeBase], TypeBase]]:
-        functions = []
-        for sign in self.extended_registry:
-            f_sign, in_types, out_type = self.parse_signature(sign)
-
-            functions.append([f_sign, in_types, out_type])
-        for executor in self.executor_group:
-            assert isinstance(executor, CentralExecutor), f"{executor} is not a executor"
-            for func_name in executor._function_registry:
-
-                functions.append([
-                    self.format(func_name,executor.domain.domain_name),
-                    executor.function_input_types[func_name],
-                    executor.function_output_type[func_name]])
-
-        return functions
-
-    def function_signature(self, func : str) -> List[Tuple[List[TypeBase], TypeBase]]:
-        hyp_sign = []
-        for function in self.functions:
-            f_sign, in_types, out_type = function
-            if func == f_sign:
-                hyp_sign.append([in_types, out_type])
-        return hyp_sign
-        
-    def gather_functions(self, input_types, output_type : Union[TypeBase, bool]) -> List[str]:
-        compatible_fns = []
-        for function in self.functions:
-            fn_sign, in_types, out_type = function
-
-            if in_types == input_types and out_type == output_type:
-                compatible_fns.append(fn_sign)
-        return compatible_fns
-
-    def register_extended_function(self, func : str, in_types : List[TypeBase], out_type : TypeBase, implement : nn.Module):
-        signature = self.signature(func, in_types + [out_type])
-        self.extended_registry[signature] = implement
-
-    def infer_domain(self, func: str) -> str:
-        for executor in self.executor_group: 
-            assert isinstance(executor, CentralExecutor), "not a function executor"
-            if func in executor._function_registry: return executor.domain.domain_name
-
-    def execute(self, func : str, args : List[Value], arg_types : List[TypeBase],  grounding = None) -> Value:
-        self._grounding = grounding
-        """a function could be in some domain or in extention registry"""
-        arg_types = value_types(args)
-        signature = self.signature(func, arg_types)
-        func_call = None
-
-        # 1) check if this is a domain function
-        if self.domain_function(func):
-            func_name, domain_name = func.split(":")
-            for executor in self.executor_group:
-                assert isinstance(executor, CentralExecutor), f"{executor} is not a executor"
-                if executor.domain.domain_name == domain_name: # find the correct executor
-                    executor._grounding = grounding
-                    func_call = executor._function_registry[func_name]
-
-
-        # 2) check if this is an extention function
-        for sign in self.extended_registry:
-            if signature in sign:func_call = self.extended_registry[sign]
-
-
-        ### collect arguments and evaluate on the function call
-        args = [arg.value for arg in args]
-        kwargs = {"arg_types" : arg_types}
-        
-        sig = inspect.signature(func_call)
-        has_kwargs = any(param.kind == inspect.Parameter.VAR_KEYWORD 
-                     for param in sig.parameters.values())
-
-        if func_call is not None:
-            if has_kwargs: return func_call(*args, **kwargs)
-            else: return func_call(*args)
-        else:raise ModuleNotFoundError(f"{signature} is not found.")
+def clamp_list(values, min_val=0.3, max_val=1.0):
+    return [max(min(v, max_val), min_val) for v in values]
 
 
 @dataclass
@@ -286,78 +120,6 @@ class SearchNode:
     name : str = None
 
 
-class SearchVisualizer:
-    """Visualizer for logging and graphing search tree operations"""
-    def __init__(self):
-        self.query_trees = []
-        self.active = 1  # Using int for boolean (1 = active, 0 = inactive)
-
-    def log(
-        self,
-        query_fn: str,
-        args: List[Value],
-        nodes: List[SearchNode],
-        mode: str
-    ) -> None:
-        """
-        Log search tree data if the visualizer is active.
-        
-        Args:
-            query_fn: Name of the query function
-            args: List of Value objects passed to the query
-            nodes: List of root SearchNodes for the search tree
-            mode: Operation mode (e.g., "search", "expand", "evaluate")
-        """
-        if self.active:
-            self.query_trees.append((query_fn, args, nodes, mode))
-
-    def create_graph(self, nodes: List[SearchNode]) -> nx.DiGraph:
-        """
-        Create a directed graph from a list of SearchNodes using DFS traversal.
-        
-        Args:
-            nodes: List of root SearchNodes to build the graph from
-        
-        Returns:
-            nx.DiGraph: NetworkX directed graph with node/edge metadata
-        """
-        graph = nx.DiGraph()
-
-        def dfs(current_node: SearchNode) -> None:
-            """Recursive DFS helper to traverse SearchNodes and build the graph"""
-            # Ensure value is a list (fallback for None)
-            if current_node.value is None:
-                current_node.value = []
-
-            # Build node label with function name, value types, and rounded values
-            vtypes = [str(v.vtype) for v in current_node.value]
-            rounded_values = [
-                str((torch.round(torch.tensor(v.value) * 100) / 100).detach().numpy())
-                for v in current_node.value
-            ]
-            node_label = f"{current_node.fn}\n{vtypes}\n{rounded_values}"
-
-            # Add node with metadata (use string representation of node as unique ID)
-            graph.add_node(
-                str(current_node),
-                fn=current_node.fn,
-                value=[v.value for v in current_node.value],
-                label=node_label
-            )
-
-            # Traverse child nodes and add edges with weights
-            for next_node, weight in zip(current_node.next, current_node.next_weights):
-                dfs(next_node)
-                # Add edge with rounded weight (convert tensor to numpy if needed)
-                edge_weight = torch.tensor(weight).detach().numpy() if not isinstance(weight, (int, float)) else weight
-                graph.add_edge(str(current_node), str(next_node), weight=edge_weight)
-
-        # Start DFS from the first node (assuming nodes list has one root)
-        if nodes:
-            dfs(nodes[0])
-
-        return graph
-
 class SearchExecutor(CentralExecutor):
     """stores local rewrite frames then """
     def __init__(self, executor):
@@ -366,12 +128,12 @@ class SearchExecutor(CentralExecutor):
         assert isinstance(self.base_executor, CentralExecutor), "not an CentralExecutor"
         self.base_executor.refs["executor_parent"] = self
         self.frames = nn.ModuleDict({}) # a bundle of rewriter rules that shares the same rewriter
-        self.storage = SearchVisualizer()
         self.unification_p = 0.001
         self.supressed = 0
         self._gather_format = "{}:{}"
  
-        self.inferer = RuleBasedTransform(*get_transform_rules())
+        self.constructor = Constructor(default_constructor_rules)
+        #print(self.constructor.forward_rules, self.constructor.backward_rules)
         self.logger = get_logger(name = "SearchExecutor")
         self.ban_list = []
         self.eval_tree = {}
@@ -380,6 +142,9 @@ class SearchExecutor(CentralExecutor):
         self.parser = TreeParser()
 
         self.parser.load_entries(self.functions)
+
+        """load the history frames"""
+        self.transient_background_functions = [] # store the newly added functions
 
     """stupid formatting stuff"""
     def gather_format(self, name, domain): return self._gather_format.format(name, domain)
@@ -600,8 +365,6 @@ class SearchExecutor(CentralExecutor):
 
         success_reach = dfs(src_node, 0., None) # dfs on the super source node
 
-        #self.storage.log(query_fn, value, rw_nodes, mode)
-
         return [(node.name,node.fn, node.value, node.distr) for node in rw_nodes], success_reach, rw_nodes, rw_edges
 
     def reduction_call(self, fn : str , args : List[Value], arg_types : List[TypeBase]):
@@ -654,8 +417,17 @@ class SearchExecutor(CentralExecutor):
     """Evaluate Chain of Expressions"""
     def evaluate(self, expression, grounding):
         if not isinstance(expression, Expression):
-            expression = self.parse_expression(expression)
- 
+            #self.parser.supress = 1
+            expression = expression.replace(" ","")
+            #print(expression)
+            #print(self.parser.parse(expression))
+            
+
+            expression = self.parser.parse(expression)[0].fn
+            #print(expression)
+
+            expression = Expression.parse_program_string(expression)
+
 
         grounding = grounding if grounding is not None else {}
 
@@ -690,7 +462,8 @@ class SearchExecutor(CentralExecutor):
                 args.append(arg_value)
                 arg_loss.append(subloss)
 
-                edge_info = (node_id, son_id, {"weight":float(torch.exp(torch.tensor(-subloss)) )})
+                sub_loss = -subloss if isinstance(subloss, torch.Tensor) else torch.tensor(-subloss)
+                edge_info = (node_id, son_id, {"weight":float(torch.exp(sub_loss) )})
 
                 self.eval_info["tree"]["edges"].append(edge_info)
 
@@ -744,48 +517,64 @@ class SearchExecutor(CentralExecutor):
             fn   : str as the input function name (specific to domain tag)
         """
         # 1. add rewriters that locate from the value node to the fn node.
+        #print("RW:", fn, value_types(args))
         execute_pairs, reach_loss, rw_nodes, rw_edges = self.rewrite_distr(args, fn, mode = "update")
         execute_pairs = execute_pairs[1:]
 
         if not execute_pairs: self.logger.info(f"execution not found for {fn}({value_types(args)})")
 
         # for each node that not in the 
-        for (gn, vargs, weight) in execute_pairs:
-            for (in_tps, out_tps) in self.base_executor.function_signature(fn):
-  
-                arg_types = value_types(vargs)
+        for (_,gn, vargs, weight) in execute_pairs:
 
+            for (in_tps, out_tps) in self.base_executor.function_signature(fn):
+                arg_types = value_types(vargs)
                 src_tps = arg_types
                 tgt_tps = in_tps 
-    
-                caster = self.inferer.infer_args_caster(src_tps, tgt_tps)
+
+                if isinstance(src_tps, List): src_tps = TupleType(src_tps)
+                if isinstance(tgt_tps, List): tgt_tps = TupleType(tgt_tps)
+
+                caster = self.constructor.create_convex_arg_rewriter(
+                    src_tps.element_types, tgt_tps.element_types, self.base_executor)
+
+                assert caster, f"caster not found for {src_tps}->{tgt_tps}"
+
                 learn0_frame = Frame(src_tps, tgt_tps, caster)
-                #(learn0_frame)
                 learn0_frame.matches[(f"{gn}@{fn}")] = torch.tensor(0.)
 
-                src_sig = 'x'.join([str(tp) for tp in src_tps])
-                tgt_sig = 'x'.join([str(tp) for tp in tgt_tps])
+                src_sig = 'x'.join([str(tp) for tp in src_tps.element_types])
+                tgt_sig = 'x'.join([str(tp) for tp in tgt_tps.element_types])
                 frame_sig = f"frame:{src_sig}->{tgt_sig}_"
+                
                 id_itr = 0
                 done = 0
                 while not done:
                     if (frame_sig + str(id_itr)) in self.frames:id_itr += 1
                     else: done = 1
-                print(f"{gn}@{fn} by",frame_sig + str(id_itr))
+                #print(f"{gn}@{fn} by",frame_sig + str(id_itr))
                 self.frames[frame_sig + str(id_itr)] = learn0_frame
     
         # 2. add the filler that defined on the value node.
         
         for (in_tps, out_tps) in self.base_executor.function_signature(fn):
+            if len(args) != 1:
+                in_tps = TupleType(value_types(args))
+            else:
+                in_tps = value_types(args)[0]
+            convex_fillter = self.constructor.create_convex_construct(in_tps, out_tps, self.base_executor)
+            assert convex_fillter, f"failed to create fillers {convex_fillter} for {fn} ({value_types(args)} -> {out_tps})"
 
-            fillers = self.inferer.infer_fn_prototypes(value_types(args), out_tps)
-            assert fillers, f"failed to create fillers {fillers} for {fn}"
-            max_filler = fillers[0]
             assert isinstance(self.base_executor, ExecutorGroup), "not a group executor"
-            self.base_executor.register_extended_function(fn, value_types(args), out_tps, max_filler)
+            self.base_executor.register_extended_function(fn, value_types(args), out_tps, convex_fillter)
+            self.transient_background_functions.append([fn, value_types(args), out_tps])
+    
 
         return self
-    
+
+    def unfreeze_background_frame(self, name = None):
+        """if name is None then unfreeze all the background frames"""
+        return
+
     def purge_frames(self, p = 0.1):
         """purge the the last p percent of all the newly added connection
         the last p percent of the newly added frames need to be removed.

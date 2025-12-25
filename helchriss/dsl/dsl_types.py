@@ -419,7 +419,9 @@ STR  = TypeBase("Str")
 class EmbeddingType(TypeBase):
     def __init__(self, space_name : str, dim : int):
         self.space_name = space_name
-        self.dim = dim
+        try:
+            self.dim = int(dim)
+        except: self.dim = dim
         self._typename = f"Embedding[{self.space_name}, {self.dim}]"
         self._alias = None
 

@@ -1,4 +1,4 @@
-from helchriss.dsl.dsl_types import TypeBase
+from helchriss.dsl.dsl_types import TypeBase, TupleType
 from helchriss.dsl.dsl_values import Value
 from typing import List, Mapping, Tuple, Any, Union, Dict
 from dataclasses import dataclass
@@ -55,8 +55,8 @@ class RewriteRule:
 class Frame(nn.Module):
     def __init__(self, source_type : List[TypeBase], target_type : List[TypeBase], rewriter):
         super().__init__()
-        self.source_type : List[TypeBase] = source_type
-        self.target_type : List[TypeBase] = target_type
+        self.source_type : List[TypeBase] = source_type.element_types if isinstance(target_type, TupleType) else source_type
+        self.target_type : List[TypeBase] = target_type.element_types if isinstance(target_type, TupleType) else target_type
 
         self.rewriter = rewriter
         self.matches : nn.ParameterDict = nn.ParameterDict({})
@@ -65,6 +65,7 @@ class Frame(nn.Module):
         return
 
     def apply(self, values : List[Value]) -> Tuple[List[Value], Union[float, torch.Tensor]]:
+        
         rewrite_args, rewrite_prob = self.rewriter(values)
 
         args = [Value(self.target_type[i],v) for i,v in enumerate(rewrite_args)]

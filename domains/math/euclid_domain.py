@@ -11,11 +11,18 @@ from helchriss.domain import load_domain_string
 integer_domain_str = """
 (domain :: Euclid)
 (def type
+    object - Embedding[object,96]
     point - Embedding[point2d, 2]
     line - Embedding[segment, 4] ;; directed segment
     circle - Embedding[circle, 3] ;; circle encoded by (x, y, r)
 )
 (def function
+    objects : List[Tuple[boolean,object]] := by pass
+
+    line (x : object) : boolean := by pass
+    circle (x : object) : boolean := by pass
+
+
     start (x : line) : point := by pass
     end   (x : line) : point := by pass
     on_line (x : point) (y : line) : boolean := by pass
@@ -42,14 +49,106 @@ integer_domain_str = """
 )
 """
 
+class CNNObjEncoder(nn.Module):
+    def __init__(self, output_dim=96):
+        super().__init__()
+        self.lenet = nn.Sequential(
+            nn.Conv2d(3, 32, 5, stride=2, padding=2), nn.ReLU(),  # conv1: 32x64x64 
+            nn.Conv2d(32, 32, 5, stride=2, padding=2), nn.ReLU(),  # conv2: 32x32x32 
+            nn.Conv2d(32, 32, 5, stride=3, padding=2), nn.ReLU(),  # conv3: 32x11x11 
+            nn.AdaptiveMaxPool2d((10, 10))                  
+        )
+        self.fc = nn.Sequential(
+            nn.Linear(32 * 10 * 10, 64),
+            nn.ReLU(),
+            nn.Linear(64, output_dim),
+            nn.ReLU(),
+            )
+        self.fc2 = nn.Linear(32 * 10 * 10, output_dim)
+    
+    def forward(self, img):
+        obj = self.forward_object(img)
+        #rel = self.forward_relation(obj)
+        return obj#, rel  # obj: [B, 3, 64], rel: [B, 3, 3, 64]
+
+    def forward_object(self, img):
+        # img = B, 3, 30, 30
+
+        b = img.size(0)
+        img = self.lenet(img)
+
+
+        img = img.reshape((b, -1))
+        img = self.fc(img)
+
+        combined = img
+        return combined
+
+class FCBlock(nn.Module):
+    def __init__(self, input_dim, output_dim, hidden_dim=128, num_layers=1, activation=nn.ReLU(), dropout=0.1):
+        super().__init__()
+        
+        layers = []
+
+        layers.append(nn.Linear(input_dim, hidden_dim))
+        layers.append(activation)
+        #layers.append(nn.Dropout(dropout))
+    
+        for _ in range(num_layers - 1):
+            layers.append(nn.Linear(hidden_dim, hidden_dim))
+            layers.append(activation)
+            #layers.append(nn.Dropout(dropout))
+
+        layers.append(nn.Linear(hidden_dim, output_dim))
+        
+        self.net = nn.Sequential(*layers)
+        
+    def forward(self, x): return self.net(x)
+
 euclid_domain = load_domain_string(integer_domain_str)
 
 class EuclidExecutor(CentralExecutor):
     def __init__(self, domain):
         super().__init__(domain)
-        self.epsilon = torch.tensor(1e-6)  # Differentiable tolerance
+        self.epsilon = torch.tensor(1e-6)
+        self.object_encoder = CNNObjEncoder(96)
+        self.line_mlp = FCBlock(96, 1)
+        self.circle_mlp = FCBlock(96, 1)
 
-    # Core line operations
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+
+    def objects(self):
+        device = self.device
+
+        if "image" not in self.grounding or "segment" not in self.grounding:
+            self._grounding = {"image":torch.zeros([3,32,32 * 3])}
+            print("warning: no segment or image provided")
+    
+        sub_images = []
+        segments = self.grounding["segment"]
+        img      = self.grounding["image"]
+        #import matplotlib.pyplot as plt
+        for i in range(segments.shape[2]):
+
+            sub_images.append(segments[:,:,i][...,None] * img)
+            #plt.imshow(sub_images[-1])
+            #plt.show()
+        sub_images = torch.stack(sub_images).permute(0,3,1,2)
+
+
+        embeddings = self.object_encoder(sub_images)
+
+
+        object = torch.cat([
+            torch.ones([sub_images.shape[0], 1], device = device) * 13,
+            embeddings
+        ], dim = 1)
+        return object
+    
+    def line(self, x): return self.line_mlp(x)
+
+    def circle(self, x): return self.circle_mlp(x)
+
     def start(self, x: torch.Tensor) -> torch.Tensor:
         return x[:2]
 
@@ -206,6 +305,18 @@ class EuclidExecutor(CentralExecutor):
         mid_inside = self.inside(mid_point, circle)
         
         return torch.logical_and(torch.logical_and(start_inside, end_inside), mid_inside)
+
+    def to_point(self, tensor: torch.Tensor) -> torch.Tensor:
+        """Ensure tensor is a 2D point (x, y)."""
+        return tensor[:2].float()
+
+    def to_line(self, tensor: torch.Tensor) -> torch.Tensor:
+        """Ensure tensor is a directed line (x1, y1, x2, y2)."""
+        return tensor[:4].float()
+
+    def to_circle(self, tensor: torch.Tensor) -> torch.Tensor:
+        """Ensure tensor is a circle (x, y, r)."""
+        return tensor[:3].float()
 
 
 euclid_executor = EuclidExecutor(euclid_domain)

@@ -1,5 +1,5 @@
 """value type modeling the probablistic measures on the program context"""
-from typing import Optional, Sequence, Any, Iterable, Mapping, Tuple, Dict, Union
+from typing import Optional, Sequence, Any, Iterable, Mapping, Tuple, Dict, Union, List
 from dataclasses import dataclass
 from termcolor import colored
 
@@ -236,4 +236,10 @@ class MaskedTensorStorage(object):
 
     quantized_values: Optional[torch.Tensor] = None
     """The quantized values for the tensor. -1 for non-quantized values."""
+
+
+
+
+def value_types(values : List[Value]): return [v.vtype for v in values]
+
 

@@ -73,8 +73,9 @@ class FOLExecutor(CentralExecutor):
             local_loss += subloss
 
 
-        logits = torch.stack(logits)
+        logits = torch.stack(logits).reshape([-1,1])
         objects = torch.cat(objects, dim = 0)
+
         reference_set = torch.cat([logits, objects], dim = 1)
         output, _, paths = reference_set, 0.0, {"nodes":[], "edges":[]}
 

@@ -1,0 +1,16 @@
+digraph vis {
+	node [fillcolor=lightblue shape=box style=filled]
+	edge [color=gray]
+	ConvexConstruct_5089141232 [label="ConvexConstruct
+Input Types:
+
+List[Tuple[bool, Embedding[object, 96]]]
+Output Type:
+float
+Weight Sum=1.0" fillcolor=lightcoral]
+	Func_5089141472 [label="SetPool(
+  (feat_net): Sequential(
+    (0): Linear...
+Weight=1.000"]
+	ConvexConstruct_5089141232 -> Func_5089141472
+}

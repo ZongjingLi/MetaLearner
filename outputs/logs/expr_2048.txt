@@ -2499,3 +2499,287 @@
 [18 18:24:20 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
 [18 18:24:20 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
 [18 18:24:20 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[22 20:50:01 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[22 20:50:01 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[22 20:50:01 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[22 20:50:01 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[22 20:50:13 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[22 20:50:13 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[22 20:50:13 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[22 20:50:13 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[22 20:50:14 98@learn.py:AutoSchedule] start to learn the words ['object', 'red', 'blue', 'line', 'green', 'exists'], add corpus size 6
+[22 20:50:14 116@learn.py:AutoSchedule] unification structure check, eval run
+[22 21:05:39 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[22 21:05:39 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[22 21:05:39 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[22 21:05:39 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[22 21:06:06 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[22 21:06:06 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[22 21:06:06 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[22 21:06:06 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[22 21:06:53 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[22 21:06:53 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[22 21:06:53 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[22 21:06:53 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[22 21:09:05 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[22 21:09:05 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[22 21:09:05 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[22 21:09:05 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[22 21:09:44 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[22 21:09:44 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[22 21:09:44 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[22 21:09:44 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[22 21:10:34 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[22 21:10:34 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[22 21:10:34 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[22 21:10:34 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[22 21:10:35 139@data.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/utils/data.py] Filter dataset None: #before=2048, #after=2048.
+[22 21:10:35 139@data.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/utils/data.py] Filter dataset None: #before=256, #after=256.
+[22 21:10:35 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[22 21:10:35 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[22 21:10:35 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[22 21:10:35 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[22 21:10:36 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[22 21:10:36 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[22 21:10:36 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[22 21:10:36 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[22 21:10:50 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[22 21:10:50 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[22 21:10:50 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[22 21:10:50 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[22 21:10:51 139@data.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/utils/data.py] Filter dataset None: #before=2048, #after=2048.
+[22 21:10:51 139@data.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/utils/data.py] Filter dataset None: #before=256, #after=256.
+[22 21:10:51 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[22 21:10:51 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[22 21:10:51 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[22 21:10:51 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[22 21:10:51 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[22 21:10:51 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[22 21:10:51 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[22 21:10:51 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[22 21:10:53 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[22 21:10:53 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[22 21:10:53 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[22 21:10:53 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[22 21:10:53 98@learn.py:AutoSchedule] start to learn the words ['exists', 'object', 'red', 'blue', 'circle', 'green'], add corpus size 6
+[22 21:10:53 116@learn.py:AutoSchedule] unification structure check, eval run
+[23 03:24:27 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[23 03:24:27 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[23 03:24:27 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[23 03:24:27 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[23 03:27:28 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[23 03:27:28 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[23 03:27:28 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[23 03:27:28 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[23 03:27:29 139@data.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/utils/data.py] Filter dataset None: #before=2048, #after=2048.
+[23 03:27:29 139@data.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/utils/data.py] Filter dataset None: #before=256, #after=256.
+[23 03:27:29 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[23 03:27:29 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[23 03:27:29 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[23 03:27:29 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[23 03:27:30 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[23 03:27:30 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[23 03:27:30 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[23 03:27:30 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[23 03:27:50 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[23 03:27:50 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[23 03:27:50 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[23 03:27:50 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[23 03:27:51 139@data.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/utils/data.py] Filter dataset None: #before=2048, #after=2048.
+[23 03:27:51 139@data.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/utils/data.py] Filter dataset None: #before=256, #after=256.
+[23 03:27:51 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[23 03:27:51 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[23 03:27:51 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[23 03:27:51 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[23 03:27:52 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[23 03:27:52 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[23 03:27:52 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[23 03:27:52 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[23 03:28:26 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[23 03:28:26 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[23 03:28:26 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[23 03:28:26 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[23 03:28:27 139@data.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/utils/data.py] Filter dataset None: #before=2048, #after=2048.
+[23 03:28:27 139@data.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/utils/data.py] Filter dataset None: #before=256, #after=256.
+[23 03:28:27 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[23 03:28:27 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[23 03:28:27 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[23 03:28:27 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[23 03:28:28 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[23 03:28:28 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[23 03:28:28 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[23 03:28:28 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[23 03:28:40 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[23 03:28:40 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[23 03:28:40 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[23 03:28:40 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[23 03:28:40 98@learn.py:AutoSchedule] start to learn the words ['exists', 'blue', 'green', 'circle', 'red', 'object'], add corpus size 6
+[23 03:28:40 116@learn.py:AutoSchedule] unification structure check, eval run
+[23 21:52:00 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[23 21:52:00 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[23 21:52:00 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[23 21:52:00 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[23 21:52:01 139@data.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/utils/data.py] Filter dataset None: #before=2048, #after=2048.
+[23 21:52:01 139@data.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/utils/data.py] Filter dataset None: #before=256, #after=256.
+[23 21:52:01 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[23 21:52:01 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[23 21:52:01 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[23 21:52:01 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[23 21:52:19 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[23 21:52:19 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[23 21:52:19 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[23 21:52:19 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[23 21:52:20 139@data.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/utils/data.py] Filter dataset None: #before=2048, #after=2048.
+[23 21:52:20 139@data.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/utils/data.py] Filter dataset None: #before=256, #after=256.
+[23 21:52:20 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[23 21:52:20 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[23 21:52:20 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[23 21:52:20 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[23 21:52:20 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[23 21:52:20 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[23 21:52:20 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[23 21:52:20 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[24 01:55:28 98@learn.py:AutoSchedule] start to learn the words ['green', 'of', 'circle', 'sprite', 'rectangle', 'exists', 'left', 'red', 'right', 'triangle', 'blue'], add corpus size 2048
+[24 01:55:28 116@learn.py:AutoSchedule] unification structure check, eval run
+[24 01:55:56 120@learn.py:AutoSchedule] training until converges
+[24 01:58:55 105@learn.py:AutoSchedule] learned words : ['green', 'of', 'circle', 'sprite', 'rectangle', 'exists', 'left', 'red', 'right', 'triangle', 'blue'] avg_acc:1.0 avg_loss:0.0006667972775176167
+[24 01:58:55 98@learn.py:AutoSchedule] start to learn the words [], add corpus size 0
+[24 01:58:55 116@learn.py:AutoSchedule] unification structure check, eval run
+[24 01:59:24 120@learn.py:AutoSchedule] training until converges
+[24 02:02:32 105@learn.py:AutoSchedule] learned words : [] avg_acc:1.0 avg_loss:1.1114791959698778e-05
+[24 02:02:32 111@learn.py:AutoSchedule] complete the learning of words ['green', 'of', 'circle', 'sprite', 'rectangle', 'exists', 'left', 'red', 'right', 'triangle', 'blue']
+[24 02:02:33 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[24 02:02:33 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[24 02:02:33 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[24 02:02:33 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[24 02:02:34 139@data.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/utils/data.py] Filter dataset None: #before=2048, #after=2048.
+[24 02:02:34 139@data.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/utils/data.py] Filter dataset None: #before=256, #after=256.
+[24 02:02:34 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[24 02:02:34 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[24 02:02:34 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[24 02:02:34 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[24 02:02:36 98@learn.py:AutoSchedule] start to learn the words ['of', 'circle', 'rectangles', 'blue', 'number', 'exists', 'maximum', 'How', 'the', 'green', 'triangles', 'objects', 'sprite', 'rectangle', 'many', 'circles', 'What', 'left', 'are', 'there', 'red', 'right', 'triangle', 'is'], add corpus size 2048
+[24 02:02:36 116@learn.py:AutoSchedule] unification structure check, eval run
+[24 02:02:36 783@executor.py:SearchExecutor] execution not found for max:Integer([List[Tuple[bool, Embedding[object, 96]]]])
+[24 02:08:18 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[24 02:08:18 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[24 02:08:18 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[24 02:08:18 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[24 02:08:19 139@data.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/utils/data.py] Filter dataset None: #before=2048, #after=2048.
+[24 02:08:19 139@data.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/utils/data.py] Filter dataset None: #before=256, #after=256.
+[24 02:08:19 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[24 02:08:19 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[24 02:08:19 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[24 02:08:19 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[24 02:08:21 98@learn.py:AutoSchedule] start to learn the words ['circle', 'red', 'objects', 'What', 'triangles', 'sprite', 'How', 'number', 'green', 'circles', 'many', 'are', 'blue', 'exists', 'right', 'left', 'is', 'maximum', 'rectangle', 'of', 'the', 'rectangles', 'triangle', 'there'], add corpus size 2048
+[24 02:08:21 116@learn.py:AutoSchedule] unification structure check, eval run
+[24 02:08:21 783@executor.py:SearchExecutor] execution not found for max:Integer([List[Tuple[bool, Embedding[object, 96]]]])
+[24 03:28:25 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[24 03:28:25 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[24 03:28:25 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[24 03:28:25 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[24 03:28:26 139@data.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/utils/data.py] Filter dataset None: #before=2048, #after=2048.
+[24 03:28:26 139@data.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/utils/data.py] Filter dataset None: #before=256, #after=256.
+[24 03:28:26 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[24 03:28:26 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[24 03:28:26 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[24 03:28:26 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[24 03:28:28 98@learn.py:AutoSchedule] start to learn the words ['circle', 'blue', 'many', 'sprite', 'rectangle', 'there', 'triangle', 'is', 'the', 'rectangles', 'are', 'What', 'How', 'circles', 'number', 'green', 'objects', 'maximum', 'triangles', 'exists', 'red', 'of', 'left', 'right'], add corpus size 2048
+[24 03:28:28 116@learn.py:AutoSchedule] unification structure check, eval run
+[24 03:28:28 783@executor.py:SearchExecutor] execution not found for max:Integer([List[Tuple[bool, Embedding[object, 96]]]])
+[24 03:28:33 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[24 03:28:33 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[24 03:28:33 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[24 03:28:33 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[24 03:28:35 98@learn.py:AutoSchedule] start to learn the words ['circle', 'blue', 'many', 'sprite', 'rectangle', 'there', 'triangle', 'is', 'the', 'rectangles', 'are', 'What', 'How', 'circles', 'number', 'green', 'objects', 'maximum', 'triangles', 'exists', 'red', 'of', 'left', 'right'], add corpus size 2048
+[24 03:28:35 116@learn.py:AutoSchedule] unification structure check, eval run
+[24 03:28:35 783@executor.py:SearchExecutor] execution not found for max:Integer([List[Tuple[bool, Embedding[object, 96]]]])
+[24 03:28:47 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[24 03:28:47 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[24 03:28:47 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[24 03:28:47 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[24 03:28:48 139@data.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/utils/data.py] Filter dataset None: #before=2048, #after=2048.
+[24 03:28:48 139@data.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/utils/data.py] Filter dataset None: #before=256, #after=256.
+[24 03:28:48 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[24 03:28:48 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[24 03:28:48 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[24 03:28:48 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[24 03:28:50 98@learn.py:AutoSchedule] start to learn the words ['circles', 'blue', 'sprite', 'the', 'many', 'there', 'triangles', 'are', 'green', 'maximum', 'of', 'circle', 'triangle', 'rectangle', 'right', 'rectangles', 'left', 'How', 'exists', 'red', 'What', 'number', 'objects', 'is'], add corpus size 2048
+[24 03:28:50 116@learn.py:AutoSchedule] unification structure check, eval run
+[24 03:28:50 783@executor.py:SearchExecutor] execution not found for max:Integer([List[Tuple[bool, Embedding[object, 96]]]])
+[24 03:29:33 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[24 03:29:33 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[24 03:29:33 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[24 03:29:33 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[24 03:29:34 139@data.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/utils/data.py] Filter dataset None: #before=2048, #after=2048.
+[24 03:29:34 139@data.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/utils/data.py] Filter dataset None: #before=256, #after=256.
+[24 03:29:34 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[24 03:29:34 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[24 03:29:34 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[24 03:29:34 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[24 03:29:36 98@learn.py:AutoSchedule] start to learn the words ['sprite', 'maximum', 'are', 'right', 'the', 'red', 'How', 'triangles', 'rectangle', 'of', 'objects', 'triangle', 'there', 'exists', 'left', 'is', 'number', 'What', 'rectangles', 'many', 'circle', 'circles', 'blue', 'green'], add corpus size 2048
+[24 03:29:36 116@learn.py:AutoSchedule] unification structure check, eval run
+[24 03:29:36 783@executor.py:SearchExecutor] execution not found for max:Integer([List[Tuple[bool, Embedding[object, 96]]]])
+[24 03:29:50 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[24 03:29:50 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[24 03:29:50 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[24 03:29:50 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[24 03:29:52 98@learn.py:AutoSchedule] start to learn the words ['sprite', 'maximum', 'are', 'right', 'the', 'red', 'How', 'triangles', 'rectangle', 'of', 'objects', 'triangle', 'there', 'exists', 'left', 'is', 'number', 'What', 'rectangles', 'many', 'circle', 'circles', 'blue', 'green'], add corpus size 2048
+[24 03:29:52 116@learn.py:AutoSchedule] unification structure check, eval run
+[24 03:29:52 783@executor.py:SearchExecutor] execution not found for max:Integer([List[Tuple[bool, Embedding[object, 96]]]])
+[24 03:35:36 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[24 03:35:36 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[24 03:35:36 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[24 03:35:36 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[24 03:35:37 139@data.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/utils/data.py] Filter dataset None: #before=2048, #after=2048.
+[24 03:35:37 139@data.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/utils/data.py] Filter dataset None: #before=256, #after=256.
+[24 03:35:37 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[24 03:35:37 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[24 03:35:37 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[24 03:35:37 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[24 03:35:39 98@learn.py:AutoSchedule] start to learn the words ['blue', 'right', 'How', 'of', 'green', 'objects', 'exists', 'What', 'circles', 'is', 'rectangles', 'are', 'the', 'triangles', 'circle', 'rectangle', 'number', 'red', 'there', 'sprite', 'maximum', 'left', 'many', 'triangle'], add corpus size 2048
+[24 03:35:39 116@learn.py:AutoSchedule] unification structure check, eval run
+[24 03:35:39 783@executor.py:SearchExecutor] execution not found for max:Integer([List[Tuple[bool, Embedding[object, 96]]]])
+[24 03:36:15 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[24 03:36:15 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[24 03:36:15 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[24 03:36:15 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[24 03:36:16 139@data.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/utils/data.py] Filter dataset None: #before=2048, #after=2048.
+[24 03:36:16 139@data.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/utils/data.py] Filter dataset None: #before=256, #after=256.
+[24 03:36:16 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[24 03:36:16 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[24 03:36:16 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[24 03:36:16 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[24 03:36:18 98@learn.py:AutoSchedule] start to learn the words ['are', 'triangles', 'red', 'the', 'triangle', 'What', 'number', 'objects', 'right', 'exists', 'rectangle', 'sprite', 'many', 'maximum', 'circle', 'left', 'blue', 'there', 'is', 'green', 'of', 'circles', 'How', 'rectangles'], add corpus size 2048
+[24 03:36:18 116@learn.py:AutoSchedule] unification structure check, eval run
+[24 03:36:18 783@executor.py:SearchExecutor] execution not found for max:Integer([List[Tuple[bool, Embedding[object, 96]]]])
+[24 03:38:15 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[24 03:38:15 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[24 03:38:15 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[24 03:38:15 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[24 03:38:16 139@data.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/utils/data.py] Filter dataset None: #before=2048, #after=2048.
+[24 03:38:16 139@data.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/utils/data.py] Filter dataset None: #before=256, #after=256.
+[24 03:38:16 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[24 03:38:16 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[24 03:38:16 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[24 03:38:16 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[24 03:38:18 98@learn.py:AutoSchedule] start to learn the words ['left', 'blue', 'red', 'of', 'are', 'is', 'rectangles', 'maximum', 'right', 'green', 'there', 'number', 'circle', 'triangles', 'How', 'exists', 'objects', 'many', 'the', 'triangle', 'What', 'sprite', 'circles', 'rectangle'], add corpus size 2048
+[24 03:38:18 116@learn.py:AutoSchedule] unification structure check, eval run
+[24 03:38:18 783@executor.py:SearchExecutor] execution not found for max:Integer([List[Tuple[bool, Embedding[object, 96]]]])
+[24 03:38:18 868@executor.py:SearchExecutor] update chain : max:Integer -> [List[Tuple[bool, Embedding[object, 96]]]]
+[24 03:38:36 120@learn.py:AutoSchedule] training until converges
+[24 19:57:03 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[24 19:57:03 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[24 19:57:03 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[24 19:57:03 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[24 19:57:04 139@data.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/utils/data.py] Filter dataset None: #before=2048, #after=2048.
+[24 19:57:04 139@data.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/utils/data.py] Filter dataset None: #before=256, #after=256.
+[24 19:57:05 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[24 19:57:05 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[24 19:57:05 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `ExecutorGroup` The input domain is empty, creating an empty domain
+[24 19:57:05 28@executor.py:/Users/sunyiqi/Documents/GitHub/MetaLearner/helchriss/knowledge/executor.py] WRN `SearchExecutor` The input domain is empty, creating an empty domain
+[24 19:57:07 98@learn.py:AutoSchedule] start to learn the words ['number', 'rectangles', 'red', 'objects', 'right', 'How', 'are', 'circles', 'the', 'triangles', 'green', 'left', 'blue', 'What', 'circle', 'many', 'exists', 'maximum', 'is', 'triangle', 'there', 'of', 'rectangle', 'sprite'], add corpus size 2048
+[24 19:57:07 117@learn.py:AutoSchedule] unification structure check, eval run
+[24 19:57:08 793@executor.py:SearchExecutor] execution not found for max:Integer([List[Tuple[bool, Embedding[object, 96]]]])
+[24 19:57:08 878@executor.py:SearchExecutor] update chain : max:Integer -> [List[Tuple[bool, Embedding[object, 96]]]]
+[24 19:57:32 121@learn.py:AutoSchedule] training until converges

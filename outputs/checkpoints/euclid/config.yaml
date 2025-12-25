@@ -1,0 +1,19 @@
+domains:
+  color:
+    name: color_executor
+    path: domains.visual.color_domain
+  euclid:
+    name: euclid_executor
+    path: domains.math.euclid_domain
+  intergers:
+    name: integer_executor
+    path: domains.math.integer_domain
+  logic:
+    name: fol_executor
+    path: domains.logic.fol_domain
+  objects:
+    name: objects_executor
+    path: domains.scene.objects_domain
+name: prototype
+vocab:
+  path: core_vocab.txt

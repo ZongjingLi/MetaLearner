@@ -1,4 +1,10 @@
 domains:
+  color:
+    name: color_executor
+    path: domains.visual.color_domain
+  euclid:
+    name: euclid_executor
+    path: domains.math.euclid_domain
   intergers:
     name: integer_executor
     path: domains.math.integer_domain

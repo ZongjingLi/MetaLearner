@@ -6,6 +6,12 @@ domains:
     objects:
       name: "objects_executor"
       path: "domains.scene.objects_domain"
+    euclid:
+      name: "euclid_executor"
+      path: "domains.math.euclid_domain"
+    color:
+      name: "color_executor"
+      path: "domains.visual.color_domain"
     logic:
       name: "fol_executor"
       path: "domains.logic.fol_domain"

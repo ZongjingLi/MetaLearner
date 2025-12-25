@@ -113,7 +113,7 @@ def process_command(command):
 
     if regex.match("interact_*", command):
         import tornado
-        from assets.app import make_app
+        from app import make_app
         from core.model import MetaLearner
         model_name = command[9:]
         main_logger.info(f"try to interact with model {model_name}.")
