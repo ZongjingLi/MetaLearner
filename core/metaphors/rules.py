@@ -10,7 +10,7 @@ from helchriss.dsl.dsl_types import VectorType, ListType, EmbeddingType, TupleTy
 from typing import List, Tuple, Union, Any, Dict, Optional, Callable, Type
 
 class FCBlock(nn.Module):
-    def __init__(self, input_dim, output_dim, hidden_dim=128, num_layers=1, activation=nn.ReLU(), dropout=0.1):
+    def __init__(self, input_dim, output_dim, hidden_dim=128, num_layers=2, activation=nn.ReLU(), dropout=0.1):
         super().__init__()
         
         layers = []
@@ -24,7 +24,7 @@ class FCBlock(nn.Module):
         layers.append(nn.Linear(hidden_dim, output_dim))
         
         self.net = nn.Sequential(*layers)
-        
+
     def forward(self, x): return self.net(x)
 
 class PatternVar(TypeBase):
@@ -133,7 +133,7 @@ class TypeTransformRuleBackward:
         self.tgt_pattern = tgt_pattern
         self.apply_fn = apply_fn 
         self.type_fn = type_fn 
-        self.name = name or f"BackwardRule({tgt_pattern.name})"
+        self.name = name or f"BackwardRule({str(tgt_pattern)})"
 
     def match(self, other_type: TypeBase) -> tuple[bool, Dict[str, Any]]:
         return match_pattern(self.tgt_pattern, other_type)
@@ -272,6 +272,7 @@ def object_set_max_apply(var_binds):
 
     return FLOAT, SetPool(dim)
 
+
 object_set_to_max = TypeTransformRule(
     pattern_type=ListType(VAR),
     apply_fn = object_set_max_apply,
@@ -300,14 +301,14 @@ tuple_double_embed_96_32_to_embed = TypeTransformRule(
     name="Tuple[Embedding[object,96],Embedding[object,32]]_To_Embedding[128]"
 )
 
-embed_to_float = TypeTransformRule(
-    pattern_type=EmbeddingType(PatternVar("E"), PatternVar("dim")),
+latent_to_float = TypeTransformRule(
+    pattern_type=EmbeddingType("Latent", PatternVar("dim")),
     apply_fn=_embed_to_float_apply,
     name="Embed_to_Float"
 )
 
-embed_to_bool = TypeTransformRule(
-    pattern_type=EmbeddingType(PatternVar("E"), PatternVar("dim")),
+latent_to_bool = TypeTransformRule(
+    pattern_type=EmbeddingType("Latent", PatternVar("dim")),
     apply_fn=_embed_to_bool_apply,
     name="Embed_to_Bool"
 )
@@ -342,6 +343,29 @@ listA_to_embed = TypeTransformRule(
     name="ListA_to_Embed"
 )
 
+from helchriss.utils.tensor import Id
+
+def _make_identity(var_binds):
+    tp = var_binds.get("tp", -1)
+    #print("tp:",tp, var_binds)
+    return tp, Id()
+
+id_rule = TypeTransformRule(
+    pattern_type=PatternVar("tp"),
+    apply_fn= _make_identity,
+    name = "id_rule"
+)
+
+def _make_canon_object_embeder(var_binds):
+    dim = var_binds.get("dim", -1)
+    return FCBlock(128, dim)
+
+canon_object_embedding_rule = TypeTransformRuleBackward(
+    tgt_pattern = EmbeddingType("object", PatternVar("dim")),
+    type_fn = lambda x : EmbeddingType("Latent", 128),
+    apply_fn= _make_canon_object_embeder
+)
+
 
 
 """backward rules to decompose"""
@@ -363,9 +387,10 @@ backward_embed_to_latent128 = TypeTransformRuleBackward(
 )
 
 
+
 default_constructor_rules = [
-    embed_to_float,
-    embed_to_bool,
+    latent_to_float,
+    latent_to_bool,
     embed_to_latent,
     #listA_to_listB,
     #listA_to_embed,
@@ -373,7 +398,10 @@ default_constructor_rules = [
     #tuple_of_embeds_to_embed,
     #tuple_single_embed_96_to_embed,
     #tuple_double_embed_96_32_to_embed
-    
+
     backward_embed_to_latent128,
     object_set_to_max,
+
+    id_rule,
+
 ]

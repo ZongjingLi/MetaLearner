@@ -157,12 +157,6 @@ def nan_hook(self, inputs, outputs, key=""):
         raise ValueError(f"Found Inf in entry \'{key}\' of class {self.__class__.__name__}.")
 
 
-def freeze(module):
-    for param in module.parameters():
-        param.requires_grad = False
-    module.eval()
-
-
 def compose_image(image, mask):
     return torch.cat([image.unsqueeze(0) * mask.unsqueeze(1), image.unsqueeze(0).expand(len(mask), -1, -1, -1)],
         1)

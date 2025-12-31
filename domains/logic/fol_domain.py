@@ -32,6 +32,33 @@ first_order_logic_domain_str = """
 fol_domain = load_domain_string(first_order_logic_domain_str)
 #fol_domain.print_summary()
 
+def merge_paths(paths, sub_paths):
+
+    if sub_paths["nodes"]:
+        print(list(node["id"] for node in sub_paths["nodes"]))
+        min_id = min(node["id"] for node in sub_paths["nodes"])
+
+        sub_paths["edges"].append((min_id, "init", {"type": "init_connection"}))
+
+    existing_ids = {n['id'] for n in paths['nodes']}
+    id_map, new_nodes = {}, []
+    for node in sub_paths['nodes']:
+        orig_id, new_id = node['id'], node['id']
+        i = 0
+        while new_id in existing_ids:
+            prefix = orig_id.rstrip('0123456789')
+            num = int(orig_id[len(prefix):]) if orig_id[len(prefix):] else 0
+            new_id = f"{prefix}{num + len(existing_ids) + i}"
+            i += 1
+        id_map[orig_id] = new_id
+        new_nodes.append({**node, 'id': new_id})
+        existing_ids.add(new_id)
+    
+
+    paths['nodes'].extend(new_nodes)
+    paths['edges'].extend([(id_map.get(a,a), id_map.get(b,b), d) for a,b,d in sub_paths['edges']])
+
+
 class FOLExecutor(CentralExecutor):
     """extracts objects tagged in the grounding and implement the logic inference module recurrsively"""
     def __init__(self, domain):
@@ -52,32 +79,35 @@ class FOLExecutor(CentralExecutor):
         node_id = f"node{ancestor_executor.node_count}"
         fn = "Eval"
 
-        for var in vars:
-            vtp = kwargs["arg_types"][0]
-            assert isinstance(vtp, ListType), f"{vtp}"
-            assert isinstance(vtp.element_type, TupleType), f"{vtp.element_type}"
-            obj_tp = vtp.element_type.element_types[1]
+        paths = {"nodes":[{"id": "init","fn":"init_fn", "value":"pseudo","type":"pseudo type", "weight": 1.0}], "edges":[]}
 
-            var_logit, obj = var[:1], var[1:]
-            if len(obj.shape) == 1: obj = obj[None,...]
+        vtp = kwargs["arg_types"][0]
+        assert isinstance(vtp, ListType), f"{vtp}"
+        assert isinstance(vtp.element_type, TupleType), f"{vtp.element_type}"
+        obj_tp = vtp.element_type.element_types[1]
 
-            logic_expr = FunctionApplicationExpression(VariableExpression(expr), [ VariableExpression(Value(obj_tp,obj)) ] )
-            class_logit, subloss, son_id, paths = ancestor_executor._evaluate(logic_expr)
+        var_logit, obj = vars[:,:1], vars[:,1:]
+        if len(obj.shape) == 1: obj = obj[None,...]
 
+        logic_expr = FunctionApplicationExpression(VariableExpression(expr), [ VariableExpression(Value(obj_tp,obj)) ] )
+        class_logit, subloss, son_id, sub_paths = ancestor_executor._evaluate(logic_expr)
+        merge_paths(paths, sub_paths)
+    
+        if not isinstance(subloss, torch.Tensor): subloss = torch.tensor(subloss)
+        edge_info = (node_id, son_id, {"weight":float(torch.exp(-subloss) )})
+        ancestor_executor.eval_info["tree"]["edges"].append(edge_info)
 
-            edge_info = (node_id, son_id, {"weight":float(torch.exp(torch.tensor(-subloss)) )})
-            ancestor_executor.eval_info["tree"]["edges"].append(edge_info)
-
-            logits.append(torch.min(class_logit.value, var_logit))
-            objects.append(obj)
-            local_loss += subloss
-
+        logits.append(torch.min(class_logit.value, var_logit))
+        objects.append(obj)
+        local_loss += subloss
+        """after the process of batchwise"""
 
         logits = torch.stack(logits).reshape([-1,1])
         objects = torch.cat(objects, dim = 0)
 
+
         reference_set = torch.cat([logits, objects], dim = 1)
-        output, _, paths = reference_set, 0.0, {"nodes":[], "edges":[]}
+        output, _, paths = reference_set, 0.0, paths
 
         """add the edge node and eval node"""
         node_info = {"id":node_id, "fn" : fn, "value": str(output), "type": "List"}

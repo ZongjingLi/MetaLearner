@@ -57,15 +57,40 @@ def tree_display(s):
 
 def check_gradient_flow(submodel):
     total_norm = 0
-    has_gradient = False
     
     for name, param in submodel.named_parameters():
         if param.grad is not None:
-            has_gradient = True
             param_norm = param.grad.data.norm(2)
             total_norm += param_norm.item() ** 2
             print(f"Param {name} Grad Norm: {param_norm:.6f}")
 
+def check_model_nan_params(model: nn.Module) -> None:
+    has_nan = False
+
+    for name, param in model.named_parameters():
+        if param.requires_grad:  # 仅检查可训练参数（可选，注释后可检查所有参数）
+
+            nan_mask = torch.isnan(param)
+            nan_count = torch.sum(nan_mask).item()
+            total_count = param.numel()  # 参数总元素个数
+            has_nan_in_param = nan_count > 0
+
+            if has_nan_in_param:
+                has_nan = True
+                nan_ratio = nan_count / total_count * 100
+                print(f"\n参数名称: {name}")
+                print(f"  参数形状: {param.shape}")
+                print(f"  NaN 元素个数: {nan_count}")
+                print(f"  NaN 占比: {nan_ratio:.4f}%")
+
+    if has_nan:
+        print("\n" + "=" * 80)
+        print("⚠️  检测到模型中存在 NaN 参数！")
+        print("=" * 80)
+        return True
+    else:
+        return False
+   
 class MetaLearner(nn.Module):
     def __init__(self, domains : List[Union[CentralExecutor]], vocab : List[str] = []):
         super().__init__()
@@ -88,6 +113,7 @@ class MetaLearner(nn.Module):
         self.lexicon_entries = {}
         self.parser          = ChartParser(self.lexicon_entries)
         self.entries_setup() 
+
 
 
     def save_ckpt(self, ckpt_path):
@@ -340,15 +366,14 @@ class MetaLearner(nn.Module):
         self.executor.supressed = False if unify else True
         
         epoch_bar = tqdm.tqdm(range(epochs), desc="Training epochs", unit="epoch")
-        
-        # Helper: Evaluate test set (minimal implementation matching training accuracy logic)
+
         def evaluate_test_set():
             if test_set is None: return -1.0
             #self.eval()  # Set model to eval mode
             test_correct = 0.0
             test_total = 0.0
             with torch.no_grad():  # Disable gradient computation for test
-                for idx, sample in test_set:
+                for idx, sample in tqdm.tqdm(test_set):
                     query = sample["query"]
                     answer = sample["answer"]
                     grounding = sample["grounding"]
@@ -403,6 +428,8 @@ class MetaLearner(nn.Module):
             
             dataset.shuffle()
             #dataset.to_device(device)
+
+
             for idx, sample in dataset:
                 query = sample["query"]
                 answer = sample["answer"]
@@ -460,7 +487,8 @@ class MetaLearner(nn.Module):
                             if measure_loss < 0.2: correct += 1 * measure_conf
                             else:
                                 pass
-
+                            
+                        #print(measure_loss , internal_loss)
                         loss += measure_conf * (measure_loss + internal_loss)
                         total_count += 1 * measure_conf
                         working_loss += measure_conf * measure_loss 
@@ -472,28 +500,37 @@ class MetaLearner(nn.Module):
                         batch_loss /= batch_count
                         try:
                             if not unify:
+
                                 optim.zero_grad()
                                 batch_loss.backward()
+                                #check_gradient_flow(self)
                                 optim.step()
                                 batch_loss = 0.0
                                 batch_count = 0
+                                if check_model_nan_params(self):
+                                    check_gradient_flow(self)
                         except: raise RuntimeError("No Valid Parse Found.")
                 except UnificationFailure as Error:
+
                         if (Error.left_structure,value_types(Error.right_structure)) not in self.executor.ban_list:
-                            self.executor.logger.warning(f"unification failure on : {query} with {Error.left_structure}{value_types(Error.right_structure)}")
+                            
+                            self.executor.logger.warning(f"unification failure on : {query} with {Error.left_structure}{value_types(Error.right_structure)}, construct freezed : {self.default_freeze}")
             
             #calculate test accuracy (if test_set exists) and update progress bar
+            
             test_acc = evaluate_test_set()
+            
             if not unify:
                 avg_acc = float(correct) / total_count if total_count > 0 else 0.0
                 avg_loss = loss / len(dataset) if len(dataset) > 0 else 0.0
                 # Add test_acc to postfix
+                #check_gradient_flow(self)
                 epoch_bar.set_postfix({"avg_loss": f"{avg_loss.item():.4f}", "avg_acc": f"{avg_acc:.4f}", "test_acc": f"{test_acc:.4f}"})
             else: 
                 avg_loss, avg_acc = -1, -1
                 # Show test_acc even if unify=True
                 epoch_bar.set_postfix({"test_acc": f"{test_acc:.4f}"})
-            #self.executor.logger.info(f"acc:{avg_acc}, test_acc: {test_acc}")
+            self.executor.logger.info(f"acc:{avg_acc}, test_acc: {test_acc}")
         return {"loss": avg_loss, "acc": avg_acc, "test_acc": test_acc}  # Add test_acc to return
 
     def infer_metaphor_expressions(self, meta_exprs: Union[str, Expression,List[Expression], List[str]]):
@@ -597,6 +634,9 @@ class MetaLearner(nn.Module):
         }
         return bind
 
+import random
+from .utils import radial_tree_pos, balanced_tree_pos, hierarchy_pos
+import networkx as nx
 
 
 def add_and_center_coordinates(eval_info):
@@ -660,9 +700,6 @@ def add_and_center_coordinates(eval_info):
 
     return eval_info
 
-import random
-from .utils import radial_tree_pos, balanced_tree_pos, hierarchy_pos
-import networkx as nx
 
 def add_coordinates_to_eval_info(eval_info, scale=50):
     """
@@ -717,7 +754,8 @@ def add_coordinates_to_eval_info(eval_info, scale=50):
         
         if path_data['nodes']:
         # Compute radial positions for path vertices (scale down for paths)
-           path_pos = hierarchy_pos(path_G, width = 500, vert_gap= 150)  # smaller scale for paths
+
+           path_pos = hierarchy_pos(path_G, width = 5000, vert_gap= 350)  # smaller scale for paths
         
         # Add coordinates to path vertices
         for vertex in path_data['nodes']:

@@ -3,9 +3,6 @@ domains:
     intergers:
       name: "integer_executor"
       path: "domains.math.integer_domain"
-    objects:
-      name: "objects_executor"
-      path: "domains.scene.objects_domain"
     euclid:
       name: "euclid_executor"
       path: "domains.math.euclid_domain"

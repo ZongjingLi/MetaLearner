@@ -35,70 +35,71 @@ class ConvexConstruct(nn.Module):
     Attributes:
         functions (List[Union[Callable, "ConvexConstruct"]]): List of base functions or nested ConvexConstruct modules
         num_functions (int): Number of functions in the convex combination
-        log_weights (nn.Parameter): Log-space learnable weights (to ensure non-negativity via softmax)
+        logits (nn.Parameter): Learnable logits (raw unnormalized scores, converted to valid weights via softmax)
     """
 
     def __repr__(self)-> str:
         return f"convex_construct {self.num_functions}"
 
-
     def __init__(self, functions: List[Union[Callable, "ConvexConstruct"]], weights: torch.Tensor = None, input_types = None, output_type = None):
         super(ConvexConstruct, self).__init__()
         
-        # Validate input functions
-        self.functions = functions  # Changed: Use regular list instead of ModuleList to support non-nn.Module
+        self.functions = nn.ModuleList(functions)  # Use regular list instead of ModuleList to support non-nn.Module
         self.num_functions = len(self.functions)
         assert self.num_functions > 0, "Function list cannot be empty"
         self.input_types = input_types
         self.output_type = output_type
 
-        # Initialize learnable weights: use log-space parameters for non-negativity constraint
         if weights is None:
-            # Default to uniform distribution
-            init_weights = torch.ones(self.num_functions, dtype=torch.float32) / self.num_functions
+            init_logits = torch.zeros(self.num_functions, dtype=torch.float32)
         else:
-            # Validate provided weights
             assert weights.ndim == 1, f"Weights must be 1D tensor (got {weights.ndim}D)"
             assert len(weights) == self.num_functions, \
                 f"Weight count ({len(weights)}) must match function count ({self.num_functions})"
             assert torch.all(weights >= 0), "All weights must be non-negative"
-            init_weights = weights / torch.sum(weights)  # Normalize to sum to 1
 
-        # Store log-weights as parameter (softmax will convert to valid convex weights)
-        self.log_weights = nn.Parameter(torch.log(init_weights + 1e-8))  # Add epsilon to avoid log(0)
+            normalized_weights = weights / torch.sum(weights)
+
+            init_logits = torch.logit(normalized_weights + 1e-8)
+
+
+        self.logits = nn.Parameter(init_logits)
+
+        #for name,param in self.named_parameters(): 
+        #    print(name, param)
 
     def get_normalized_weights(self) -> torch.Tensor:
         """
-        Convert log-weights to valid convex combination weights (non-negative, sum to 1)
-        using softmax activation.
+        Convert logits to valid convex combination weights (non-negative, sum to 1)
+        using softmax activation (核心：logits → softmax 直接转换)
 
         Returns:
             torch.Tensor: Normalized weights of shape (num_functions,)
         """
-        return torch.softmax(self.log_weights, dim=0)
+        # 直接对 logits 应用 softmax，得到符合凸组合约束的权重
+        return torch.softmax(self.logits, dim=0)
 
     def forward(self, x) -> Any:
         """
         Forward pass: compute convex combination of function outputs.
 
         Args:
-            *args: Positional arguments to pass to each function
-            **kwargs: Keyword arguments to pass to each function
+            x: Input to pass to each function
 
         Returns:
             Any: Weighted sum of function outputs (matches output type of base functions)
         """
         # Get normalized convex weights
-
         weights = self.get_normalized_weights()
 
         outputs = []
         for func in self.functions:
+            if isinstance(x, Value) and isinstance(func, ConvexConstruct):
+                x = x.value
+
             val = func(x)
             if isinstance(val, Value): val = val.value
             outputs.append(val)
- 
-
 
         assert len(outputs) > 0, "No function outputs to combine"
         first_output = outputs[0]
@@ -109,14 +110,11 @@ class ConvexConstruct(nn.Module):
         if isinstance(first_output, torch.Tensor):
             weighted_sum = torch.zeros_like(first_output)
         else:
-            #print(first_output,outputs)
             # Handle non-tensor outputs (e.g., numpy arrays, scalars)
             weighted_sum = type(first_output)(0)
 
-
         for weight, output in zip(weights, outputs):
             weighted_sum += weight * output
-
         return Value(self.output_type,  weighted_sum)
 
     def normalize_weights(self) -> None:
@@ -126,7 +124,8 @@ class ConvexConstruct(nn.Module):
         """
         with torch.no_grad():
             normalized = self.get_normalized_weights()
-            self.log_weights.data = torch.log(normalized + 1e-8)
+            # 更新 logits 而非 log_weights，反推归一化权重对应的 logits
+            self.logits.data = torch.log(normalized + 1e-8)
 
     def get_top_p_functions(self, p: float) -> "ConvexConstruct":
         """
@@ -153,7 +152,6 @@ class ConvexConstruct(nn.Module):
 
         return ConvexConstruct(top_functions, top_weights)
 
-
 class ConvexComposer(nn.Module):
     def __init__(self, fn: Callable, convex: ConvexConstruct):
         super().__init__()
@@ -161,7 +159,10 @@ class ConvexComposer(nn.Module):
         self.convex = convex
 
     def forward(self, *args, **kwargs):
-        return self.convex(self.fn(*args, **kwargs))
+        res = self.fn(*args, **kwargs)
+        if isinstance(res, Value):res = res.value
+
+        return self.convex(res)
 
 class BackwardCombinedFn(nn.Module):
     def __init__(self, sub_convex_list: List[ConvexConstruct], combine_fn: Callable):
@@ -170,23 +171,39 @@ class BackwardCombinedFn(nn.Module):
         self.combine_fn = combine_fn
 
     def forward(self, *args, **kwargs) -> Any:
-        sub_results = [sub_convex(*args, **kwargs) for sub_convex in self.sub_convex_list]
+        sub_results = []
+        for sub_convex in self.sub_convex_list:
+            res = sub_convex(*args, **kwargs) 
+            if isinstance(res, Value): res = res.value
+            sub_results.append(res)
+
         return self.combine_fn(*sub_results)
 
+class ConstModule(nn.Module):
+    def __init__(self, v):
+        super().__init__()
+        self.v = v
+
+    def foward(self, v): return Value(torch.tensor(self,v), FLOAT)
+
+from helchriss.utils.tensor import Id
 
 class ConvexRewriter(nn.Module):
     def __init__(self, rewrites : List[ConvexConstruct], conds : List[ConvexConstruct]):
         super().__init__()
-        self.rewrites = rewrites # take arg to another arg as rewrite
-        self.conditions = conds # take arg to float as logit of rewrite
+        self.rewrites = nn.ModuleList(rewrites) # take arg to another arg as rewrite
+        self.conditions = nn.ModuleList(conds) # take arg to float as logit of rewrite
  
-    def forward(self, x : List[TypeBase]):
+    def forward(self, x : List[Value]):
         rewrite_values = []
         rewrite_probs = []
         for i,arg in enumerate(x):
             if isinstance(arg, Value): arg = arg.value
+
             rw_value    = self.rewrites[i](arg)
-            rw_weight   = self.rewrites[i](arg)
+            rw_weight   = self.conditions[i](arg)
+
+            
             rewrite_values.append(rw_value)
             rewrite_probs.append(rw_weight)
     
@@ -195,13 +212,14 @@ class ConvexRewriter(nn.Module):
 class Constructor:
 
     def __init__(self, rules = []):
-        self.max_depth = 4 # maximum recursion depth
+        self.max_depth = 3 # maximum recursion depth
 
         self.backward_rules = []
         self.forward_rules = []
 
         for rule in rules:
             self.add_rule(rule)
+
 
     def add_rule(self, rule: TypeTransformRule):
         if isinstance(rule, TypeTransformRule):
@@ -212,24 +230,22 @@ class Constructor:
         else: raise TypeError(f"Unsupported rule type: {type(rule)}. Only TypeTransformRule and TypeTransformRuleBackward are allowed.")
 
     def create_convex_construct(self, src_type : TypeBase,  tgt_type : TypeBase, function_registry):
-        #print(len(self.forward_rules), len(self.backward_rules))
-        def bfs(src_type : TypeBase, tgt_type : TypeBase, depth = 1):
-            if depth > self.max_depth : return None
 
+        def bfs(src_type : TypeBase, tgt_type : TypeBase, depth = 0):
+            if depth > self.max_depth : return None
+            
             direct_functions = function_registry.get_functions(src_type, tgt_type)
+
             if not direct_functions and depth == self.max_depth: return None
 
             functions = [] # get non fill in function
             """get all the functions that can be directly computed"""
             functions.extend(function_registry.get_functions(src_type, tgt_type))
 
-            #print(len(functions))
-
             intermediate_functions = []
             for rule in self.forward_rules:
                 match_success, var_binds = rule.match(src_type)
-                #if match_success:
-                #    print(rule.pattern_type, src_type,match_success, var_binds)
+
                 if not match_success: continue
                 inter_type, inter_fn = rule.apply(var_binds)
                 
@@ -240,14 +256,9 @@ class Constructor:
                 else:
                     
                     inter_convex = bfs(inter_type, tgt_type, depth = depth+1)
-                    
-            
-                    
+
 
                     if inter_convex is not None:
-
-                        #print("Applyed:", src_type,"->",inter_type, "->", tgt_type)
-                        #print(rule.name, inter_fn, inter_convex)
 
                         intermediate_functions.append(ConvexComposer(inter_fn, inter_convex))
             
@@ -290,7 +301,6 @@ class Constructor:
                 backward_combine_fn = backward_rule.apply(var_binds)
 
 
-                #print(backward_rule.name)
                 combined_fn = BackwardCombinedFn(sub_goal_convex_list, backward_combine_fn)
                 intermediate_backward_functions.append(combined_fn)
 
@@ -300,7 +310,6 @@ class Constructor:
 
             if not functions: return None
 
-            #print(src_type, tgt_type, len(functions))
             return ConvexConstruct(functions, weights, src_type, tgt_type)
     
         return bfs(src_type, tgt_type, depth=0)
@@ -311,10 +320,15 @@ class Constructor:
         conds    = []
 
         for i in range(len(src_types)):
-            rewrite = self.create_convex_construct(src_types[i], tgt_types[i], function_registry)
-            cond    = self.create_convex_construct(src_types[i], FLOAT, function_registry)
-            #print(src_types[i], tgt_types[i], isinstance(src_types[i], TypeBase),isinstance(tgt_types[i], TypeBase))
-            #print(rewrite, cond, self.max_depth)
+
+            if 1:
+                #src_type = EmbeddingType("color_wheel", 1)
+                #tgt_type = EmbeddingType("object", 96)
+
+                rewrite = self.create_convex_construct(src_types[i], tgt_types[i], function_registry)
+                cond    = self.create_convex_construct(src_types[i], BOOL, function_registry)
+            #if src_types[i] == src_type and tgt_types[i] == tgt_type:
+            #    print("GO",src_types[i], tgt_types[i], rewrite)
             assert rewrite, f"rewrite is None {src_types[i]}, {tgt_types[i]}"
             assert cond,    f"cond is None {src_types[i]}, {tgt_types[i]}"
             rewrites.append(rewrite)
@@ -543,16 +557,16 @@ if __name__ == "__main__":
     #)
 
 
-    src_type = EmbeddingType("object", 96)
-    tgt_type = EmbeddingType("color_wheel", 1)
+    src_type = EmbeddingType("color_wheel", 1)
+    tgt_type = EmbeddingType("object", 96)
 
-    src_type = ListType(VAR)
-    tgt_type = FLOAT
+    #src_type = ListType(VAR)
+    #tgt_type = FLOAT
 
 
     convex = constructor.create_convex_construct(src_type, tgt_type, function_registry)
     #[print(fn,"\n\n\n\n") for fn in convex.functions]
-
+    print("Convex",convex)
     print("done")
     rewrite = constructor.create_convex_arg_rewriter(
         (src_type,), (tgt_type,), function_registry)
@@ -562,9 +576,9 @@ if __name__ == "__main__":
         print(f"Number of functions: {convex.num_functions}")
         #print(convex.functions)
         
-        visualize_convex_construct(convex, "vis").view()
-        test_embed = torch.randn([2,97])
-        output = convex(test_embed)
+        #visualize_convex_construct(convex, "vis").view()
+        test_embed = torch.randn([2,1])
+        output = convex(test_embed).value.shape
 
 
         print(f"Test output: {output}")

@@ -58,17 +58,23 @@ class Frame(nn.Module):
         self.source_type : List[TypeBase] = source_type.element_types if isinstance(target_type, TupleType) else source_type
         self.target_type : List[TypeBase] = target_type.element_types if isinstance(target_type, TupleType) else target_type
 
-        self.rewriter = rewriter
+        self.rewriter :nn.Module = rewriter
         self.matches : nn.ParameterDict = nn.ParameterDict({})
+        self.overwrite = True
 
-    def match_logits(self, fn, gn):
-        return
+    def add_logits(self, fn : str, gn : str, weight = 0.0):
+        key = f"{fn}@{gn}"
+        if key in self.matches and not self.overwrite:
+            raise KeyError(f"Key '{key}' already exists in matches (set overwrite=True to replace)")
+    
+
+        self.matches[key] = nn.Parameter(weight, requires_grad=True)
 
     def apply(self, values : List[Value]) -> Tuple[List[Value], Union[float, torch.Tensor]]:
-        
-        rewrite_args, rewrite_prob = self.rewriter(values)
 
-        args = [Value(self.target_type[i],v) for i,v in enumerate(rewrite_args)]
+        rewrite_args, rewrite_prob = self.rewriter(values) # outputs are already Values
+
+        args = rewrite_args
 
         return args, rewrite_prob
     

@@ -209,6 +209,11 @@ class ModelHandler(BaseHandler):
  
             for i,tag in enumerate(tags):
                 grounding[tag] = files[i]["filename"]
+                if ".npy" in files[i]["filename"]:
+                    
+                    grounding[tag] = torch.tensor(np.load(io.BytesIO(files[i]['body'])))
+                    #print(torch.tensor(np.load(io.BytesIO(files[i]['body']))).shape)
+
                 if files[i]["content_type"][:5] == "image":
                     img = Image.open(io.BytesIO(files[i]['body'])).convert('RGB')
                     grounding[tag] = torch.tensor(np.array(img)).permute(2,0,1) / 255.0 
@@ -216,6 +221,7 @@ class ModelHandler(BaseHandler):
                     #import matplotlib.pyplot as plt
                     #plt.imshow(torch.tensor(np.array(img)) / 255.0 )
                     #plt.show()
+                #print(grounding)
 
 
             result = self.model.process_query(query, grounding)
@@ -277,7 +283,7 @@ if __name__ == "__main__":
 
     from core.model import MetaLearner
     learner = MetaLearner([])
-    learner.load_ckpt("outputs/checkpoints/max1")
+    learner.load_ckpt("outputs/checkpoints/euclid")
 
     from domains.visualizer import DomainVisualizer
     visualizer = DomainVisualizer()

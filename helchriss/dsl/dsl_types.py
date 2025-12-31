@@ -422,7 +422,7 @@ class EmbeddingType(TypeBase):
         try:
             self.dim = int(dim)
         except: self.dim = dim
-        self._typename = f"Embedding[{self.space_name}, {self.dim}]"
+        self._typename = f"Emb[{self.space_name}, {self.dim}]"
         self._alias = None
 
 ARROW = "->"

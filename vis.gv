@@ -1,16 +1,171 @@
 digraph vis {
 	node [fillcolor=lightblue shape=box style=filled]
 	edge [color=gray]
-	ConvexConstruct_5089141232 [label="ConvexConstruct
+	ConvexConstruct_5710630768 [label="ConvexConstruct
 Input Types:
 
-List[Tuple[bool, Embedding[object, 96]]]
+Embedding[color_wheel, 1]
 Output Type:
-float
+Embedding[object, 96]
 Weight Sum=1.0" fillcolor=lightcoral]
-	Func_5089141472 [label="SetPool(
-  (feat_net): Sequential(
-    (0): Linear...
+	Func_5710671296 [label="ConvexComposer(
+  (fn): FCBlock(
+    (net): Sequen...
+Weight=0.333" fillcolor=gold]
+	ConvexConstruct_5710630768 -> Func_5710671296
+	ConvexComposer_5710671296 [label="ConvexComposer
+Parent Weight=0.333
+(fn → ConvexConstruct)" fillcolor=gold]
+	Func_5710671296 -> ConvexComposer_5710671296
+	Fn_5710668128 [label="Pre-Process
+FCBlock(
+  (net): Sequential(
+    (0): Linear(in_f..." fillcolor=lightcyan]
+	ConvexComposer_5710671296 -> Fn_5710668128
+	ConvexConstruct_5710668224 [label="ConvexConstruct
+Input Types:
+
+Embedding[Latent, 128]
+Output Type:
+Embedding[object, 96]
+Weight Sum=1.0" fillcolor=lightcoral]
+	ConvexComposer_5710671296 -> ConvexConstruct_5710668224
+	Func_5710668896 [label="ConvexComposer(
+  (fn): FCBlock(
+    (net): Sequen...
+Weight=0.333" fillcolor=gold]
+	ConvexConstruct_5710668224 -> Func_5710668896
+	ConvexComposer_5710668896 [label="ConvexComposer
+Parent Weight=0.333
+(fn → ConvexConstruct)" fillcolor=gold]
+	Func_5710668896 -> ConvexComposer_5710668896
+	Fn_5710668272 [label="Pre-Process
+FCBlock(
+  (net): Sequential(
+    (0): Linear(in_f..." fillcolor=lightcyan]
+	ConvexComposer_5710668896 -> Fn_5710668272
+	ConvexConstruct_5710668368 [label="ConvexConstruct
+Input Types:
+
+Embedding[Latent, 128]
+Output Type:
+Embedding[object, 96]
+Weight Sum=1.0" fillcolor=lightcoral]
+	ConvexComposer_5710668896 -> ConvexConstruct_5710668368
+	Func_5710668080 [label="BackwardCombinedFn(
+  (sub_convex_list): ModuleLis...
 Weight=1.000"]
-	ConvexConstruct_5089141232 -> Func_5089141472
+	ConvexConstruct_5710668368 -> Func_5710668080
+	Fn_5710668272 -> ConvexConstruct_5710668368 [color=darkblue style=dashed]
+	Func_5710669712 [label="ConvexComposer(
+  (fn): Id()
+  (convex): convex_co...
+Weight=0.333" fillcolor=gold]
+	ConvexConstruct_5710668224 -> Func_5710669712
+	ConvexComposer_5710669712 [label="ConvexComposer
+Parent Weight=0.333
+(fn → ConvexConstruct)" fillcolor=gold]
+	Func_5710669712 -> ConvexComposer_5710669712
+	Fn_5710669088 [label="Pre-Process
+Id()" fillcolor=lightcyan]
+	ConvexComposer_5710669712 -> Fn_5710669088
+	ConvexConstruct_5710668992 [label="ConvexConstruct
+Input Types:
+
+Embedding[Latent, 128]
+Output Type:
+Embedding[object, 96]
+Weight Sum=1.0" fillcolor=lightcoral]
+	ConvexComposer_5710669712 -> ConvexConstruct_5710668992
+	Func_5710669472 [label="BackwardCombinedFn(
+  (sub_convex_list): ModuleLis...
+Weight=1.000"]
+	ConvexConstruct_5710668992 -> Func_5710669472
+	Fn_5710669088 -> ConvexConstruct_5710668992 [color=darkblue style=dashed]
+	Func_5710671200 [label="BackwardCombinedFn(
+  (sub_convex_list): ModuleLis...
+Weight=0.333"]
+	ConvexConstruct_5710668224 -> Func_5710671200
+	Fn_5710668128 -> ConvexConstruct_5710668224 [color=darkblue style=dashed]
+	Func_5710998496 [label="ConvexComposer(
+  (fn): Id()
+  (convex): convex_co...
+Weight=0.333" fillcolor=gold]
+	ConvexConstruct_5710630768 -> Func_5710998496
+	ConvexComposer_5710998496 [label="ConvexComposer
+Parent Weight=0.333
+(fn → ConvexConstruct)" fillcolor=gold]
+	Func_5710998496 -> ConvexComposer_5710998496
+	Fn_5710671344 [label="Pre-Process
+Id()" fillcolor=lightcyan]
+	ConvexComposer_5710998496 -> Fn_5710671344
+	ConvexConstruct_5710671392 [label="ConvexConstruct
+Input Types:
+
+Embedding[color_wheel, 1]
+Output Type:
+Embedding[object, 96]
+Weight Sum=1.0" fillcolor=lightcoral]
+	ConvexComposer_5710998496 -> ConvexConstruct_5710671392
+	Func_5710995904 [label="ConvexComposer(
+  (fn): FCBlock(
+    (net): Sequen...
+Weight=0.333" fillcolor=gold]
+	ConvexConstruct_5710671392 -> Func_5710995904
+	ConvexComposer_5710995904 [label="ConvexComposer
+Parent Weight=0.333
+(fn → ConvexConstruct)" fillcolor=gold]
+	Func_5710995904 -> ConvexComposer_5710995904
+	Fn_5710671536 [label="Pre-Process
+FCBlock(
+  (net): Sequential(
+    (0): Linear(in_f..." fillcolor=lightcyan]
+	ConvexComposer_5710995904 -> Fn_5710671536
+	ConvexConstruct_5710671824 [label="ConvexConstruct
+Input Types:
+
+Embedding[Latent, 128]
+Output Type:
+Embedding[object, 96]
+Weight Sum=1.0" fillcolor=lightcoral]
+	ConvexComposer_5710995904 -> ConvexConstruct_5710671824
+	Func_5710995520 [label="BackwardCombinedFn(
+  (sub_convex_list): ModuleLis...
+Weight=1.000"]
+	ConvexConstruct_5710671824 -> Func_5710995520
+	Fn_5710671536 -> ConvexConstruct_5710671824 [color=darkblue style=dashed]
+	Func_5710996720 [label="ConvexComposer(
+  (fn): Id()
+  (convex): convex_co...
+Weight=0.333" fillcolor=gold]
+	ConvexConstruct_5710671392 -> Func_5710996720
+	ConvexComposer_5710996720 [label="ConvexComposer
+Parent Weight=0.333
+(fn → ConvexConstruct)" fillcolor=gold]
+	Func_5710996720 -> ConvexComposer_5710996720
+	Fn_5710996096 [label="Pre-Process
+Id()" fillcolor=lightcyan]
+	ConvexComposer_5710996720 -> Fn_5710996096
+	ConvexConstruct_5710996000 [label="ConvexConstruct
+Input Types:
+
+Embedding[color_wheel, 1]
+Output Type:
+Embedding[object, 96]
+Weight Sum=1.0" fillcolor=lightcoral]
+	ConvexComposer_5710996720 -> ConvexConstruct_5710996000
+	Func_5710996960 [label="BackwardCombinedFn(
+  (sub_convex_list): ModuleLis...
+Weight=1.000"]
+	ConvexConstruct_5710996000 -> Func_5710996960
+	Fn_5710996096 -> ConvexConstruct_5710996000 [color=darkblue style=dashed]
+	Func_5710998400 [label="BackwardCombinedFn(
+  (sub_convex_list): ModuleLis...
+Weight=0.333"]
+	ConvexConstruct_5710671392 -> Func_5710998400
+	Fn_5710671344 -> ConvexConstruct_5710671392 [color=darkblue style=dashed]
+	Func_5711305120 [label="BackwardCombinedFn(
+  (sub_convex_list): ModuleLis...
+Weight=0.333"]
+	ConvexConstruct_5710630768 -> Func_5711305120
 }

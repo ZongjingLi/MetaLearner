@@ -127,6 +127,7 @@ class EuclidExecutor(CentralExecutor):
         sub_images = []
         segments = self.grounding["segment"]
         img      = self.grounding["image"]
+        if img.shape[0] == 3: img = img.permute(1,2,0)
         #import matplotlib.pyplot as plt
         for i in range(segments.shape[2]):
 

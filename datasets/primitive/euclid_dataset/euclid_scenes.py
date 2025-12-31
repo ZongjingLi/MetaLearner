@@ -500,7 +500,7 @@ def _tensor_to_pil(tensor, is_segment: bool = False):
         return Image.fromarray(img_np, mode="RGB")
 
 
-def load_euclid_dataset(load_root: str) -> EuclidDatasetUnwrapped:
+def load_euclid_dataset(load_root: str, length = 1000) -> EuclidDatasetUnwrapped:
     """
     从保存的目录加载Euclid数据集，返回EuclidDatasetUnwrapped实例
     
@@ -586,12 +586,12 @@ def load_euclid_dataset(load_root: str) -> EuclidDatasetUnwrapped:
         segments.append(seg_tensor)
 
     dataset_dict = {
-        "dsl_programs": dsl_programs,
-        "images": images,
-        "questions": questions,
-        "programs": programs,
-        "answers": answers,
-        "segments": segments
+        "dsl_programs": dsl_programs[:length],
+        "images": images[:length],
+        "questions": questions[:length],
+        "programs": programs[:length],
+        "answers": answers[:length],
+        "segments": segments[:length]
     }
 
     load_dataset = EuclidDatasetUnwrapped(0,{})

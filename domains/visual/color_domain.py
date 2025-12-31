@@ -23,6 +23,7 @@ class ColorDomain(CentralExecutor, BatchVisualizer):
 
 
     def red(self, color):
+        #print("color",color)
         # Red is centered at 0/1 on the color wheel
         redness = 0.5 * (torch.cos(2 * torch.pi * color) + 1)
         return torch.logit(redness)

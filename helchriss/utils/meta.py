@@ -5,6 +5,7 @@ import collections
 import collections.abc
 import threading
 import contextlib
+from functools import wraps 
 
 from typing import Any, Optional, Union, Iterable, Tuple, List, Dict, Callable
 
@@ -467,3 +468,22 @@ def repr_from_str(self):
             print(repr(Foo()))  # Foo[Foo]
     """
     return '{}<{}>'.format(self.__class__.__name__, self.__str__())
+
+def timer(custom_desc: str = None):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            start_time = time.perf_counter()
+            result = func(*args, **kwargs)
+            end_time = time.perf_counter()
+            elapsed_time = end_time - start_time
+            
+            func_name = func.__name__
+            desc = custom_desc if custom_desc else f"函数 {func_name}"
+            print(f"{desc} executed")
+            print(f"time elapsed: {elapsed_time:.6f} seconds")
+            print(f"function {func.__name__}(*args, **kwargs)\n")
+            
+            return result
+        return wrapper
+    return decorator

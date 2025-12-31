@@ -18,6 +18,7 @@ from pathlib import Path
 import dill
 import inspect
 from dataclasses import dataclass
+from .types import ConvexConstruct
 
 @dataclass
 class FunctionSignature:
@@ -161,9 +162,11 @@ class ExecutorGroup(CentralExecutor):
             fn, in_types, out_type = function
             fn_signature = self.signature(fn, in_types)
             if isinstance(in_types, List): in_types = TupleType(in_types)
-            #print("CMP:",in_types , input_types)
-            #print("CMP:",out_type , output_type)
+            
             if in_types == input_types and out_type == output_type:
+                print(fn, "In Group Executor")
+                print("CMP:",in_types , input_types)
+                print("CMP:",out_type , output_type)
                 compatible_fns.append(self.get_function_call(fn_signature))
         return compatible_fns
 
@@ -212,7 +215,6 @@ class ExecutorGroup(CentralExecutor):
 
         has_kwargs = has_kwargs and not isinstance(func_call, ConvexConstruct)
         if func_call is not None:
-            #print(func,has_kwargs, func_call)
             if has_kwargs: return func_call(*args, **kwargs)
             else: return func_call(*args)
         else:raise ModuleNotFoundError(f"{signature} is not found.")
