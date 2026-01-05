@@ -3,3 +3,4 @@ def hex2rgb(h):
 
 def rgb2hex(rgb):
     return '#{0:02x}{1:02x}{2:02x}'.format(int(rgb[0]), int(rgb[1]), int(rgb[2]))
+

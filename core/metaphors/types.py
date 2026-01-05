@@ -62,21 +62,17 @@ class ConvexConstruct(nn.Module):
 
             init_logits = torch.logit(normalized_weights + 1e-8)
 
-
         self.logits = nn.Parameter(init_logits)
 
-        #for name,param in self.named_parameters(): 
-        #    print(name, param)
 
     def get_normalized_weights(self) -> torch.Tensor:
         """
         Convert logits to valid convex combination weights (non-negative, sum to 1)
-        using softmax activation (核心：logits → softmax 直接转换)
+        using softmax activation 
 
         Returns:
             torch.Tensor: Normalized weights of shape (num_functions,)
         """
-        # 直接对 logits 应用 softmax，得到符合凸组合约束的权重
         return torch.softmax(self.logits, dim=0)
 
     def forward(self, x) -> Any:
@@ -124,7 +120,6 @@ class ConvexConstruct(nn.Module):
         """
         with torch.no_grad():
             normalized = self.get_normalized_weights()
-            # 更新 logits 而非 log_weights，反推归一化权重对应的 logits
             self.logits.data = torch.log(normalized + 1e-8)
 
     def get_top_p_functions(self, p: float) -> "ConvexConstruct":
@@ -151,6 +146,83 @@ class ConvexConstruct(nn.Module):
         top_weights = weights[top_indices]
 
         return ConvexConstruct(top_functions, top_weights)
+
+    def _compute_function_length(self, func: Union[Callable, "ConvexConstruct", "ConvexComposer", "BackwardCombinedFn"]) -> int:
+        """
+        Recursively compute the computational length of a given function/module.
+        Handles nested structures (ConvexConstruct, ConvexComposer, BackwardCombinedFn) recursively.
+        
+        Args:
+            func: The function/module to compute the length for
+            
+        Returns:
+            int: Total computational length of the input function/module
+        """
+        # Base case: basic callable (non-custom module) has length 1
+        if not isinstance(func, (ConvexConstruct, ConvexComposer, BackwardCombinedFn)):
+            return 1
+        
+        # Case 1: ConvexConstruct (sum of lengths of its child functions)
+        if isinstance(func, ConvexConstruct):
+            total_length = 0
+            for child_func in func.functions:
+                total_length += self._compute_function_length(child_func)
+            return total_length
+        
+        # Case 2: ConvexComposer (length of fn + length of convex module)
+        if isinstance(func, ConvexComposer):
+            fn_length = self._compute_function_length(func.fn)
+            convex_length = self._compute_function_length(func.convex)
+            return fn_length + convex_length
+        
+        # Case 3: BackwardCombinedFn (sum of lengths of its sub convex modules)
+        if isinstance(func, BackwardCombinedFn):
+            total_length = 0
+            for sub_convex in func.sub_convex_list:
+                total_length += self._compute_function_length(sub_convex)
+            # Add length for the combine_fn itself (base case 1)
+            total_length += self._compute_function_length(func.combine_fn)
+            return total_length
+
+    def clear(self, p: Union[int, float]) -> None:
+        """
+        In-place clear function that removes all child functions whose computational length exceeds p.
+        Updates the module's functions, num_functions, and logits (weights) to retain only valid functions.
+        
+        Args:
+            p: Maximum allowed computational length for functions (non-negative)
+        """
+        # Validate input parameter p
+        assert isinstance(p, (int, float)) and p >= 0, f"p must be a non-negative number (got {p})"
+        
+        # Step 1: Compute length for each function and collect valid (length <= p) functions
+        valid_indices = []
+        valid_functions = []
+        for idx, func in enumerate(self.functions):
+            func_length = self._compute_function_length(func)
+            if func_length <= p:
+                valid_indices.append(idx)
+                valid_functions.append(func)
+        
+        # Step 2: Ensure at least one valid function is retained (avoid empty module)
+        if len(valid_functions) == 0:
+            # Fallback: retain the function with the smallest length
+            func_lengths = [self._compute_function_length(func) for func in self.functions]
+            min_length_idx = func_lengths.index(min(func_lengths))
+            valid_indices = [min_length_idx]
+            valid_functions = [self.functions[min_length_idx]]
+        
+        # Step 3: Update module attributes in-place (with no gradient tracking)
+        self.functions = nn.ModuleList(valid_functions)
+        self.num_functions = len(self.functions)
+        
+        # Step 4: Update logits to match valid functions (retain corresponding weights and re-normalize)
+        with torch.no_grad():
+            current_weights = self.get_normalized_weights()
+            valid_weights = current_weights[valid_indices]
+            # Re-initialize logits from valid weights (maintain convex constraints)
+            normalized_valid_weights = valid_weights / torch.sum(valid_weights)
+            self.logits = nn.Parameter(torch.logit(normalized_valid_weights + 1e-8))
 
 class ConvexComposer(nn.Module):
     def __init__(self, fn: Callable, convex: ConvexConstruct):
@@ -209,10 +281,11 @@ class ConvexRewriter(nn.Module):
     
         return rewrite_values, rewrite_probs
 
+
 class Constructor:
 
     def __init__(self, rules = []):
-        self.max_depth = 3 # maximum recursion depth
+        self.max_depth = 2 # maximum recursion depth
 
         self.backward_rules = []
         self.forward_rules = []
@@ -355,9 +428,11 @@ class FunctionRegistry:
         return self.functions.get(key, [])
 
 
-
+import networkx as nx
 import graphviz
 from typing import Union, Optional
+import warnings
+import matplotlib.pyplot as plt
 
 def visualize_convex_construct(
     convex: "ConvexConstruct",
@@ -536,16 +611,175 @@ def visualize_convex_construct(
     return dot
 
 
+def hierarchy_pos(G, root=None, width=1., vert_gap=0.2, vert_loc=0, xcenter=0.5):
+    """
+    Create a hierarchical tree layout.
+    
+    Parameters:
+    - G: networkx graph (should be a tree)
+    - root: root node (if None, finds one automatically)
+    - width: horizontal space allocated for each level
+    - vert_gap: gap between levels
+    - vert_loc: vertical location of root
+    - xcenter: horizontal location of root
+    """
+    if not nx.is_tree(G):
+        raise TypeError('Cannot use hierarchy_pos on a graph that is not a tree')
+
+    if root is None:
+        if isinstance(G, nx.DiGraph):
+            # Find root (node with no predecessors)
+            root = [n for n, d in G.in_degree() if d == 0]
+            if not root:
+                root = list(G.nodes())[0]  # fallback
+            else:
+                root = root[0]
+        else:
+            root = list(G.nodes())[0]  # pick arbitrary root for undirected
+
+    def _hierarchy_pos(G, root, width=100., vert_gap=100, vert_loc=0, xcenter=0.5, pos=None, parent=None):
+        if pos is None:
+            pos = {root: (xcenter, vert_loc)}
+        else:
+            pos[root] = (xcenter, vert_loc)
+        
+        children = list(G.neighbors(root))
+        #print(root, parent, children)
+        if parent is not None and parent in children:
+            children.remove(parent)
+        
+        if not children:
+            return pos
+        
+        dx = width / len(children) 
+        nextx = xcenter - width/2 - dx/2
+        for child in children:
+            nextx += dx
+            pos = _hierarchy_pos(G, child, width=dx, vert_gap=vert_gap, 
+                               vert_loc=vert_loc+vert_gap, xcenter=nextx, pos=pos, parent=root)
+        return pos
+
+    return _hierarchy_pos(G, root, width, vert_gap, vert_loc, xcenter)
+
+
+
+def construct_convex_graph(model : ConvexConstruct):
+    tree = nx.Graph()
+
+    convex_sum_count = 0
+    backward_fn_count = 0
+    forward_fn_count = 0
+    function_count = 0
+
+    def _is_edge_valid_for_tree(graph, u, v):
+        """校验添加边(u, v)后是否仍保持树结构（无环、连通性符合树要求）"""
+        # 树的核心特性：无环，若两节点已连通，添加边会形成环，破坏树结构
+        if nx.has_path(graph, u, v):
+            return False
+        # 树的边数始终等于节点数-1，提前预判（冗余校验）
+        if len(graph.edges) + 1 > len(graph.nodes) - 1:
+            return False
+        return True
+
+    def build(model, parent):
+        nonlocal convex_sum_count, backward_fn_count, forward_fn_count, function_count
+        current_node = None
+        if isinstance(model, ConvexConstruct):
+            node_name = f"vexsum_{convex_sum_count}"
+            node_label = f"{model.output_type}\n{model.input_types}"
+            if node_name not in tree:
+                tree.add_node(node_name, label={"label": node_label})
+            weights = model.get_normalized_weights()
+            for i, fn in enumerate(model.functions):
+                fn_node_name = f"fn{convex_sum_count}_{i}"
+                if fn_node_name not in tree:
+                    tree.add_node(fn_node_name)
+                if isinstance(fn, (ConvexConstruct, ConvexComposer, BackwardCombinedFn)):
+                    build(fn, fn_node_name)
+                
+                # 校验边有效性，无效则发出警告
+                if _is_edge_valid_for_tree(tree, fn_node_name, node_name):
+                    tree.add_edge(fn_node_name, node_name, label={"weight": weights[i] if i < len(weights) else None})
+                else:
+                    warnings.warn(f"警告：添加边 ({fn_node_name} <-> {node_name}) 会破坏树结构（形成环/冗余边），已跳过该边添加。")
+            # 校验当前节点到父节点的边有效性
+            if parent not in tree:
+                tree.add_node(parent)
+            if _is_edge_valid_for_tree(tree, node_name, parent):
+                tree.add_edge(node_name, parent)
+            else:
+                warnings.warn(f"警告：添加边 ({node_name} <-> {parent}) 会破坏树结构（形成环/冗余边），已跳过该边添加。")
+            current_node = node_name
+            convex_sum_count += 1
+        elif isinstance(model, ConvexComposer):
+            fn_node = f"compose{forward_fn_count}_{model.fn}"
+            if fn_node not in tree:
+                tree.add_node(fn_node)
+            build(model.convex, fn_node)
+            # 校验边有效性，无效则发出警告
+            if _is_edge_valid_for_tree(tree, fn_node, parent):
+                tree.add_edge(fn_node, parent)
+            else:
+                warnings.warn(f"警告：添加边 ({fn_node} <-> {parent}) 会破坏树结构（形成环/冗余边），已跳过该边添加。")
+            current_node = fn_node
+            forward_fn_count += 1
+        elif isinstance(model, BackwardCombinedFn):
+            fn_node = f"compose{backward_fn_count}_{model.combine_fn}"
+            if fn_node not in tree:
+                tree.add_node(fn_node)
+            # 校验当前节点到父节点的边有效性
+            if _is_edge_valid_for_tree(tree, fn_node, parent):
+                tree.add_edge(fn_node, parent)
+            else:
+                warnings.warn(f"警告：添加边 ({fn_node} <-> {parent}) 会破坏树结构（形成环/冗余边），已跳过该边添加。")
+            sub_list = model.sub_convex_list
+            for i, fn in enumerate(sub_list):
+                sub_node = f"sub{backward_fn_count}_{i}"
+                build(fn, sub_node)
+                if sub_node not in tree:
+                    tree.add_node(sub_node)
+                # 校验边有效性，无效则发出警告
+                if _is_edge_valid_for_tree(tree, sub_node, fn_node):
+                    tree.add_edge(sub_node, fn_node)
+                else:
+                    warnings.warn(f"警告：添加边 ({sub_node} <-> {fn_node}) 会破坏树结构（形成环/冗余边），已跳过该边添加。")
+            current_node = fn_node
+            backward_fn_count += 1
+        else:
+            node_name = f"{str(model)}_{function_count}"
+            if node_name not in tree:
+                tree.add_node(node_name)
+            # 校验边有效性，无效则发出警告
+            if _is_edge_valid_for_tree(tree, node_name, parent):
+                tree.add_edge(node_name, parent)
+            else:
+                warnings.warn(f"警告：添加边 ({node_name} <-> {parent}) 会破坏树结构（形成环/冗余边），已跳过该边添加。")
+            current_node = node_name
+            function_count += 1
+        return current_node
+
+    # 初始化根节点
+    root_node = "root"
+    if root_node not in tree:
+        tree.add_node(root_node)
+    build(model, root_node)
+
+    # 绘制树形图
+    tree_pos = hierarchy_pos(tree)
+    nx.draw_networkx(tree, tree_pos)
+    plt.show()
+
+    return tree
+
+
 if __name__ == "__main__":
     VAR = TupleType([BOOL, EmbeddingType("object", 96)] )
 
-    # 1. 初始化构造器并添加默认规则
     constructor = Constructor(default_constructor_rules)
 
-    #for rule in default_constructor_rules:
-    #    constructor.add_rule(rule)
+
     function_registry = FunctionRegistry()
-    constructor.max_depth = 4
+    constructor.max_depth = 2
 
 
     def dummy_embed_to_float(embed: torch.Tensor) -> torch.Tensor:
@@ -560,23 +794,19 @@ if __name__ == "__main__":
     src_type = EmbeddingType("color_wheel", 1)
     tgt_type = EmbeddingType("object", 96)
 
-    #src_type = ListType(VAR)
-    #tgt_type = FLOAT
-
-
     convex = constructor.create_convex_construct(src_type, tgt_type, function_registry)
-    #[print(fn,"\n\n\n\n") for fn in convex.functions]
-    print("Convex",convex)
-    print("done")
+
+    #convex.clear()
+    #construct_convex_graph(convex)
     rewrite = constructor.create_convex_arg_rewriter(
         (src_type,), (tgt_type,), function_registry)
-    #print(src_type, tgt_type, rewrite)
+
     if convex:
         print("ConvexConstruct built successfully!")
         print(f"Number of functions: {convex.num_functions}")
         #print(convex.functions)
         
-        #visualize_convex_construct(convex, "vis").view()
+        visualize_convex_construct(convex, "vis").view()
         test_embed = torch.randn([2,1])
         output = convex(test_embed).value.shape
 

@@ -450,7 +450,7 @@ class MetaLearner(nn.Module):
                     if answer.vtype == "int": answer.vtype = INT
 
 
-                try:
+                if 1:
                     working_loss = 0.
                     if program is None:
                         results, probs, programs, _ = self(query, grounding, answer.vtype)
@@ -460,7 +460,6 @@ class MetaLearner(nn.Module):
                         programs    =  [program]
 
                     if not results:
-                        print(results)
                         self.executor.logger.warning(f"no parsing found for query:{query}")
                 
                     for i, result in enumerate(results):
@@ -487,11 +486,15 @@ class MetaLearner(nn.Module):
                             if measure_loss < 0.2: correct += 1 * measure_conf
                             else:
                                 pass
-                            
-                        #print(measure_loss , internal_loss)
+                        
+                        #print(f"measure:", measure_loss)
+                        #print("internal:",internal_loss)
+                        measure_loss = measure_loss * 1.
+                        internal_loss = internal_loss * 1.0
                         loss += measure_conf * (measure_loss + internal_loss)
                         total_count += 1 * measure_conf
-                        working_loss += measure_conf * measure_loss 
+
+                        working_loss += measure_conf * (measure_loss + internal_loss)
                 
                     batch_loss += working_loss
                     batch_count += 1
@@ -510,6 +513,8 @@ class MetaLearner(nn.Module):
                                 if check_model_nan_params(self):
                                     check_gradient_flow(self)
                         except: raise RuntimeError("No Valid Parse Found.")
+                try:
+                    pass
                 except UnificationFailure as Error:
 
                         if (Error.left_structure,value_types(Error.right_structure)) not in self.executor.ban_list:
@@ -530,7 +535,7 @@ class MetaLearner(nn.Module):
                 avg_loss, avg_acc = -1, -1
                 # Show test_acc even if unify=True
                 epoch_bar.set_postfix({"test_acc": f"{test_acc:.4f}"})
-            self.executor.logger.info(f"acc:{avg_acc}, test_acc: {test_acc}")
+            #self.executor.logger.info(f"acc:{avg_acc}, test_acc: {test_acc}")
         return {"loss": avg_loss, "acc": avg_acc, "test_acc": test_acc}  # Add test_acc to return
 
     def infer_metaphor_expressions(self, meta_exprs: Union[str, Expression,List[Expression], List[str]]):
@@ -756,7 +761,8 @@ def add_coordinates_to_eval_info(eval_info, scale=50):
         # Compute radial positions for path vertices (scale down for paths)
 
            path_pos = hierarchy_pos(path_G, width = 5000, vert_gap= 350)  # smaller scale for paths
-        
+           path_pos = nx.spring_layout(path_G)
+
         # Add coordinates to path vertices
         for vertex in path_data['nodes']:
             vertex_id = vertex['id']

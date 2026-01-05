@@ -81,12 +81,12 @@ class AutoLearnSchedule:
     def train(self, model : MetaLearner, epochs : int, lr : float = 2e-2):
         return model.train(self.dataset, epochs = epochs, lr = lr)
     
-    def procedual_train(self, model : MetaLearner, lr = 2e-4, eps = 0.005, verbose = False):
+    def procedual_train(self, model : MetaLearner, lr = 2e-4, step_epochs = 15, eps = 0.005, verbose = False):
         device = self.device
         base_vocab = []#model.learned_vocab
         base_data  = []
         base_dataset = ListDataset(base_data)
-        step_epochs = 5
+
         #model = model.to(device)
 
         new_words, _ = optimal_schedule(self.dataset, base_vocab)

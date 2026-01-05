@@ -11,6 +11,7 @@ color_domain_str = """
     color - Embedding[color_wheel, 1] ;; unnormalized distribution over a list of objects
 )
 (def function
+    color   (x : color) : color := by pass ;; explicit base change to color
     red     (x : color) : boolean := by pass
     green   (x : color) : boolean := by pass
     blue    (x : color) : boolean := by pass
@@ -20,25 +21,28 @@ color_domain = load_domain_string(color_domain_str)
 
 class ColorDomain(CentralExecutor, BatchVisualizer):
     """here we consider color as some element on the color wheel"""
-
+    def color(self, color_obj):
+        return color_obj
 
     def red(self, color):
-        #print("color",color)
+        #print("color:",color)
         # Red is centered at 0/1 on the color wheel
         redness = 0.5 * (torch.cos(2 * torch.pi * color) + 1)
-        return torch.logit(redness)
+        return torch.logit(redness, eps = 1e-6)
 
     def green(self, color):
+        #print("green:",color)
         # Green is centered at 1/3 on the color wheel
         # Shift the cosine function by 1/3
         greenness = 0.5 * (torch.cos(2 * torch.pi * (color - 1/3)) + 1)
-        return torch.logit(greenness)
+        return torch.logit(greenness, eps = 1e-6)
 
     def blue(self, color):
+        #print("blue:",color)
         # Blue is centered at 2/3 on the color wheel
         # Shift the cosine function by 2/3
         blueness = 0.5 * (torch.cos(2 * torch.pi * (color - 2/3)) + 1)
-        return torch.logit(blueness)
+        return torch.logit(blueness, eps = 1e-6)
 
     def visualize(self, batched_data, save_path=None):
         import matplotlib.pyplot as plt

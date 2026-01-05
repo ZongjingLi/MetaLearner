@@ -107,6 +107,7 @@ class UnificationFailure(Exception):
 
 
 def node_sn(node):
+    if node.sign is not None: return node.sign
     if ":" in node.fn:
         fn, space = node.fn.split(":")
     else:
@@ -128,6 +129,9 @@ def visualize_subtree(subtree_root: "SearchNode", node_size=800, font_size=5, qu
         node_id = node_sn(node)
         G.add_node(node_id, label = "*")
         node_to_search_node[node_id] = node
+
+        if node.next is None: node.next = []
+        if node.next_weights is None: node.next_weights = []
         for son, weight in zip(node.next, node.next_weights):
             son_id = node_sn(son)
             G.add_edge(node_id, son_id)
@@ -137,13 +141,13 @@ def visualize_subtree(subtree_root: "SearchNode", node_size=800, font_size=5, qu
     build_graph(subtree_root)
     pos = hierarchy_pos(G, vert_gap=3.5)  
     
-    if len(G.nodes) > 2:
+    if 1:
         node_colors = []
         query_node_ids = []
         subtree_nodes = []
         parent_nodes  =  []
         for node_id, search_node in node_to_search_node.items():
-            assert isinstance(search_node, SearchNode)
+            #assert isinstance(search_node, SearchNode)
 
             if search_node.is_target:
                 query_node_ids.append(node_id)
@@ -153,7 +157,6 @@ def visualize_subtree(subtree_root: "SearchNode", node_size=800, font_size=5, qu
                 parent_nodes.append(node_id)
 
         for node_id in G.nodes:
-            
             if node_id in query_node_ids:
                 node_colors.append("#D01117")
             if node_id in subtree_nodes:
@@ -162,7 +165,6 @@ def visualize_subtree(subtree_root: "SearchNode", node_size=800, font_size=5, qu
                 node_colors.append("#06627E")
                 
         
-
         edge_colors = []
         import matplotlib.cm as cm  
         import matplotlib.colors as colors 
@@ -177,7 +179,9 @@ def visualize_subtree(subtree_root: "SearchNode", node_size=800, font_size=5, qu
             cmap = cm.get_cmap("Blues")
 
             edge_colors.append(cmap(norm(weight)))
-
+        #print(G)
+        #print(node_colors)
+        #print(edge_colors)
 
         nx.draw(G, pos, with_labels=True, node_color=node_colors, edge_color=edge_colors,
                 node_size=node_size, font_size=font_size, font_weight="bold", 
@@ -203,6 +207,7 @@ class SearchNode:
     is_parent = 0
     is_target = 0
     name : str = None
+    sign : str = None
 
 
     def __str__(self): return f"{self.fn}"
@@ -235,8 +240,10 @@ class SearchExecutor(CentralExecutor):
 
         """load the history frames"""
         self.transient_background_functions = [] # store the newly added functions
-        self.default_freeze = 1#True
+        self.default_freeze = 1
         self.verbose = 0
+        self.cut = 1
+        self.non_effective_nodes = []
 
     """stupid formatting stuff"""
     def gather_format(self, name, domain): return self._gather_format.format(name, domain)
@@ -470,8 +477,6 @@ class SearchExecutor(CentralExecutor):
         
         display(init_node)
 
-        
-
         return nodes
 
     def subtree_filter_margin(self, init_node : SearchNode, nodes : List[SearchNode], margin = 0.1):
@@ -517,7 +522,7 @@ class SearchExecutor(CentralExecutor):
                 collect_valid_nodes(son)
     
         collect_valid_nodes(init_node)
-        #print("valid nodes:", valid_nodes)
+
         return valid_nodes
     
     def filter_cycle(self, init_node: "SearchNode", query_fn: str) -> List["SearchNode"]:
@@ -660,30 +665,19 @@ class SearchExecutor(CentralExecutor):
 
 
         # each node weight to be successful reach exists and add the reach path
-        def dfs(node : SearchNode, success_reach, prev = None, wt = None):
-            
-            # outside the scope then return
-            if not node in rw_nodes: return 0.
+        def filter_path(node):
+            """a node is keep only any of the three mask is correct"""
+            sub_nodes = [nd for nd in node.next if (nd.is_parent or nd.is_subtree or nd.is_target)]
+            node.next = sub_nodes
 
-        def dfs(node : SearchNode, success_reach, prev = None):
-            self.vertex_count += 1
-            if prev is not None:
-               node.name = f"vertex{self.vertex_count}"
-               rw_edges.append((prev, f"vertex{self.vertex_count}",success_reach))
+            has_reach = node.is_target
+            for i,nd in enumerate(node.next):
+                son_reached = filter_path(nd)
+                has_reach = max(has_reach, son_reached * node.next_weights[i])
             
-            # the node is reachable and have no applicable rewrite.
-            if node.next_weights:
-                node.distr = node.reachable * (1. - torch.max(torch.tensor(node.next_weights)))
-            else:
-                node.distr = node.reachable
-            for son, weight in zip(node.next, node.next_weights):
-                assert isinstance(son, SearchNode)
-                son.reachable = node.reachable * weight
-                if son.fn == query_fn :
-                    success_reach = max(success_reach, son.reachable)
-                
-            return success_reach
-        
+            return has_reach
+            
+
         def distr(node : SearchNode, prob = 1.0):
             """exists a path to node and no output edge"""
             if node.next_weights:
@@ -708,44 +702,81 @@ class SearchExecutor(CentralExecutor):
         def kill(node): # kill the nodes with zero distr before mask
             next = [nd for nd in node.next if (nd.maintain > 0)]
             node.next = next
-            
-            for nd in node.next:
-                if node.maintain > 0:
-                    pass
-                    #print(nd.fn, nd.maintain)
             for son in node.next:
                 kill(son)
+    
+        def sum_weights(node):
+            weight = float(node.distr)
+
+            for nd in node.next:
+                weight += sum_weights(nd)
+            return weight
 
         def normalize(node, total):
+            node.name = f"{node.fn}{node.id}({value_types(node.value)})"
             for son in node.next:
                 normalize(son, total)
             node.distr = node.distr / total
+        
+        def ban_freeze(node : SearchNode,  ban_list):
+            """freezed nodes should be banned"""
+            for son in node.next:
+                ban_freeze(son, ban_list)
+            
+            match = False
+            for (fn, types) in ban_list:
+                if fn == node.fn and types == value_types(node.value):
+                    match = True
 
-        _ = self.filter_cycle(src_node, query_fn) # filter self loops
+            if match: node.distr *= 0.0
+            else: node.distr *= 1.0
 
-        success_reach = dfs(src_node, 0., None, wt = 1.) # dfs on the super source node
+        def exist_distr_path(node):
+            """exists a path to a distribution node"""
+            has_reach = node.distr
+            for i,nd in enumerate(node.next):
+                son_reached = exist_distr_path(nd)
+                has_reach = max(has_reach, son_reached * node.next_weights[i])
+            
+            return has_reach
+        
 
-        from helchriss import stprint
-
-        stprint(success_reach)
+        
+        self.subtree_filter_target(src_node,  query_fn)
+        self.filter_cycle(src_node, query_fn) # filter self loops
+        filter_path(src_node) # dfs on the super source node
 
         distr(src_node, prob = 1.0) # construct lastest node distr
-        self.subtree_filter_target(src_node,  query_fn)
+        
         effective(query_fn, src_node, 0.0) # mask out parent nodes
+        
+        
+        #kill(src_node)
 
-        kill(src_node)
+        
+        
 
 
-        total_weights = sum(node.distr for node in rw_nodes) + 1e-6
+        ban_freeze(src_node, self.non_effective_nodes)
+
+        success_reach = exist_distr_path(src_node)
+
+        total_weights = sum_weights(src_node) + 1e-6
 
         normalize(src_node, total_weights)
 
 
-        if len(rw_nodes) > 2 and self.verbose:
+        
+        
+        
+        if len(rw_nodes) > self.cut and self.verbose:
             visualize_subtree(src_node, query_fn = query_fn)
             #print("DO This", len(rw_nodes), query_fn)
             pass 
-        return [(node.name,node.fn, node.value, node.distr) for node in rw_nodes], success_reach, rw_nodes, rw_edges
+
+        rw_nodes = [node for node in rw_nodes if node.name]
+
+        return [(node.name, node.fn, node.value, node.distr) for node in rw_nodes], success_reach, rw_nodes, rw_edges
 
     #@timer(custom_desc="reduction call")
     def reduction_call(self, fn : str , args : List[Value], arg_types : List[TypeBase]):
@@ -756,7 +787,7 @@ class SearchExecutor(CentralExecutor):
         """
         rewrite_pairs, success_reach, rw_nodes, serial_edges = self.rewrite_distr(args, fn, mode = "eval")
         execute_pairs = rewrite_pairs[1:]
-        #print("reach:", success_reach)
+
         if not isinstance(success_reach, torch.Tensor): success_reach = torch.tensor(success_reach)
         if success_reach < self.unification_p and not self.supressed:
             raise UnificationFailure(f"failed to unify {fn}({args}->{success_reach})", 
@@ -778,9 +809,14 @@ class SearchExecutor(CentralExecutor):
         assert execute_pairs, f"{fn} canont be executed on {value_types(args)}"
 
         for i,(node, fn, vargs, weight) in enumerate(execute_pairs):
-
+            
             measure : Value = self.base_executor.execute(fn, vargs, arg_types, self.grounding)
+            execute_loss = 0.
+            if isinstance(measure.value, Tuple):
+                execute_loss = measure.value[1]
+                measure.value = measure.value[0]
 
+            #print(isinstance(measure, Value))
             if isinstance(measure.value, torch.Tensor) and (measure.vtype == INT or measure.vtype == FLOAT):
                 expect_output += measure.value.reshape([-1])[0] * weight
             else:
@@ -790,7 +826,8 @@ class SearchExecutor(CentralExecutor):
                     if len(measure.value.shape) > 0:
                         b = measure.value.shape[0]
                         measure.value = measure.value.reshape([b, -1])
-    
+                #print(fn, weight)
+                #print(weight, measure.value)
                 expect_output +=  weight * measure.value
 
             def repr(v : Value):
@@ -808,7 +845,6 @@ class SearchExecutor(CentralExecutor):
                 return str(v.value)
 
             input_repr = ",".join([repr(v) for v in vargs])
-            print("node fn",node, fn)
             serial_nodes.append(
                 {   "id":node,
                     "fn": fn,
@@ -819,17 +855,14 @@ class SearchExecutor(CentralExecutor):
 
 
         search_tree = {"nodes": serial_nodes, "edges":serial_edges}
-
-        return Value(measure.vtype, expect_output), -torch.log(success_reach), search_tree
+        if len(rw_nodes) > self.cut and self.verbose:
+            print("internal loss:", -torch.log(success_reach))
+        return Value(measure.vtype, expect_output), -torch.log(success_reach) + execute_loss, search_tree
 
     """Evaluate Chain of Expressions"""
     def evaluate(self, expression, grounding):
         if not isinstance(expression, Expression):
-            #self.parser.supress = 1
             expression = expression.replace(" ","")
-
-            #print(self.parser.parse(expression))
-            
 
             expression = self.parser.parse(expression)[0].fn
 
@@ -849,7 +882,7 @@ class SearchExecutor(CentralExecutor):
 
         with self.with_grounding(grounding):
             outputs, loss, _, _ = self._evaluate(expression)
-
+            #print("reach loss:", loss)
 
         return outputs, loss
     
@@ -928,7 +961,19 @@ class SearchExecutor(CentralExecutor):
             fn   : str as the input function name (specific to domain tag)
         """
         
+        # 1. add the filler that defined on the value node.
+        for (in_tps, out_tp) in self.base_executor.function_signature(fn):
+            if len(args) != 1:
+                in_tps = TupleType(value_types(args))
+            else:
+                in_tps = value_types(args)[0]
+            convex_fillter = self.constructor.create_convex_construct(in_tps, out_tp, self.base_executor)
+            assert convex_fillter, f"failed to create fillers {convex_fillter} for {fn} ({value_types(args)} -> {out_tp})"
 
+            assert isinstance(self.base_executor, ExecutorGroup), "not a group executor"
+            self.base_executor.register_extended_function(fn, value_types(args), out_tp, convex_fillter)
+            self.logger.critical(f"registerd background extention for {fn} on {value_types(args)} -> {out_tp}")
+            self.transient_background_functions.append([fn, value_types(args), out_tp])
     
 
         # 2. add rewriters that locate from the value reachable node to the fn node.
@@ -942,11 +987,13 @@ class SearchExecutor(CentralExecutor):
 
             for (in_tps, out_tp) in self.base_executor.function_signature(fn):
                 self_loop = 1.
-                if self_loop:
+                if self_loop and weight > 0:
                     """BAN ALL the automorphisms"""
                     arg_types = value_types(vargs)
                     src_tps = arg_types
                     tgt_tps = in_tps 
+
+                    print(gn,arg_types,"->", fn, tgt_tps, weight)
 
                     if isinstance(src_tps, List): src_tps = TupleType(src_tps)
                     if isinstance(tgt_tps, List): tgt_tps = TupleType(tgt_tps)
@@ -974,19 +1021,7 @@ class SearchExecutor(CentralExecutor):
 
                         self.frames[frame_sig + str(id_itr)] = learn0_frame
 
-        # 1. add the filler that defined on the value node.
-        for (in_tps, out_tp) in self.base_executor.function_signature(fn):
-            if len(args) != 1:
-                in_tps = TupleType(value_types(args))
-            else:
-                in_tps = value_types(args)[0]
-            convex_fillter = self.constructor.create_convex_construct(in_tps, out_tp, self.base_executor)
-            assert convex_fillter, f"failed to create fillers {convex_fillter} for {fn} ({value_types(args)} -> {out_tp})"
-
-            assert isinstance(self.base_executor, ExecutorGroup), "not a group executor"
-            self.base_executor.register_extended_function(fn, value_types(args), out_tp, convex_fillter)
-            self.logger.critical(f"registerd background extention for {fn} on {value_types(args)} -> {out_tp}")
-            self.transient_background_functions.append([fn, value_types(args), out_tp])
+       
     
 
         return self
@@ -1027,9 +1062,20 @@ class SearchExecutor(CentralExecutor):
                 
                 from helchriss.utils.tensor import freeze
                 freeze(self.base_executor.extended_registry, freeze = self.default_freeze)
-                self.logger.critical(f"update chain : {query_fn} -> {value_types(value)}, freezed:{self.default_freeze}")
-
+                self.extended_non_effective(effective=False)
+                self.logger.critical(f"update chain : {query_fn} -> {value_types(value)}, freezed:{self.default_freeze}\n")
+                self.logger.critical(f"non effective nodes : extended registry")
+                
                 
             out = self.evaluate(query, grounding = grounding)
         return out
+    
+    def extended_non_effective(self, effective = False):
+        if effective:
+            self.non_effective_nodes = []
+        else:
+            self.non_effective_nodes
+            for sign in self.base_executor.extended_registry:
+                fn, in_types, out_type = self.base_executor.parse_signature(sign)
 
+                self.non_effective_nodes.append([fn, in_types])

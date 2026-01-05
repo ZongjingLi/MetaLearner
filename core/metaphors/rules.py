@@ -12,6 +12,9 @@ from typing import List, Tuple, Union, Any, Dict, Optional, Callable, Type
 class FCBlock(nn.Module):
     def __init__(self, input_dim, output_dim, hidden_dim=128, num_layers=2, activation=nn.ReLU(), dropout=0.1):
         super().__init__()
+        self.num_layers = num_layers
+        self.input_dim = input_dim
+        self.output_dim = output_dim
         
         layers = []
         layers.append(nn.Linear(input_dim, hidden_dim))
@@ -26,6 +29,11 @@ class FCBlock(nn.Module):
         self.net = nn.Sequential(*layers)
 
     def forward(self, x): return self.net(x)
+
+
+    def __repr__(self): return str(self)
+
+    def __str__(self): return f"{self.input_dim}_{self.num_layers}_{self.output_dim}"
 
 class PatternVar(TypeBase):
     def __init__(self, var_name: str):

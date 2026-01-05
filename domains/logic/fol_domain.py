@@ -4,7 +4,7 @@ from helchriss.knowledge.executor import CentralExecutor
 from helchriss.domain import load_domain_string
 from helchriss.dsl.dsl_values import Value
 from helchriss.dsl.dsl_types import ListType, TupleType
-from helchriss.knowledge.symbolic import FunctionApplicationExpression, VariableExpression
+from helchriss.knowledge.symbolic import FunctionApplicationExpression, VariableExpression, Expression
 first_order_logic_domain_str = """
 (domain :: Logic)
 (def type  ;; define type alias using a - b, meaning a is an alias to type b
@@ -35,7 +35,7 @@ fol_domain = load_domain_string(first_order_logic_domain_str)
 def merge_paths(paths, sub_paths):
 
     if sub_paths["nodes"]:
-        print(list(node["id"] for node in sub_paths["nodes"]))
+        #print(list(node["id"] for node in sub_paths["nodes"]))
         min_id = min(node["id"] for node in sub_paths["nodes"])
 
         sub_paths["edges"].append((min_id, "init", {"type": "init_connection"}))
@@ -89,6 +89,8 @@ class FOLExecutor(CentralExecutor):
         var_logit, obj = vars[:,:1], vars[:,1:]
         if len(obj.shape) == 1: obj = obj[None,...]
 
+        print(Expression.parse_program_string(expr))
+
         logic_expr = FunctionApplicationExpression(VariableExpression(expr), [ VariableExpression(Value(obj_tp,obj)) ] )
         class_logit, subloss, son_id, sub_paths = ancestor_executor._evaluate(logic_expr)
         merge_paths(paths, sub_paths)
@@ -115,7 +117,7 @@ class FOLExecutor(CentralExecutor):
         ancestor_executor.eval_info["paths"][f"{node_id}"] = paths # no rewrite 
         ancestor_executor.prev_node = node_info
 
-        return reference_set#, local_loss
+        return reference_set, local_loss
     
 
     def relate(self, anchor_vars, ref_vars, expr, **kwargs):
