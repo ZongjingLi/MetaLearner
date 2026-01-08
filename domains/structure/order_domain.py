@@ -6,17 +6,17 @@ from helchriss.domain import load_domain_string
 from domains.utils import BatchVisualizer
 
 order_domain_str = """
-(domain Order)
-(:type
+(domain :: Order)
+(def type
     order - vector[float, 1]
     boolean - vector[float, 1]
 )
-(:predicate
+(def function
     greater ?x-order ?y-order -> boolean
     lesser ?x-order ?y-order -> boolean
     equal ?x-order ?y-order -> boolean
     inf -> order
-    sup -> order
+    neg_inf -> order
 )
 """
 
@@ -31,7 +31,7 @@ class OrderExecutor(CentralExecutor, BatchVisualizer):
     
     def inf(self): return torch.tensor(1.0)
 
-    def sup(self): return torch.tensor(-1.0)
+    def neg_inf(self): return torch.tensor(-1.0)
     
     def greater(self, o1, o2):
         # Output logits directly without sigmoid for greater
@@ -42,8 +42,6 @@ class OrderExecutor(CentralExecutor, BatchVisualizer):
         return self.temperature * (o2 - o1)
     
     def equal(self, o1, o2):
-        # Output logits directly without sigmoid for equal
-        # Negative because smaller difference → more equal
         return -self.temperature * (torch.abs(o1 - o2) - 0.2)
     
     def visualize(self, batched_data, save_path=None):

@@ -157,20 +157,20 @@ def euclid_object_grounding_questions(scene_metas):
     if qtype == "exist_color":
         primitive = rand_color()
         q_template = f"exists {primitive} object"
-        p_template = f"exists(filter(objects(), {primitive}))"
+        p_template = f"exists(filter(objects(), 'lambda x => {primitive}(color(x))' ))"
         answer = len([obj for obj in scene_metas["objects"] if obj["color_name"] == primitive]) > 0
 
     if qtype == "exists_primitive":
         primitive = rand_primitive()
         q_template = f"exists {primitive} object"
-        p_template = f"exists(filter(objects(), {primitive}))"
+        p_template = f"exists(filter(objects(), 'lambda x => {primitive}(x)' ))"
         answer = len([obj for obj in scene_metas["objects"] if obj["type"] == primitive]) > 0
 
     if qtype == "double_filter":
         primitive = rand_primitive()
         color     = rand_color()
         q_template = f"exists {primitive} {color} object"
-        p_template = f"exists(filter(filter(objects(), {primitive}), {color}))"
+        p_template = f"exists(filter(filter(objects(), 'lambda x => {primitive}(x)' ), 'lambda x => {color}(color(x))' ))"
         answer = len([obj for obj in scene_metas["objects"] if (obj["type"] == primitive) and obj["color_name"] == color ] ) > 0
 
 

@@ -5,6 +5,7 @@ from helchriss.domain import load_domain_string
 from helchriss.dsl.dsl_values import Value
 from helchriss.dsl.dsl_types import ListType, TupleType
 from helchriss.knowledge.symbolic import FunctionApplicationExpression, VariableExpression, Expression
+import re
 first_order_logic_domain_str = """
 (domain :: Logic)
 (def type  ;; define type alias using a - b, meaning a is an alias to type b
@@ -31,6 +32,25 @@ first_order_logic_domain_str = """
 
 fol_domain = load_domain_string(first_order_logic_domain_str)
 #fol_domain.print_summary()
+
+def extract_lambda_variables(lambda_str: str) -> list:
+    lambda_pattern = r'\blambda\s+((?:[a-zA-Z_][a-zA-Z0-9_]*\s*)+)(?=:)'
+    
+    match = re.search(lambda_pattern, lambda_str, flags=re.UNICODE)
+    
+    if not match: return []
+    
+    variable_part = match.group(1).strip()
+    variables = re.split(r'\s+', variable_part)
+
+    seen = set()
+    unique_variables = []
+    for var in variables:
+        if var not in seen and var:
+            seen.add(var)
+            unique_variables.append(var)
+    
+    return unique_variables
 
 def merge_paths(paths, sub_paths):
 
@@ -59,6 +79,17 @@ def merge_paths(paths, sub_paths):
     paths['edges'].extend([(id_map.get(a,a), id_map.get(b,b), d) for a,b,d in sub_paths['edges']])
 
 
+def substitue_variable(expr : Expression, binding):
+    if isinstance(expr, FunctionApplicationExpression):
+        substitue_variable(expr.func, binding)
+        for arg in expr.args:
+            substitue_variable(arg, binding)
+    if isinstance(expr, VariableExpression):
+        #print("work on:",expr.name, expr.name in binding)
+        if expr.name in binding:
+            #print("replace:",expr.name)
+            expr.name = binding[expr.name] # replace the whole variable
+
 class FOLExecutor(CentralExecutor):
     """extracts objects tagged in the grounding and implement the logic inference module recurrsively"""
     def __init__(self, domain):
@@ -71,6 +102,8 @@ class FOLExecutor(CentralExecutor):
         return ancestor 
 
     def filter(self, vars, expr, **kwargs):
+        expr = expr.replace("'","")
+        expr = expr.replace("=>",":")
         logits = [] # logits of reference in the scene.
         objects = []
         local_loss = 0.
@@ -89,11 +122,24 @@ class FOLExecutor(CentralExecutor):
         var_logit, obj = vars[:,:1], vars[:,1:]
         if len(obj.shape) == 1: obj = obj[None,...]
 
-        print(Expression.parse_program_string(expr))
+        # lambda x y z => blue(color(x))
+        lambda_vars, lambda_expr = expr.split(":") # parse the lambda expression
+        lambda_vars = extract_lambda_variables(expr)
+        var_binding = {lambda_vars[0]: Value(obj_tp,obj)}
 
-        logic_expr = FunctionApplicationExpression(VariableExpression(expr), [ VariableExpression(Value(obj_tp,obj)) ] )
-        class_logit, subloss, son_id, sub_paths = ancestor_executor._evaluate(logic_expr)
+
+        lambda_expr = ancestor_executor.parser.parse(lambda_expr)[0].fn
+        lambda_expr = Expression.parse_program_string(lambda_expr)
+        substitue_variable(lambda_expr, var_binding)
+
+
+        class_logit, subloss, son_id, sub_paths = ancestor_executor._evaluate(lambda_expr)
         merge_paths(paths, sub_paths)
+
+        """logic_expr = FunctionApplicationExpression(VariableExpression(expr), [ VariableExpression(Value(obj_tp,obj)) ] )
+        class_logit, subloss, son_id, sub_paths = ancestor_executor._evaluate(logic_expr)
+        """
+        
     
         if not isinstance(subloss, torch.Tensor): subloss = torch.tensor(subloss)
         edge_info = (node_id, son_id, {"weight":float(torch.exp(-subloss) )})

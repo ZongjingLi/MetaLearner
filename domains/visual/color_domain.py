@@ -24,25 +24,21 @@ class ColorDomain(CentralExecutor, BatchVisualizer):
     def color(self, color_obj):
         return color_obj
 
+    def _calc(self, color, shift):
+        #print(color)
+        # input color is an unbound number, map it on the [0,1] interval by mod (differentiable)
+        val = 0.5 * (torch.cos(2 * torch.pi * (color - shift)) + 1)
+        val = torch.where(val>0.5, 1-(1-val)**2, val**2).clamp(1e-6, 1-1e-6)
+        return torch.logit(val, eps=1e-6)
+
     def red(self, color):
-        #print("color:",color)
-        # Red is centered at 0/1 on the color wheel
-        redness = 0.5 * (torch.cos(2 * torch.pi * color) + 1)
-        return torch.logit(redness, eps = 1e-6)
+        return self._calc(color, 0)
 
     def green(self, color):
-        #print("green:",color)
-        # Green is centered at 1/3 on the color wheel
-        # Shift the cosine function by 1/3
-        greenness = 0.5 * (torch.cos(2 * torch.pi * (color - 1/3)) + 1)
-        return torch.logit(greenness, eps = 1e-6)
+        return self._calc(color, 1/3)
 
     def blue(self, color):
-        #print("blue:",color)
-        # Blue is centered at 2/3 on the color wheel
-        # Shift the cosine function by 2/3
-        blueness = 0.5 * (torch.cos(2 * torch.pi * (color - 2/3)) + 1)
-        return torch.logit(blueness, eps = 1e-6)
+        return self._calc(color, 2/3)
 
     def visualize(self, batched_data, save_path=None):
         import matplotlib.pyplot as plt

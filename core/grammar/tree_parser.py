@@ -8,7 +8,7 @@
 from typing import List, Tuple
 from itertools import product
 
-from helchriss.dsl.dsl_types import TypeBase
+from helchriss.dsl.dsl_types import TypeBase, STR
 from helchriss.knowledge.symbolic import Expression, FunctionApplicationExpression, VariableExpression, ConstantExpression
 
 class FunctionEntry:
@@ -50,10 +50,11 @@ class TreeParser:
         return Expression.parse_program_string(program)
     
     def parse(self, program : str):
-        program = program.replace(" ", "")
+        #print(program)
+        #program = program.replace(" ", "")
         tree = Expression.parse_program_string(program)
         supress = self.supress # supree the mismatch
-
+        #print("tree parse:", tree)
 
         def dp(x : Expression) -> List[FunctionEntry]:
             """return the list"""
@@ -70,12 +71,11 @@ class TreeParser:
                 
                 arg_entries : List[List[FunctionEntry]] = [dp(arg) for arg in args]
                 arg_entries = [list(comb) for comb in product(*arg_entries)]
-                #print("entries:", len(entries))
-                #print("arg entries:",len(arg_entries))
-                
+
                 for entry in entries:
                     for arg_pair in arg_entries:
-
+                        #print(arg_pair)
+                        #print(entry.types)
                         not_compat = [arg.types[-1] != entry.types[i] for i,arg in enumerate(arg_pair)]
                         
                         vars = ",".join([arg.fn for arg in arg_pair])
@@ -100,7 +100,12 @@ class TreeParser:
     
                 return programs
             if isinstance(x, VariableExpression):
-                return self.get_function_entry(x.name)
+                #print(x.name, self.get_function_entry(x.name))
+                entries = self.get_function_entry(x.name)
+                if entries:
+                    return entries
+                else:
+                    return [FunctionEntry(x.name, x.name, [STR], 1., True)]
             raise Exception(f"unknown node type {x}")
         
         programs : List[FunctionEntry] = dp(tree)

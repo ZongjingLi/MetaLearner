@@ -580,31 +580,24 @@ class SearchExecutor(CentralExecutor):
                 new_query_comb_count += 1
             
             node.maintain = 1
-            
-            # 6. 递归遍历子节点，传递更新后的路径状态
+
             for son in node.next:
                 assert isinstance(son, SearchNode), f"{son} is not a valid SearchNode"
                 dfs_track_combined_key(son, new_path_keys, new_query_comb_count)
         
-        # ========== 步骤1：执行循环检测 ==========
         dfs_detect_cycle(init_node, set(), [])
         
-        # ========== 步骤2：展示循环信息（若存在） ==========
+
         if cycle_found and cycle_details:
             print("=" * 60)
-            print("🔴 CYCLE DETECTED (duplicate query_fn+arg_types)")
+            print("CYCLE DETECTED (duplicate query_fn+arg_types)")
             print(f"Duplicate combined key: {cycle_details['duplicate_combined_key']}")
             print(f"Cycle path length: {cycle_details['cycle_path_length']}")
             print(f"Full cycle path: {' -> '.join(cycle_details['cycle_path_nodes'])}")
             print("=" * 60)
         else:
             pass
-            #print("🟢 NO CYCLE FOUND (no duplicate query_fn+arg_types in any path)")
-        
-        # ========== 步骤3：执行循环路径切断 ==========
-        #dfs_track_combined_key(init_node, set(), path_query_comb_count=0)
-        
-        # ========== 步骤4：收集所有有效节点 ==========
+
         valid_nodes = []
         def collect_valid_nodes(node: "SearchNode"):
             if node.maintain == 1:
@@ -639,6 +632,7 @@ class SearchExecutor(CentralExecutor):
             functions = self.base_executor.gather_functions(value_types(value), output_type)
 
         except:
+            print(query_fn,self.base_executor.function_signature(query_fn))
             raise NotImplementedError(f"{query_fn} is not found")
         for fn in functions:
 
@@ -741,7 +735,6 @@ class SearchExecutor(CentralExecutor):
             return has_reach
         
 
-        
         self.subtree_filter_target(src_node,  query_fn)
         self.filter_cycle(src_node, query_fn) # filter self loops
         filter_path(src_node) # dfs on the super source node
@@ -753,10 +746,6 @@ class SearchExecutor(CentralExecutor):
         
         #kill(src_node)
 
-        
-        
-
-
         ban_freeze(src_node, self.non_effective_nodes)
 
         success_reach = exist_distr_path(src_node)
@@ -765,7 +754,8 @@ class SearchExecutor(CentralExecutor):
 
         normalize(src_node, total_weights)
 
-
+        if mode == "update":
+            pass
         
         
         
@@ -862,8 +852,6 @@ class SearchExecutor(CentralExecutor):
     """Evaluate Chain of Expressions"""
     def evaluate(self, expression, grounding):
         if not isinstance(expression, Expression):
-            expression = expression.replace(" ","")
-
             expression = self.parser.parse(expression)[0].fn
 
 
