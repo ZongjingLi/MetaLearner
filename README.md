@@ -61,8 +61,8 @@ In this work we use the categorical-combinatoric-grammar to perform the parsing 
 
 ## Experiment Results
 
-![image](outputs/figs/scene_000012.png)
-![image](outputs/cw12.png)
+![image](outputs/figs/color_wheel_eg.png)
+
 
 ### Related Works
 **Neuro-Symbolic Concept Learner**
