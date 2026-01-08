@@ -16,8 +16,10 @@ objects_domain_str = """
     Object -  Embedding[object, 96]
     Shape  - Embedding[shape, 32]
     Color - Embedding[color, 3]
+    cw - Embedding[color_wheel, 1]
 )
 (def function
+    cw_map (x : Object) : cw := by pass
     ;; by pass is defaulty used to avoid the actual definion of the functions
     scene : List[Tuple[boolean,Object]] := by pass
 
@@ -127,9 +129,14 @@ class ObjectsExecutor(CentralExecutor):
         self.left_mlp  = FCBlock(obj_dim + obj_dim, 1)
         self.right_mlp = FCBlock(obj_dim + obj_dim, 1)
 
+        self.cw_map_mlp = FCBlock(obj_dim, 1)
+
         self.object_encoder = CNNObjEncoder(output_dim = feature_dim, spatial_dim = spatial_dim)
         #self.object_encoder = MLPObjEncoder(output_dim = obj_dim)#
         self.device = "cpu"#mps" if torch.backends.mps.is_available() else "cuda" if torch.cuda.is_available() else "cpu"
+
+    def cw_map(self, x):
+        return self.cw_map_mlp(x)
 
     def scene(self, **kwargs):
         device = self.device

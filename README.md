@@ -55,13 +55,22 @@ https://sites.google.com/view/virtualtoolsgame
 
 ## Framework Details
 
-### Parser and CCG
+### CCG Based Parser
 In this work we use the categorical-combinatoric-grammar to perform the parsing the model [G2L2](https://proceedings.neurips.cc/paper_files/paper/2021/file/4158f6d19559955bae372bb00f6204e4-Paper.pdf).
 
+### Evaluation Model
+
+### Update Model
+add minimal amount of edges to cover
 
 ## Experiment Results
 
-![image](outputs/figs/color_wheel_eg.png)
+
+![image](outputs/figs/euclid0/color_wheel_eg.png)
+
+learned object to color mapping structure
+
+![image][outputs/figs/euclid0/color_structure.png]
 
 
 ### Related Works

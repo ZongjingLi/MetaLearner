@@ -410,7 +410,7 @@ class SearchExecutor(CentralExecutor):
 
         return nodes, id_count
     
-    def subtree_filter_target(self, init_node: SearchNode, target: str) -> List[SearchNode]:
+    def subtree_filter_target(self, init_node: SearchNode, target: str, mode = "eval") -> List[SearchNode]:
         """
         Filter nodes that either eventually reach the target node or are reachable by the target node (in the target's subtree).
         Traverse the subtree rooted at init_node, no additional nodes list required.
@@ -470,7 +470,7 @@ class SearchExecutor(CentralExecutor):
 
         nodes = []
         def display(node):
-            if node.maintain:
+            if (mode == "update") or node.maintain:
                 nodes.append(node)
             for son in node.next:
                 display(son)
@@ -649,8 +649,8 @@ class SearchExecutor(CentralExecutor):
                 subtree_nodes = self.subtree_filter_target(subtree_nodes[0], query_fn)
 
             if mode == "update": # select the subtree that is reachable by margin
-                subtree_nodes = self.subtree_filter_margin(subtree_nodes[0], subtree_nodes, margin = 0.01)
-            
+                #subtree_nodes = self.subtree_filter_margin(subtree_nodes[0], subtree_nodes, margin = 0.01)
+                subtree_nodes = self.subtree_filter_target(subtree_nodes[0], query_fn, mode = mode)
     
             if subtree_nodes: # not an empty subtree
                 src_node.next.append(subtree_nodes[0]) # add the subtree head
@@ -659,14 +659,14 @@ class SearchExecutor(CentralExecutor):
 
 
         # each node weight to be successful reach exists and add the reach path
-        def filter_path(node):
+        def filter_on_path(node):
             """a node is keep only any of the three mask is correct"""
             sub_nodes = [nd for nd in node.next if (nd.is_parent or nd.is_subtree or nd.is_target)]
             node.next = sub_nodes
 
             has_reach = node.is_target
             for i,nd in enumerate(node.next):
-                son_reached = filter_path(nd)
+                son_reached = filter_on_path(nd)
                 has_reach = max(has_reach, son_reached * node.next_weights[i])
             
             return has_reach
@@ -733,20 +733,30 @@ class SearchExecutor(CentralExecutor):
                 has_reach = max(has_reach, son_reached * node.next_weights[i])
             
             return has_reach
+
+        if mode == "eval":
+            self.subtree_filter_target(src_node,  query_fn, mode = mode)
         
-
-        self.subtree_filter_target(src_node,  query_fn)
+        
+        
+        
         self.filter_cycle(src_node, query_fn) # filter self loops
-        filter_path(src_node) # dfs on the super source node
+        
+        if mode == "eval":
+            filter_on_path(src_node) # kill nodes that is not on a path that pass fn
 
+       
         distr(src_node, prob = 1.0) # construct lastest node distr
+        
+        
         
         effective(query_fn, src_node, 0.0) # mask out parent nodes
         
         
         #kill(src_node)
-
+        
         ban_freeze(src_node, self.non_effective_nodes)
+
 
         success_reach = exist_distr_path(src_node)
 
@@ -758,11 +768,10 @@ class SearchExecutor(CentralExecutor):
             pass
         
         
-        
         if len(rw_nodes) > self.cut and self.verbose:
-            visualize_subtree(src_node, query_fn = query_fn)
+            visualize_subtree(src_node, query_fn = query_fn+"\nVerbose")
             #print("DO This", len(rw_nodes), query_fn)
-            pass 
+            pass
 
         rw_nodes = [node for node in rw_nodes if node.name]
 
@@ -972,10 +981,10 @@ class SearchExecutor(CentralExecutor):
 
         # for each node that not in the 
         for (_,gn, vargs, weight) in execute_pairs:
-
+            #print("GN:", gn)
             for (in_tps, out_tp) in self.base_executor.function_signature(fn):
                 self_loop = 1.
-                if self_loop and weight > 0:
+                if self_loop and weight >= 0:
                     """BAN ALL the automorphisms"""
                     arg_types = value_types(vargs)
                     src_tps = arg_types
