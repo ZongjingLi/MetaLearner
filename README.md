@@ -69,8 +69,8 @@ add minimal amount of edges to cover
 ![image](outputs/figs/euclid0/color_wheel_eg.png)
 
 learned object to color mapping structure
+![image](outputs/figs/euclid0/color_structure.png)
 
-![image][outputs/figs/euclid0/color_structure.png]
 
 
 ### Related Works
