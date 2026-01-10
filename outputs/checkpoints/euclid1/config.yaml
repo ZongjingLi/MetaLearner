@@ -11,6 +11,9 @@ domains:
   logic:
     name: fol_executor
     path: domains.logic.fol_domain
+  shape3d:
+    name: objects_executor
+    path: domains.scene.objects_domain
 name: prototype
 vocab:
   path: core_vocab.txt
