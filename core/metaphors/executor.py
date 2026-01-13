@@ -18,6 +18,7 @@ from helchriss.dsl.dsl_values import value_types
 from core.metaphors.rewrite import Frame, pth_file
 from helchriss.logger import get_logger
 from core.grammar.tree_parser import TreeParser
+from torch.distributions import Distribution, constraints
 
 
 # this is the for type space, basically a wrapper class
